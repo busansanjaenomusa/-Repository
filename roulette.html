@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roulette Wheel</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(15, 23, 42, 0.72);
+      --card: rgba(15, 23, 42, 0.9);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #f59e0b;
+      --primary-2: #fb7185;
+      --success: #34d399;
+      --danger: #f87171;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(96, 165, 250, 0.12), transparent 30%),
+        linear-gradient(135deg, #0f172a 0%, #111827 35%, #0b1220 100%);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(1100px, 100%);
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(300px, 700px);
+      gap: 24px;
+      align-items: center;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      padding: 24px;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      letter-spacing: -0.05em;
+    }
+
+    .sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: rgba(96, 165, 250, 0.8);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+      color: white;
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px) scale(0.995); }
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      filter: grayscale(0.2);
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      min-width: 88px;
+    }
+
+    .spin-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), #f97316);
+      font-size: 1.05rem;
+      padding: 16px 18px;
+      letter-spacing: 0.02em;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .item-name {
+      flex: 1;
+      font-size: 0.96rem;
+      word-break: break-word;
+    }
+
+    .remove-btn {
+      background: rgba(248, 113, 113, 0.12);
+      color: #fecaca;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      min-width: 56px;
+    }
+
+    .result-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(52, 211, 153, 0.28);
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #d1fae5;
+      line-height: 1.5;
+    }
+
+    .wheel-panel {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 720px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 32px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: min(90vw, 620px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+    }
+
+    .wheel-shadow {
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.2), rgba(15,23,42,0.1) 50%, rgba(15,23,42,0.3) 100%);
+      filter: blur(28px);
+      transform: scale(1.08);
+      opacity: 0.7;
+    }
+
+    canvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 50%;
+      background: transparent;
+      z-index: 1;
+    }
+
+    .pointer {
+      position: absolute;
+      top: 6%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 24px solid transparent;
+      border-right: 24px solid transparent;
+      border-top: 48px solid #f8fafc;
+      filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.55));
+      z-index: 3;
+    }
+
+    .center {
+      position: absolute;
+      width: 106px;
+      height: 106px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fef3c7, #fbbf24 38%, #f59e0b 100%);
+      border: 10px solid rgba(255,255,255,0.5);
+      box-shadow: 0 18px 30px rgba(245, 158, 11, 0.3);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #111827;
+      font-size: 1.3rem;
+      z-index: 4;
+    }
+
+    .center::before {
+      content: "GO";
+      transform: translateY(2px);
+    }
+
+    .confetti-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    .confetti-particle {
+      position: absolute;
+      width: 8px;
+      height: 16px;
+      border-radius: 3px;
+      opacity: 0.9;
+      animation: fall 1.6s ease-in forwards;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--rot)) scale(0.7);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .wheel-panel {
+        min-height: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel sidebar">
+      <div>
+        <h1>룰렛</h1>
+        <p class="sub">식당, 벌칙, 미션을 추가하고 회전해보세요.</p>
+      </div>
+
+      <div>
+        <div class="input-row">
+          <input id="itemInput" type="text" placeholder="항목을 입력하세요" maxlength="40" />
+          <button id="addBtn" class="add-btn">추가</button>
+        </div>
+      </div>
+
+      <div id="itemList" class="list" aria-live="polite"></div>
+
+      <button id="spinBtn" class="spin-btn">회전</button>
+
+      <div id="resultBox" class="result-box">아직 결과가 없어요.</div>
+    </aside>
+
+    <section class="panel wheel-panel">
+      <div class="wheel-wrap">
+        <div class="wheel-shadow"></div>
+        <canvas id="wheelCanvas" width="620" height="620"></canvas>
+        <div class="pointer" aria-hidden="true"></div>
+        <div class="center" aria-hidden="true"></div>
+        <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "roulette_items_v1";
+
+    const defaultItems = [
+      "치킨",
+      "짜장면",
+      "초밥",
+      "마라탕",
+      "카페",
+      "벌칙 10분 걷기"
+    ];
+
+    const itemInput = document.getElementById("itemInput");
+    const addBtn = document.getElementById("addBtn");
+    const itemList = document.getElementById("itemList");
+    const spinBtn = document.getElementById("spinBtn");
+    const resultBox = document.getElementById("resultBox");
+    const wheelCanvas = document.getElementById("wheelCanvas");
+    const confettiLayer = document.getElementById("confettiLayer");
+
+    const ctx = wheelCanvas.getContext("2d");
+    const wheelState = {
+      rotation: 0,
+      spinning: false,
+      currentWinner: null
+    };
+
+    let items = loadItems();
+
+    function loadItems() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return [...defaultItems];
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) && parsed.length ? parsed : [...defaultItems];
+      } catch {
+        return [...defaultItems];
+      }
+    }
+
+    function saveItems() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function renderList() {
+      itemList.innerHTML = "";
+
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "item";
+        empty.innerHTML = `<div class="item-name">항목이 없습니다.</div>`;
+        itemList.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const label = document.createElement("div");
+        label.className = "item-name";
+        label.textContent = item;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-btn";
+        removeBtn.textContent = "삭제";
+        removeBtn.setAttribute("aria-label", `${item} 삭제`);
+        removeBtn.addEventListener("click", () => {
+          items.splice(index, 1);
+          if (!items.length) {
+            wheelState.currentWinner = null;
+            resultBox.textContent = "아직 결과가 없어요.";
+          }
+          saveItems();
+          renderList();
+          drawWheel();
+        });
+
+        row.appendChild(label);
+        row.appendChild(removeBtn);
+        itemList.appendChild(row);
+      });
+    }
+
+    function drawWheel() {
+      const canvas = wheelCanvas;
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = w * 0.42;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const total = items.length || 1;
+      const slice = (Math.PI * 2) / total;
+
+      // wheel board
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(wheelState.rotation);
+
+      for (let i = 0; i < total; i++) {
+        const start = i * slice;
+        const end = start + slice;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, start, end);
+        ctx.closePath();
+
+        const palette = [
+          "#f97316", "#facc15", "#34d399", "#60a5fa",
+          "#a78bfa", "#f472b6", "#fb7185", "#38bdf8",
+          "#22c55e", "#f59e0b", "#8b5cf6", "#14b8a6"
+        ];
+        ctx.fillStyle = palette[i % palette.length];
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(255,255,255,0.45)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // labels
+        ctx.save();
+        ctx.rotate(start + slice / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "700 24px sans-serif";
+        ctx.textBaseline = "middle";
+
+        const text = items[i];
+        const textLength = Math.min(text.length, 12);
+        const pad = radius * 0.56;
+
+        ctx.fillText(text.substring(0, textLength), pad, 0);
+        ctx.restore();
+      }
+
+      // inner circle
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.18, 0, Math.PI * 2);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fill();
+
+      // inner border
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.18, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(15, 23, 42, 0.3)";
+      ctx.lineWidth = 8;
+      ctx.stroke();
+
+      ctx.restore();
+
+      // decorative outer ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius + 14, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 16;
+      ctx.stroke();
+    }
+
+    function getWinnerIndex() {
+      if (!items.length) return -1;
+      return Math.floor(Math.random() * items.length);
+    }
+
+    function createConfettiBurst() {
+      confettiLayer.innerHTML = "";
+
+      const colors = ["#fbbf24", "#fb7185", "#60a5fa", "#34d399", "#a78bfa", "#fca5a5", "#fcd34d"];
+      const particleCount = 48;
+
+      for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement("div");
+        p.className = "confetti-particle";
+        p.style.left = `${50 + (Math.random() * 18 - 9)}%`;
+        p.style.top = `${48 + (Math.random() * 20 - 10)}%`;
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.setProperty("--dx", `${(Math.random() - 0.5) * 340}px`);
+        p.style.setProperty("--dy", `${Math.random() * 220 + 120}px`);
+        p.style.setProperty("--rot", `${(Math.random() - 0.5) * 600}deg`);
+        confettiLayer.appendChild(p);
+      }
+
+      setTimeout(() => {
+        confettiLayer.innerHTML = "";
+      }, 1700);
+    }
+
+    function spinRoulette() {
+      if (wheelState.spinning || items.length < 2) {
+        if (items.length < 2) {
+          resultBox.textContent = "항목을 2개 이상 넣어주세요.";
+        }
+        return;
+      }
+
+      const winnerIndex = getWinnerIndex();
+      const total = items.length;
+      const slice = (Math.PI * 2) / total;
+      const chosenAngle = (winnerIndex + 0.5) * slice;
+
+      const pointerAngle = Math.PI / 2; // top pointer position
+      const fullTurns = 12; // 최소 회전 수
+      const extraRotation = fullTurns * Math.PI * 2;
+      const current = ((wheelState.rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+
+      // 현재 위치를 기준으로 선택된 섹션이 포인터 위치로 오도록 보정
+      let delta = (Math.PI * 2 - ((current + pointerAngle) % (Math.PI * 2)) + chosenAngle) % (Math.PI * 2);
+      const target = wheelState.rotation + extraRotation + delta;
+
+      wheelState.spinning = true;
+      wheelState.currentWinner = items[winnerIndex];
+
+      const start = performance.now();
+      const duration = 5000;
+
+      function animate(now) {
+        const elapsed = now - start;
+        const t = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 4);
+        wheelState.rotation = lerp(wheelState.rotation, target, ease);
+        drawWheel();
+
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          const finalIndex = winnerIndex;
+          resultBox.textContent = `${items[finalIndex]} 당첨!`;
+          createConfettiBurst();
+          wheelState.rotation = ((target % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+          drawWheel();
+          setTimeout(() => {
+            wheelState.spinning = false;
+          }, 200);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function lerp(start, end, t) {
+      return start + (end - start) * t;
+    }
+
+    addBtn.addEventListener("click", () => {
+      const value = itemInput.value.trim();
+      if (!value) {
+        itemInput.focus();
+        return;
+      }
+
+      items.push(value);
+      saveItems();
+      renderList();
+      drawWheel();
+      itemInput.value = "";
+      itemInput.focus();
+      resultBox.textContent = "아직 결과가 없어요.";
+    });
+
+    itemInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addBtn.click();
+      }
+    });
+
+    spinBtn.addEventListener("click", spinRoulette);
+
+    renderList();
+    drawWheel();
+  </script>
+</body>
+</html>

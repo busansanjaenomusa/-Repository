@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주사위 굴리기</title>
+<style>
+  :root {
+    --bg-1: #eef2f7;
+    --bg-2: #d9e1ec;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --die-face: #ffffff;
+    --die-edge: #d6dbe3;
+    --pip: #1f2937;
+    --pip-one: #dc2626;
+    --btn: #2563eb;
+    --btn-hover: #1d4ed8;
+    --btn-text: #ffffff;
+    --shadow: rgba(15, 23, 42, 0.25);
+    --die-size: min(42vw, 200px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-1: #111827;
+      --bg-2: #0b1220;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --die-face: #f8fafc;
+      --die-edge: #cbd5e1;
+      --shadow: rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 16px;
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    color: var(--text);
+    background: radial-gradient(circle at 50% 35%, var(--bg-1), var(--bg-2));
+    overflow-x: hidden;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* 3D 장면 */
+  .scene {
+    width: var(--die-size);
+    height: var(--die-size);
+    perspective: 900px;
+    position: relative;
+  }
+
+  .scene::after {
+    /* 바닥 그림자 */
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: calc(var(--die-size) * -0.32);
+    height: calc(var(--die-size) * 0.14);
+    background: radial-gradient(ellipse at center, var(--shadow), transparent 70%);
+    filter: blur(4px);
+    transition: transform 0.6s ease;
+  }
+  .scene.rolling::after {
+    transform: scale(0.7);
+  }
+
+  .tilt {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(-22deg) rotateY(28deg);
+  }
+
+  .die {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1.4s cubic-bezier(0.18, 0.9, 0.25, 1.05);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 14%;
+    background: var(--die-face);
+    border-radius: 18%;
+    box-shadow:
+      inset 0 0 0 2px var(--die-edge),
+      inset 0 0 calc(var(--die-size) * 0.12) rgba(0, 0, 0, 0.12);
+    backface-visibility: hidden;
+  }
+
+  .pip {
+    width: 72%;
+    height: 72%;
+    margin: auto;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #4b5563, var(--pip) 65%);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+  }
+  .face-1 .pip {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 35% 35%, #f87171, var(--pip-one) 65%);
+  }
+
+  /* 눈 위치 (3x3 격자) */
+  .tl { grid-area: 1 / 1; }
+  .tr { grid-area: 1 / 3; }
+  .ml { grid-area: 2 / 1; }
+  .c  { grid-area: 2 / 2; }
+  .mr { grid-area: 2 / 3; }
+  .bl { grid-area: 3 / 1; }
+  .br { grid-area: 3 / 3; }
+
+  /* 면 배치: 마주보는 면의 합이 7 */
+  .face-1 { transform: rotateY(0deg)   translateZ(calc(var(--die-size) / 2)); }
+  .face-6 { transform: rotateY(180deg) translateZ(calc(var(--die-size) / 2)); }
+  .face-3 { transform: rotateY(90deg)  translateZ(calc(var(--die-size) / 2)); }
+  .face-4 { transform: rotateY(-90deg) translateZ(calc(var(--die-size) / 2)); }
+  .face-2 { transform: rotateX(90deg)  translateZ(calc(var(--die-size) / 2)); }
+  .face-5 { transform: rotateX(-90deg) translateZ(calc(var(--die-size) / 2)); }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .result {
+    min-height: 1.6em;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .result strong {
+    font-size: 1.6em;
+    color: var(--btn);
+  }
+
+  button {
+    font: inherit;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 14px 44px;
+    border: none;
+    border-radius: 999px;
+    color: var(--btn-text);
+    background: var(--btn);
+    box-shadow: 0 8px 20px -6px var(--btn);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  button:hover:not(:disabled) { background: var(--btn-hover); }
+  button:active:not(:disabled) { transform: translateY(2px); }
+  button:disabled { opacity: 0.6; cursor: default; }
+  button:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+
+  .history {
+    font-size: 0.9rem;
+    color: var(--muted);
+    min-height: 1.2em;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .die { transition-duration: 0.01s; }
+  }
+</style>
+</head>
+<body>
+  <h1>🎲 주사위 굴리기</h1>
+
+  <div class="scene" id="scene">
+    <div class="tilt">
+      <div class="die" id="die">
+        <div class="face face-1"><span class="pip c"></span></div>
+        <div class="face face-2"><span class="pip tl"></span><span class="pip br"></span></div>
+        <div class="face face-3"><span class="pip tl"></span><span class="pip c"></span><span class="pip br"></span></div>
+        <div class="face face-4"><span class="pip tl"></span><span class="pip tr"></span><span class="pip bl"></span><span class="pip br"></span></div>
+        <div class="face face-5"><span class="pip tl"></span><span class="pip tr"></span><span class="pip c"></span><span class="pip bl"></span><span class="pip br"></span></div>
+        <div class="face face-6"><span class="pip tl"></span><span class="pip tr"></span><span class="pip ml"></span><span class="pip mr"></span><span class="pip bl"></span><span class="pip br"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="result" id="result" aria-live="polite">버튼을 눌러 주사위를 굴려 보세요</div>
+    <button type="button" id="rollBtn">굴리기</button>
+    <div class="history" id="history"></div>
+  </div>
+
+<script>
+  (function () {
+    var die = document.getElementById('die');
+    var scene = document.getElementById('scene');
+    var btn = document.getElementById('rollBtn');
+    var resultEl = document.getElementById('result');
+    var historyEl = document.getElementById('history');
+
+    // 각 숫자가 정면에 오도록 하는 회전값 (deg)
+    var FACE_ROTATION = {
+      1: { x: 0,   y: 0 },
+      2: { x: -90, y: 0 },
+      3: { x: 0,   y: -90 },
+      4: { x: 0,   y: 90 },
+      5: { x: 90,  y: 0 },
+      6: { x: 0,   y: 180 }
+    };
+
+    var turnsX = 0;
+    var turnsY = 0;
+    var history = [];
+    var rolling = false;
+
+    // 1~6 균등 난수 (가능하면 crypto 사용)
+    function randomFace() {
+      if (window.crypto && window.crypto.getRandomValues) {
+        var buf = new Uint32Array(1);
+        var limit = Math.floor(0x100000000 / 6) * 6; // 모듈로 편향 제거
+        do { window.crypto.getRandomValues(buf); } while (buf[0] >= limit);
+        return (buf[0] % 6) + 1;
+      }
+      return Math.floor(Math.random() * 6) + 1;
+    }
+
+    function randInt(min, max) {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    function roll() {
+      if (rolling) return;
+      rolling = true;
+      btn.disabled = true;
+      scene.classList.add('rolling');
+      resultEl.textContent = '굴리는 중...';
+
+      var value = randomFace();
+      var target = FACE_ROTATION[value];
+
+      // 매번 2~4바퀴 이상 추가로 돌아가도록 누적
+      turnsX += randInt(2, 4);
+      turnsY += randInt(2, 4);
+
+      die.style.transform =
+        'rotateX(' + (turnsX * 360 + target.x) + 'deg) ' +
+        'rotateY(' + (turnsY * 360 + target.y) + 'deg)';
+
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        die.removeEventListener('transitionend', finish);
+        scene.classList.remove('rolling');
+        resultEl.innerHTML = '결과: <strong>' + value + '</strong>';
+        history.unshift(value);
+        if (history.length > 10) history.pop();
+        historyEl.textContent = '최근 기록: ' + history.join(' · ');
+        rolling = false;
+        btn.disabled = false;
+        btn.focus();
+      }
+      die.addEventListener('transitionend', finish);
+      setTimeout(finish, 1600); // transitionend 미발생 대비
+    }
+
+    btn.addEventListener('click', roll);
+    document.addEventListener('keydown', function (e) {
+      if ((e.code === 'Space' || e.code === 'Enter') && document.activeElement !== btn) {
+        e.preventDefault();
+        roll();
+      }
+    });
+  })();
+</script>
+</body>
+</html>

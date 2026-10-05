@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>모성보호 플래너</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1c2430;
+    --muted: #64707d;
+    --line: #e2e6eb;
+    --accent: #2f6fde;
+    --accent-soft: #e6eefc;
+    --pre: #f4a7b9;
+    --post: #d9476b;
+    --post-soft: #fbe3ea;
+    --leave: #3b82f6;
+    --leave-alt: #0ea5a4;
+    --ok: #15803d;
+    --ok-soft: #e7f6ec;
+    --warn: #b45309;
+    --warn-soft: #fdf3e2;
+    --bad: #b91c1c;
+    --bad-soft: #fde8e8;
+    --track: #eef1f4;
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10141a;
+      --card: #1a2029;
+      --text: #e8ecf1;
+      --muted: #98a3b0;
+      --line: #2c3440;
+      --accent: #6b9cf5;
+      --accent-soft: #1f2d47;
+      --pre: #a8566d;
+      --post: #ec6a8b;
+      --post-soft: #3a2029;
+      --leave: #5b9bf8;
+      --leave-alt: #2cc2c0;
+      --ok: #4ade80;
+      --ok-soft: #173023;
+      --warn: #fbbf24;
+      --warn-soft: #3a2e14;
+      --bad: #f87171;
+      --bad-soft: #3b1c1c;
+      --track: #232a35;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
+  }
+  header h1 { margin: 4px 0 4px; font-size: 1.5rem; letter-spacing: -0.02em; }
+  header p { margin: 0 0 18px; color: var(--muted); font-size: 0.92rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    margin: 0 0 14px;
+    font-size: 1.08rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step {
+    display: inline-grid;
+    place-items: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+  }
+
+  label.field { display: block; margin-bottom: 14px; }
+  .field > span { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; }
+  .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+  input[type="date"], input[type="number"] {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* 세그먼트 버튼 */
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    background: var(--track);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .seg button {
+    min-height: 44px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  /* 스테퍼 */
+  .stepper {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .stepper button {
+    height: 48px;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+  .stepper button:disabled { color: var(--line); cursor: default; }
+  .stepper output { text-align: center; font-weight: 700; }
+
+  /* 토글 */
+  .toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .toggle .sw {
+    flex: none;
+    width: 46px; height: 28px;
+    border-radius: 14px;
+    background: var(--line);
+    position: relative;
+    transition: background 0.2s;
+    margin-top: 1px;
+  }
+  .toggle .sw::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .sw { background: var(--accent); }
+  .toggle input:checked + .sw::after { transform: translateX(18px); }
+  .toggle input:focus-visible + .sw { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .toggle .tx b { display: block; font-size: 0.93rem; }
+  .toggle .tx small { color: var(--muted); font-size: 0.8rem; }
+
+  /* 결과 요약 */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .stat .k { font-size: 0.78rem; color: var(--muted); }
+  .stat .v { font-size: 1.05rem; font-weight: 700; margin-top: 2px; }
+  .stat.wide { grid-column: 1 / -1; }
+
+  .badge {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    margin-top: 10px;
+  }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge .ic { flex: none; font-weight: 800; }
+
+  /* 육아휴직 구간 */
+  .segment {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .segment-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .segment-head b { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+  .icon-btn {
+    min-width: 44px; min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 10px;
+  }
+  .icon-btn:hover { background: var(--track); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .seg-range { font-size: 0.88rem; font-weight: 600; margin-top: 8px; }
+
+  .btn {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn.ghost {
+    border: 1.5px dashed var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+
+  .meter {
+    height: 10px;
+    background: var(--track);
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 6px 0 4px;
+  }
+  .meter > i { display: block; height: 100%; background: var(--leave); border-radius: 5px; }
+  .meter.over > i { background: var(--bad); }
+
+  /* 타임라인 */
+  .tl { position: relative; margin-top: 4px; }
+  .tl-axis {
+    position: relative;
+    height: 22px;
+    margin-left: 0;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .tl-axis span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .tl-body { position: relative; }
+  .tl-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .tl-grid i {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: var(--line);
+  }
+  .tl-row { position: relative; margin-bottom: 12px; }
+  .tl-label { font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between; gap: 8px; }
+  .tl-label small { color: var(--muted); font-weight: 500; }
+  .tl-track {
+    position: relative;
+    height: 26px;
+    background: var(--track);
+    border-radius: 8px;
+  }
+  .tl-bar {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-radius: 8px;
+    min-width: 3px;
+  }
+  .tl-birth {
+    position: absolute;
+    top: -6px; bottom: -6px;
+    width: 2px;
+    background: var(--text);
+    z-index: 2;
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+  /* 세로 일정 */
+  .steps { list-style: none; margin: 18px 0 0; padding: 0; }
+  .steps li {
+    position: relative;
+    padding: 0 0 16px 26px;
+  }
+  .steps li::before {
+    content: "";
+    position: absolute;
+    left: 6px; top: 6px; bottom: -6px;
+    width: 2px;
+    background: var(--line);
+  }
+  .steps li:last-child::before { display: none; }
+  .steps li > i {
+    position: absolute;
+    left: 0; top: 4px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 3px solid var(--card);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .steps b { display: block; font-size: 0.92rem; }
+  .steps span { font-size: 0.85rem; color: var(--muted); }
+
+  details { font-size: 0.85rem; color: var(--muted); }
+  details summary { cursor: pointer; font-weight: 600; color: var(--text); min-height: 44px; display: flex; align-items: center; }
+  details ul { padding-left: 18px; margin: 4px 0 8px; }
+  details li { margin-bottom: 6px; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 380px) {
+    .summary { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>모성보호 플래너</h1>
+    <p>출산예정일을 입력하면 출산전후휴가와 이어지는 육아휴직 일정을 계산합니다.</p>
+  </header>
+
+  <!-- 1. 출산전후휴가 -->
+  <section class="card" aria-labelledby="h-mat">
+    <h2 id="h-mat"><span class="step">1</span>출산전후휴가</h2>
+
+    <label class="field">
+      <span>출산예정일</span>
+      <input type="date" id="due" required>
+    </label>
+
+    <div class="field">
+      <span>임신 유형</span>
+      <div class="seg" role="group" aria-label="임신 유형">
+        <button type="button" data-multi="0" aria-pressed="true">한 명 (90일)</button>
+        <button type="button" data-multi="1" aria-pressed="false">다태아 (120일)</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>출산 전 사용 일수</span>
+      <div class="stepper">
+        <button type="button" id="preMinus" aria-label="하루 줄이기">−</button>
+        <output id="preOut" aria-live="polite">44일</output>
+        <button type="button" id="prePlus" aria-label="하루 늘리기">+</button>
+      </div>
+      <div class="hint" id="preHint">최대값이 권장 시작일입니다. 줄이면 출산 후 휴가가 늘어납니다.</div>
+    </div>
+
+    <label class="toggle">
+      <input type="checkbox" id="hasActual">
+      <span class="sw"></span>
+      <span class="tx"><b>실제 출산일 입력</b><small>출산 후 실제 날짜로 다시 계산합니다 (출산 지연 시 종료일 연장 확인).</small></span>
+    </label>
+    <label class="field hidden" id="actualWrap">
+      <span>실제 출산일</span>
+      <input type="date" id="actual">
+    </label>
+
+    <label class="toggle">
+      <input type="checkbox" id="preterm">
+      <span class="sw"></span>
+      <span class="tx"><b>미숙아 출산 (100일)</b><small>미숙아를 출산한 경우 총 100일로 계산합니다. 다태아는 120일이 적용됩니다.</small></span>
+    </label>
+
+    <div class="summary" id="matSummary"></div>
+    <div id="matChecks"></div>
+  </section>
+
+  <!-- 2. 육아휴직 -->
+  <section class="card" aria-labelledby="h-par">
+    <h2 id="h-par"><span class="step">2</span>육아휴직</h2>
+
+    <label class="toggle">
+      <input type="checkbox" id="extend">
+      <span class="sw"></span>
+      <span class="tx"><b>1년 6개월 연장 대상</b><small>같은 자녀로 부모가 각각 3개월 이상 사용 / 한부모 / 고용노동부령으로 정하는 장애아동의 부모</small></span>
+    </label>
+
+    <div class="field">
+      <span>사용 방식</span>
+      <div class="seg" role="group" aria-label="사용 방식">
+        <button type="button" data-mode="once" aria-pressed="true">한 번에 사용</button>
+        <button type="button" data-mode="split" aria-pressed="false">나눠서 사용</button>
+      </div>
+      <div class="hint">최대 3회 분할 가능 (총 4개 구간). 임신 중 육아휴직은 분할 횟수에 포함되지 않습니다.</div>
+    </div>
+
+    <div id="segments"></div>
+    <button type="button" class="btn ghost" id="addSeg">+ 구간 추가</button>
+
+    <div style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+        <b>사용 일수</b><span id="usedTxt"></span>
+      </div>
+      <div class="meter" id="meter"><i></i></div>
+      <div id="parChecks"></div>
+    </div>
+  </section>
+
+  <!-- 3. 타임라인 -->
+  <section class="card" aria-labelledby="h-tl">
+    <h2 id="h-tl"><span class="step">3</span>한눈에 보는 일정</h2>
+    <div class="tl" id="timeline"></div>
+    <div class="legend" id="legend"></div>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>계산 기준과 법적 근거</summary>
+      <ul>
+        <li><b>출산전후휴가</b>: 출산 전과 후를 통틀어 90일(미숙아 100일, 다태아 120일), 출산 후 45일(다태아 60일) 이상 배정 — 근로기준법 제74조 제1항.</li>
+        <li><b>출산 후 일수 계산</b>: 출산일을 출산 후 휴가에 넣는지에 대해 실무 안내가 엇갈리므로, 이 도구는 <u>출산일 다음 날부터</u> 45일을 세는 보수적 방식을 씁니다. 그래서 권장 시작일은 출산예정일 44일 전(다태아 59일 전)입니다.</li>
+        <li><b>출산 지연</b>: 실제 출산이 예정일보다 늦어 출산 후 일수가 기준에 못 미치면, 출산 후 기간을 보장하도록 종료일을 늘려 표시합니다. 늘어난 기간의 급여(유급 여부)는 이 도구에서 판단하지 않으므로 따로 확인하세요.</li>
+        <li><b>육아휴직</b>: 1년 이내, 연장 대상은 6개월 이내 추가 — 남녀고용평등법 제19조 제2항. 대상 자녀는 만 8세 이하 또는 초등학교 2학년 이하 — 같은 조 제1항.</li>
+        <li><b>분할 사용</b>: 3회에 한정하여 나누어 사용(총 4개 구간) — 같은 법 제19조의4 제1항.</li>
+        <li><b>기간 계산</b>: 휴가·휴직 시작일을 1일째로 셉니다. 개월 단위 기간은 시작일에 해당하는 날의 전날에 끝나고, 해당하는 날이 없는 달이면 그 달 말일에 끝납니다(민법 제160조).</li>
+        <li>법령 기준일: 2026.10.05. 참고용 계산이며, 실제 신청 전에는 사업장 규정과 관할 고용센터에 확인하세요.</li>
+      </ul>
+    </details>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var MAX_SEGMENTS = 4;
+  var DAY = 86400000;
+  var WEEK = ['일', '월', '화', '수', '목', '금', '토'];
+  var SEG_COLORS = ['var(--leave)', 'var(--leave-alt)', '#8b5cf6', '#f59e0b'];
+  var STORE_KEY = 'parental-planner-v1';
+
+  // ---------- 날짜 유틸 (로컬 정오 기준으로 시간대 오차 방지) ----------
+  function mk(y, m, d) { return new Date(y, m, d, 12); }
+  function parse(s) {
+    if (!s) return null;
+    var p = s.split('-').map(Number);
+    if (p.length !== 3 || p.some(isNaN)) return null;
+    return mk(p[0], p[1] - 1, p[2]);
+  }
+  function iso(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function addDays(d, n) { return mk(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function diff(a, b) { return Math.round((b - a) / DAY); }
+  function fmt(d) {
+    return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' +
+      String(d.getDate()).padStart(2, '0') + '(' + WEEK[d.getDay()] + ')';
+  }
+  function fmtShort(d) { return (d.getMonth() + 1) + '/' + d.getDate(); }
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+  // 민법 제160조: start부터 months개월 기간의 만료일
+  function endOfMonths(start, months) {
+    var t = start.getMonth() + months;
+    var y = start.getFullYear() + Math.floor(t / 12);
+    var m = ((t % 12) + 12) % 12;
+    if (start.getDate() > daysInMonth(y, m)) return mk(y, m, daysInMonth(y, m));
+    return addDays(mk(y, m, start.getDate()), -1);
+  }
+  // 개월 + 일 기간의 종료일
+  function periodEnd(start, months, days) {
+    var end = months > 0 ? endOfMonths(start, months) : addDays(start, -1);
+    return addDays(end, days);
+  }
+
+  // ---------- 상태 ----------
+  var state = {
+    due: '',
+    multi: false,
+    preterm: false,
+    preDays: null,          // null이면 권장값
+    hasActual: false,
+    actual: '',
+    extend: false,
+    mode: 'once',
+    segments: [{ auto: true, start: '', months: 12, days: 0 }]
+  };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (saved && typeof saved === 'object') Object.assign(state, saved);
+  } catch (e) { /* 저장소 사용 불가 시 기본값 */ }
+
+  if (!state.due) {
+    // 기본값: 오늘로부터 약 4개월 뒤
+    state.due = iso(addDays(mk(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()), 120));
+  }
+
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // ---------- 요소 ----------
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    due: $('due'), preOut: $('preOut'), preMinus: $('preMinus'), prePlus: $('prePlus'), preHint: $('preHint'),
+    hasActual: $('hasActual'), actualWrap: $('actualWrap'), actual: $('actual'), preterm: $('preterm'),
+    matSummary: $('matSummary'), matChecks: $('matChecks'),
+    extend: $('extend'), segments: $('segments'), addSeg: $('addSeg'),
+    usedTxt: $('usedTxt'), meter: $('meter'), parChecks: $('parChecks'),
+    timeline: $('timeline'), legend: $('legend'), steps: $('steps')
+  };
+
+  // ---------- 출산전후휴가 계산 ----------
+  function matRules() {
+    var postReq = state.multi ? 60 : 45;
+    var baseTotal = state.multi ? 120 : 90;
+    var total = state.multi ? 120 : (state.preterm ? 100 : 90);
+    // 출산 전 최대 일수 = 기본 총일수 - 출산일(1) - 출산 후 필수일수
+    var maxPre = baseTotal - 1 - postReq;
+    return { postReq: postReq, total: total, maxPre: maxPre };
+  }
+
+  function calcMaternity() {
+    var due = parse(state.due);
+    if (!due) return null;
+    var r = matRules();
+    var pre = state.preDays == null ? r.maxPre : Math.min(Math.max(0, state.preDays), r.maxPre);
+    var start = addDays(due, -pre);
+    var actual = state.hasActual ? parse(state.actual) : null;
+    var birth = actual || due;
+    var earlyBirth = false;
+    if (birth < start) { start = birth; earlyBirth = true; }
+    var plannedEnd = addDays(start, r.total - 1);
+    var post = diff(birth, plannedEnd);          // 출산일 다음 날부터 센 일수
+    var end = plannedEnd;
+    var extended = 0;
+    if (post < r.postReq) {
+      end = addDays(birth, r.postReq);
+      extended = diff(plannedEnd, end);
+      post = r.postReq;
+    }
+    return {
+      due: due, birth: birth, isActual: !!actual, start: start, end: end,
+      preUsed: diff(start, birth), post: post, total: diff(start, end) + 1,
+      extended: extended, earlyBirth: earlyBirth, rules: r, pre: pre
+    };
+  }
+
+  // ---------- 육아휴직 계산 ----------
+  function calcLeave(mat) {
+    var limitMonths = state.extend ? 18 : 12;
+    var segs = state.mode === 'once' ? [state.segments[0]] : state.segments;
+    var out = [];
+    var prevEnd = mat ? mat.end : null;
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      var start = s.auto ? (prevEnd ? addDays(prevEnd, 1) : null) : parse(s.start);
+      var months = Math.max(0, s.months | 0);
+      var days = Math.max(0, s.days | 0);
+      if (!start || (months === 0 && days === 0)) { out.push({ start: start, end: null, days: 0 }); continue; }
+      var end = periodEnd(start, months, days);
+      out.push({ start: start, end: end, days: diff(start, end) + 1 });
+      prevEnd = end;
+    }
+    var first = out.length && out[0].start;
+    var allowance = first ? diff(first, endOfMonths(first, limitMonths)) + 1 : 365;
+    var used = out.reduce(function (a, b) { return a + b.days; }, 0);
+    return { segs: out, used: used, allowance: allowance, limitMonths: limitMonths };
+  }
+
+  // ---------- 렌더링 ----------
+  function badge(kind, text) {
+    var ic = kind === 'ok' ? '✓' : '!';
+    return '<div class="badge ' + kind + '"><span class="ic">' + ic + '</span><span>' + text + '</span></div>';
+  }
+  function stat(k, v, wide) {
+    return '<div class="stat' + (wide ? ' wide' : '') + '"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+  }
+
+  function renderMaternity(mat) {
+    var r = matRules();
+    var pre = state.preDays == null ? r.maxPre : Math.min(state.preDays, r.maxPre);
+    el.preOut.textContent = pre + '일' + (pre === r.maxPre ? ' (권장)' : '');
+    el.preMinus.disabled = pre <= 0;
+    el.prePlus.disabled = pre >= r.maxPre;
+    el.preHint.textContent = '최대 ' + r.maxPre + '일(권장 시작일)까지 고를 수 있습니다. 줄이면 출산 후 휴가가 늘어납니다.';
+
+    if (!mat) {
+      el.matSummary.innerHTML = '';
+      el.matChecks.innerHTML = badge('warn', '출산예정일을 입력하세요.');
+      return;
+    }
+    el.matSummary.innerHTML =
+      stat(pre === r.maxPre ? '시작 추천일' : '시작일', fmt(mat.start)) +
+      stat('종료일', fmt(mat.end)) +
+      stat('출산 전', mat.preUsed + '일') +
+      stat('출산일 + 출산 후', '1일 + ' + mat.post + '일') +
+      stat('총 휴가 일수', mat.total + '일' + (mat.extended ? ' (연장 ' + mat.extended + '일 포함)' : ''), true);
+
+    var checks = '';
+    checks += badge('ok', '출산 후 ' + mat.post + '일 확보 — 기준 ' + r.postReq + '일 이상 충족' +
+      (mat.isActual ? ' (실제 출산일 기준)' : ' (출산예정일 기준)'));
+    if (mat.extended) {
+      checks += badge('warn', '출산이 늦어져 정해진 총일수만으로는 출산 후 ' + r.postReq +
+        '일을 채울 수 없어 종료일을 ' + mat.extended + '일 늘렸습니다. 늘어난 기간의 급여 처리는 따로 확인하세요.');
+    }
+    if (mat.earlyBirth) {
+      checks += badge('warn', '휴가 시작 전에 출산하여 출산일부터 휴가를 시작하는 것으로 계산했습니다.');
+    }
+    if (!mat.isActual) {
+      checks += badge('warn', '출산예정일보다 늦게 출산하면 출산 후 일수가 줄어듭니다. 출산 후 실제 출산일을 입력해 다시 확인하세요.');
+    }
+    el.matChecks.innerHTML = checks;
+  }
+
+  function renderSegments(leave) {
+    var segs = state.mode === 'once' ? [state.segments[0]] : state.segments;
+    var maxM = leave.limitMonths;
+    var html = '';
+    segs.forEach(function (s, i) {
+      var calc = leave.segs[i];
+      html += '<div class="segment" data-i="' + i + '">' +
+        '<div class="segment-head"><b><span class="dot" style="background:' + SEG_COLORS[i] + '"></span>' +
+        (state.mode === 'once' ? '육아휴직' : (i + 1) + '번째 구간') + '</b>' +
+        (state.mode === 'split' && segs.length > 1 ? '<button type="button" class="icon-btn" data-act="del">삭제</button>' : '') +
+        '</div>' +
+        ('<label class="toggle" style="padding:4px 0 8px"><input type="checkbox" data-f="auto"' + (s.auto ? ' checked' : '') +
+          '><span class="sw"></span><span class="tx"><b>' + (i === 0 ? '출산전후휴가 종료 다음 날 시작' : '앞 구간 종료 다음 날 시작') +
+          '</b><small>끄면 시작일을 직접 고릅니다' + (i > 0 ? ' (중간에 복직 기간을 둘 때).' : '.') + '</small></span></label>') +
+        '<label class="field' + (s.auto ? ' hidden' : '') + '"><span>시작일</span><input type="date" data-f="start" value="' +
+        (s.start || (calc.start ? iso(calc.start) : '')) + '"></label>' +
+        '<div class="row2">' +
+          '<label class="field" style="margin:0"><span>개월</span><input type="number" inputmode="numeric" min="0" max="' + maxM + '" data-f="months" value="' + s.months + '"></label>' +
+          '<label class="field" style="margin:0"><span>일</span><input type="number" inputmode="numeric" min="0" max="30" data-f="days" value="' + s.days + '"></label>' +
+        '</div>' +
+        '<div class="seg-range">' + (calc.end ? fmt(calc.start) + ' ~ ' + fmt(calc.end) + ' · ' + calc.days + '일' : '기간을 입력하세요') + '</div>' +
+        '</div>';
+    });
+    el.segments.innerHTML = html;
+    el.addSeg.classList.toggle('hidden', state.mode !== 'split');
+    var full = state.segments.length >= MAX_SEGMENTS;
+    var noRemain = leave.used >= leave.allowance;
+    el.addSeg.disabled = full || noRemain;
+    el.addSeg.textContent = full ? '최대 4개 구간 (3회 분할)' : noRemain ? '남은 기간 없음 — 앞 구간을 줄이면 추가할 수 있습니다' : '+ 구간 추가';
+  }
+
+  function renderLeaveChecks(mat, leave) {
+    var pct = Math.min(100, leave.used / leave.allowance * 100);
+    el.meter.firstElementChild.style.width = pct + '%';
+    el.meter.classList.toggle('over', leave.used > leave.allowance);
+    el.usedTxt.textContent = leave.used + '일 / ' + leave.allowance + '일 (' + leave.limitMonths + '개월)';
+
+    var html = '';
+    if (leave.used > leave.allowance) {
+      html += badge('bad', '사용 가능 기간(' + leave.limitMonths + '개월, ' + leave.allowance + '일)을 ' + (leave.used - leave.allowance) + '일 초과했습니다.');
+    } else if (leave.used > 0) {
+      html += badge('ok', '남은 기간: ' + (leave.allowance - leave.used) + '일');
+    }
+    // 겹침·순서 확인
+    var prevEnd = mat ? mat.end : null;
+    leave.segs.forEach(function (s, i) {
+      if (!s.start || !s.end) return;
+      if (prevEnd && s.start <= prevEnd) {
+        html += badge('bad', (state.mode === 'once' ? '육아휴직' : (i + 1) + '번째 구간') + ' 시작일이 앞 일정(' + fmt(prevEnd) + ')과 겹칩니다.');
+      }
+      prevEnd = s.end;
+    });
+    // 자녀 만 9세 생일(만 8세 이하 기준 참고)
+    if (mat) {
+      var b = mat.birth;
+      var nineth = mk(b.getFullYear() + 9, b.getMonth(), Math.min(b.getDate(), daysInMonth(b.getFullYear() + 9, b.getMonth())));
+      var late = leave.segs.some(function (s) { return s.start && s.start >= nineth; });
+      if (late) html += badge('warn', '만 8세가 지난 뒤 시작하는 구간이 있습니다. 초등학교 2학년 이하인지 확인하세요.');
+    }
+    el.parChecks.innerHTML = html;
+  }
+
+  function renderTimeline(mat, leave) {
+    if (!mat) { el.timeline.innerHTML = ''; el.steps.innerHTML = ''; el.legend.innerHTML = ''; return; }
+    var segs = leave.segs.filter(function (s) { return s.start && s.end; });
+    var t0 = mat.start;
+    var t1 = segs.reduce(function (a, s) { return s.end > a ? s.end : a; }, mat.end);
+    var span = diff(t0, t1) + 1;
+    var pos = function (d) { return diff(t0, d) / span * 100; };
+    var w = function (a, b) { return (diff(a, b) + 1) / span * 100; };
+
+    // 월 눈금: 폭에 맞춰 간격 조절
+    var months = Math.max(1, Math.round(span / 30));
+    var stepM = months <= 6 ? 1 : months <= 12 ? 2 : months <= 20 ? 3 : 4;
+    var ticks = [];
+    var cur = mk(t0.getFullYear(), t0.getMonth() + 1, 1);
+    var k = 0;
+    while (cur <= t1) {
+      if (k % stepM === 0) ticks.push(cur);
+      cur = mk(cur.getFullYear(), cur.getMonth() + 1, 1);
+      k++;
+    }
+    var axis = '<div class="tl-axis">' + ticks.map(function (d) {
+      var p = pos(d);
+      if (p < 4 || p > 96) return '';
+      var lab = d.getMonth() === 0 || d === ticks[0] ? (String(d.getFullYear()).slice(2) + '.' + (d.getMonth() + 1)) : (d.getMonth() + 1) + '월';
+      return '<span style="left:' + p + '%">' + lab + '</span>';
+    }).join('') + '</div>';
+    var grid = '<div class="tl-grid">' + ticks.map(function (d) { return '<i style="left:' + pos(d) + '%"></i>'; }).join('') + '</div>';
+
+    var birthP = pos(mat.birth);
+    var rows = '';
+    rows += '<div class="tl-row"><div class="tl-label">출산전후휴가 <small>' + mat.total + '일</small></div>' +
+      '<div class="tl-track">' +
+        (mat.preUsed > 0 ? '<div class="tl-bar" style="left:0;width:' + w(mat.start, addDays(mat.birth, -1)) + '%;background:var(--pre);border-radius:8px 0 0 8px"></div>' : '') +
+        '<div class="tl-bar" style="left:' + birthP + '%;width:' + w(mat.birth, mat.end) + '%;background:var(--post);' + (mat.preUsed > 0 ? 'border-radius:0 8px 8px 0' : '') + '"></div>' +
+        '<div class="tl-birth" style="left:' + birthP + '%"></div>' +
+      '</div></div>';
+    leave.segs.forEach(function (s, i) {
+      if (!s.start || !s.end) return;
+      rows += '<div class="tl-row"><div class="tl-label">' + (state.mode === 'once' ? '육아휴직' : '육아휴직 ' + (i + 1)) +
+        ' <small>' + fmtShort(s.start) + '~' + fmtShort(s.end) + '</small></div>' +
+        '<div class="tl-track"><div class="tl-bar" style="left:' + pos(s.start) + '%;width:' + w(s.start, s.end) + '%;background:' + SEG_COLORS[i] + '"></div></div></div>';
+    });
+    el.timeline.innerHTML = axis + '<div class="tl-body">' + grid + rows + '</div>';
+
+    el.legend.innerHTML =
+      '<span><i class="dot" style="background:var(--pre)"></i>출산 전</span>' +
+      '<span><i class="dot" style="background:var(--post)"></i>출산일·출산 후</span>' +
+      '<span><i style="display:inline-block;width:2px;height:12px;background:var(--text)"></i>' + (mat.isActual ? '출산일' : '출산예정일') + '</span>' +
+      '<span><i class="dot" style="background:var(--leave)"></i>육아휴직</span>' +
+      '<span><i class="dot" style="background:var(--track);box-shadow:inset 0 0 0 1px var(--line)"></i>근무(복직)</span>';
+
+    // 세로 일정표
+    var items = [];
+    items.push({ c: 'var(--pre)', t: '출산전후휴가 시작', d: fmt(mat.start) + (mat.preUsed ? ' · 출산 전 ' + mat.preUsed + '일' : '') });
+    items.push({ c: 'var(--text)', t: mat.isActual ? '출산일' : '출산예정일', d: fmt(mat.birth) });
+    items.push({ c: 'var(--post)', t: '출산전후휴가 종료', d: fmt(mat.end) + ' · 출산 후 ' + mat.post + '일' });
+    var prev = mat.end;
+    leave.segs.forEach(function (s, i) {
+      if (!s.start || !s.end) return;
+      var gap = diff(prev, s.start) - 1;
+      if (gap > 0) items.push({ c: 'var(--line)', t: '근무 (복직)', d: fmt(addDays(prev, 1)) + ' ~ ' + fmt(addDays(s.start, -1)) + ' · ' + gap + '일' });
+      items.push({ c: SEG_COLORS[i], t: state.mode === 'once' ? '육아휴직' : '육아휴직 ' + (i + 1) + '번째', d: fmt(s.start) + ' ~ ' + fmt(s.end) + ' · ' + s.days + '일' });
+      prev = s.end;
+    });
+    items.push({ c: 'var(--ok)', t: '최종 복직', d: fmt(addDays(prev, 1)) });
+    el.steps.innerHTML = items.map(function (x) {
+      return '<li><i style="background:' + x.c + '"></i><b>' + x.t + '</b><span>' + x.d + '</span></li>';
+    }).join('');
+  }
+
+  function render() {
+    // 입력 동기화
+    el.due.value = state.due;
+    el.hasActual.checked = state.hasActual;
+    el.actualWrap.classList.toggle('hidden', !state.hasActual);
+    if (state.hasActual && !state.actual) state.actual = state.due;
+    el.actual.value = state.actual;
+    el.preterm.checked = state.preterm;
+    el.extend.checked = state.extend;
+    document.querySelectorAll('[data-multi]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String((b.dataset.multi === '1') === state.multi));
+    });
+    document.querySelectorAll('[data-mode]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
+    });
+
+    var mat = calcMaternity();
+    var leave = calcLeave(mat);
+    renderMaternity(mat);
+    renderSegments(leave);
+    renderLeaveChecks(mat, leave);
+    renderTimeline(mat, leave);
+    save();
+  }
+
+  // ---------- 이벤트 ----------
+  el.due.addEventListener('change', function () { state.due = el.due.value; render(); });
+  el.actual.addEventListener('change', function () { state.actual = el.actual.value; render(); });
+  el.hasActual.addEventListener('change', function () { state.hasActual = el.hasActual.checked; render(); });
+  el.preterm.addEventListener('change', function () { state.preterm = el.preterm.checked; render(); });
+  el.extend.addEventListener('change', function () {
+    state.extend = el.extend.checked;
+    var s0 = state.segments[0];
+    // 한 번에 사용 중이고 기간이 기본 한도와 같으면 새 한도로 맞춤
+    if (state.mode === 'once' && s0.days === 0 && s0.months === (state.extend ? 12 : 18)) s0.months = state.extend ? 18 : 12;
+    render();
+  });
+
+  document.querySelectorAll('[data-multi]').forEach(function (b) {
+    b.addEventListener('click', function () { state.multi = b.dataset.multi === '1'; state.preDays = null; render(); });
+  });
+  document.querySelectorAll('[data-mode]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.mode = b.dataset.mode;
+      if (state.mode === 'split' && state.segments.length === 1 && state.segments[0].months === 12 && state.segments[0].days === 0) {
+        // 분할 기본 예시: 6개월 + 6개월
+        state.segments = [
+          { auto: true, start: '', months: 6, days: 0 },
+          { auto: true, start: '', months: 6, days: 0 }
+        ];
+      }
+      if (state.mode === 'once') {
+        state.segments = [{ auto: state.segments[0].auto, start: state.segments[0].start, months: state.extend ? 18 : 12, days: 0 }];
+      }
+      render();
+    });
+  });
+
+  function nudgePre(delta) {
+    var r = matRules();
+    var cur = state.preDays == null ? r.maxPre : state.preDays;
+    var next = Math.min(r.maxPre, Math.max(0, cur + delta));
+    state.preDays = next === r.maxPre ? null : next;
+    render();
+  }
+  // 길게 누르면 연속 변경
+  [[el.preMinus, -1], [el.prePlus, 1]].forEach(function (pair) {
+    var btn = pair[0], d = pair[1], timer = null, rep = null;
+    function stop() { clearTimeout(timer); clearInterval(rep); timer = rep = null; }
+    btn.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      nudgePre(d);
+      timer = setTimeout(function () { rep = setInterval(function () { nudgePre(d); }, 70); }, 400);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { btn.addEventListener(ev, stop); });
+    btn.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nudgePre(d); }
+    });
+  });
+
+  el.segments.addEventListener('change', function (e) {
+    var box = e.target.closest('.segment');
+    if (!box) return;
+    var i = +box.dataset.i;
+    var f = e.target.dataset.f;
+    var s = state.segments[i];
+    if (f === 'auto') {
+      s.auto = e.target.checked;
+      if (!s.auto && !s.start) {
+        var calc = calcLeave(calcMaternity()).segs[i];
+        if (calc.start) s.start = iso(calc.start);
+      }
+    } else if (f === 'start') {
+      s.start = e.target.value;
+    } else if (f === 'months' || f === 'days') {
+      var v = parseInt(e.target.value, 10);
+      s[f] = isNaN(v) ? 0 : Math.max(0, Math.min(f === 'months' ? 18 : 30, v));
+    }
+    render();
+  });
+  el.segments.addEventListener('click', function (e) {
+    if (e.target.dataset.act !== 'del') return;
+    var i = +e.target.closest('.segment').dataset.i;
+    state.segments.splice(i, 1);
+    render();
+  });
+  el.addSeg.addEventListener('click', function () {
+    if (state.segments.length >= MAX_SEGMENTS) return;
+    var leave = calcLeave(calcMaternity());
+    var remain = Math.max(0, leave.allowance - leave.used);
+    // 남은 일수를 넘지 않도록 기본 기간 설정 (한 달은 최대 31일로 가정)
+    var m = Math.min(3, Math.floor(remain / 31));
+    var d = m === 0 ? Math.min(30, remain) : 0;
+    var last = leave.segs[leave.segs.length - 1];
+    var start = last && last.end ? iso(endOfMonths(addDays(last.end, 1), 3)) : '';
+    // 새 구간은 기본적으로 3개월 복직 후 시작하는 예시
+    state.segments.push({ auto: false, start: start ? iso(addDays(parse(start), 1)) : '', months: m, days: d });
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

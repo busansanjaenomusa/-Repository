@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>산재보험 장해보상금 계산기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-slate-800 antialiased">
+    <div class="mx-auto max-w-6xl px-4 py-8 md:px-8">
+      <header class="mb-8">
+        <div class="rounded-2xl bg-slate-900 p-6 text-white shadow-xl">
+          <p class="text-sm uppercase tracking-[0.2em] text-slate-300">WORKERS COMPENSATION</p>
+          <h1 class="mt-3 text-2xl font-bold md:text-4xl">산재보험 장해보상금 계산기</h1>
+          <p class="mt-2 text-sm text-slate-300 md:text-base">
+            산재 상담 현장에서 장해등급, 임금, 선급 여부를 입력하면 보상금의 근거를 간단히 확인할 수 있습니다.
+          </p>
+        </div>
+      </header>
+
+      <main class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-lg md:p-6">
+          <h2 class="mb-5 text-xl font-semibold">입력</h2>
+
+          <form id="calculatorForm" class="space-y-5">
+            <div class="grid gap-5 md:grid-cols-2">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">연도</span>
+                <select id="year" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                  <option value="2021">2021</option>
+                </select>
+              </label>
+
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">장해등급</span>
+                <select id="grade" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                  <option value="1">1급</option>
+                  <option value="2">2급</option>
+                  <option value="3">3급</option>
+                  <option value="4">4급</option>
+                  <option value="5" selected>5급</option>
+                  <option value="6">6급</option>
+                  <option value="7">7급</option>
+                  <option value="8">8급</option>
+                  <option value="9">9급</option>
+                  <option value="10">10급</option>
+                  <option value="11">11급</option>
+                  <option value="12">12급</option>
+                  <option value="13">13급</option>
+                  <option value="14">14급</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid gap-5 md:grid-cols-2">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">임금 유형</span>
+                <select id="wageType" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                  <option value="monthly">월급</option>
+                  <option value="daily">일급</option>
+                  <option value="direct">직접입력</option>
+                </select>
+              </label>
+
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">금액</span>
+                <input id="inputAmount" type="number" min="0" step="1000" value="3500000" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+              </label>
+            </div>
+
+            <div class="grid gap-5 md:grid-cols-2">
+              <label class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+                <input id="isDailyWorkerExempt" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                <span class="text-sm font-medium text-slate-700">건설일용직 통상근로계수 배제</span>
+              </label>
+
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">월 출역일수</span>
+                <input id="dailyWorkDays" type="number" min="1" step="1" value="22" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+              </label>
+            </div>
+
+            <div>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">선급 연수</span>
+                <input id="advanceYears" type="number" min="0" max="10" step="1" value="0" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+              </label>
+            </div>
+
+            <button type="submit" class="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-500">
+              계산하기
+            </button>
+          </form>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-lg md:p-6">
+          <h2 class="mb-5 text-xl font-semibold">결과</h2>
+
+          <div class="space-y-4">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-500">기준 금액</p>
+              <p id="finalDailyWage" class="mt-2 text-3xl font-bold text-slate-900">0원</p>
+              <p id="limitStatus" class="mt-1 text-sm text-slate-600">상태: NORMAL</p>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">원시 1일 평균임금</p>
+                <p id="rawDailyWage" class="mt-2 text-xl font-bold">0원</p>
+                <p id="rawDailyWageNote" class="mt-1 text-xs text-slate-500"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">장해등급 타입</p>
+                <p id="gradeType" class="mt-2 text-xl font-bold">-</p>
+              </div>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">일시금 총액</p>
+                <p id="lumpSumTotal" class="mt-2 text-xl font-bold">0원</p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">연금 연액</p>
+                <p id="pensionAnnual" class="mt-2 text-xl font-bold">0원</p>
+              </div>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">월 지급액</p>
+                <p id="pensionMonthly" class="mt-2 text-xl font-bold">0원</p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">선급금</p>
+                <p id="advanceAmount" class="mt-2 text-xl font-bold">0원</p>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-500">선급기간 중 월 지급액</p>
+              <p id="monthlyDuringAdvance" class="mt-2 text-xl font-bold">0원</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-lg md:p-6">
+        <h2 class="mb-5 text-xl font-semibold">예시 계산 결과</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-collapse border border-slate-200 text-left text-sm">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="border border-slate-200 px-3 py-2 font-semibold">등급</th>
+                <th class="border border-slate-200 px-3 py-2 font-semibold">입력 유형</th>
+                <th class="border border-slate-200 px-3 py-2 font-semibold">입력 값</th>
+                <th class="border border-slate-200 px-3 py-2 font-semibold">1일 평균임금</th>
+                <th class="border border-slate-200 px-3 py-2 font-semibold">연금/일시금</th>
+              </tr>
+            </thead>
+            <tbody id="exampleTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      // 고용노동부 고시 제2025-84호
+      const COMPENSATION_LIMITS = {
+        2026: { max: 268299, min: 82560 },
+        2025: { max: 258132, min: 80240 },
+        2024: { max: 253354, min: 78880 },
+        2023: { max: 246036, min: 76960 },
+        2022: { max: 232664, min: 73280 },
+        2021: { max: 226191, min: 69760 }
+      };
+
+      // 산재보험법 별표 2 (2026년 기준)
+      // type: '연금'(1~3급만), '선택'(4~7급), '일시금'(8~14급만)
+      // pension(일분): 연금 기준 일분 (1~3급/4~7급만)
+      // lumpSum(일분): 일시금 기준 일분 (전급)
+      // maxAdvanceYears: 산재법 제57조 제4항 (1~3급 4년, 4~7급 2년, 8~14급 0년)
+      const DISABILITY_COMPENSATION_TABLE = {
+        1: { type: '연금', pension: 329, lumpSum: 1474, maxAdvanceYears: 4 },
+        2: { type: '연금', pension: 291, lumpSum: 1309, maxAdvanceYears: 4 },
+        3: { type: '연금', pension: 257, lumpSum: 1155, maxAdvanceYears: 4 },
+        4: { type: '선택', pension: 224, lumpSum: 1012, maxAdvanceYears: 2 },
+        5: { type: '선택', pension: 193, lumpSum: 869, maxAdvanceYears: 2 },
+        6: { type: '선택', pension: 164, lumpSum: 737, maxAdvanceYears: 2 },
+        7: { type: '선택', pension: 138, lumpSum: 616, maxAdvanceYears: 2 },
+        8: { type: '일시금', pension: 0, lumpSum: 495, maxAdvanceYears: 0 },
+        9: { type: '일시금', pension: 0, lumpSum: 385, maxAdvanceYears: 0 },
+        10: { type: '일시금', pension: 0, lumpSum: 297, maxAdvanceYears: 0 },
+        11: { type: '일시금', pension: 0, lumpSum: 220, maxAdvanceYears: 0 },
+        12: { type: '일시금', pension: 0, lumpSum: 154, maxAdvanceYears: 0 },
+        13: { type: '일시금', pension: 0, lumpSum: 99, maxAdvanceYears: 0 },
+        14: { type: '일시금', pension: 0, lumpSum: 55, maxAdvanceYears: 0 }
+      };
+
+      function calculateCompensation({
+        year = 2026,
+        wageType = 'direct',
+        inputAmount = 0,
+        isDailyWorkerExempt = false,
+        dailyWorkDays = 22,
+        grade = 1,
+        advanceYears = 0
+      }) {
+        const limits = COMPENSATION_LIMITS[year] || COMPENSATION_LIMITS[2026];
+        const gradeData = DISABILITY_COMPENSATION_TABLE[grade];
+
+        // 1. 1일 평균임금 산정
+        let rawDailyWage = 0;
+        let isDailyWorkerEstimate = false;
+        
+        if (wageType === 'direct') {
+          rawDailyWage = Number(inputAmount);
+        } else if (wageType === 'monthly') {
+          rawDailyWage = Number(inputAmount) / 30.4167;
+        } else if (wageType === 'daily') {
+          if (isDailyWorkerExempt) {
+            rawDailyWage = (Number(inputAmount) * Number(dailyWorkDays)) / 30.4167;
+            isDailyWorkerEstimate = true;
+          } else {
+            // 통상근로계수 73% 적용
+            rawDailyWage = Number(inputAmount) * 0.73;
+          }
+        }
+
+        // 2. 최고·최저 보상기준금액 Clamping (산재법 제36조 제7항)
+        let finalDailyWage = rawDailyWage;
+        let limitStatus = 'NORMAL';
+
+        if (finalDailyWage > limits.max) {
+          finalDailyWage = limits.max;
+          limitStatus = 'MAX_APPLIED';
+        } else if (finalDailyWage < limits.min) {
+          finalDailyWage = limits.min;
+          limitStatus = 'MIN_APPLIED';
+        }
+
+        finalDailyWage = Math.round(finalDailyWage);
+
+        // 3. 일시금 및 연금 기본액 산정
+        const lumpSumTotal = Math.round(finalDailyWage * gradeData.lumpSum);
+        const pensionAnnual = Math.round(finalDailyWage * gradeData.pension);
+        const pensionMonthly = Math.round(pensionAnnual / 12);
+
+        // 4. 선급금 및 선급 기간 중 월 연금액 연산 (산재법 제57조 제4항)
+        // 선급금 이자 공제는 하지 않음 (구 시행령 제54조 2020.1.7. 삭제)
+        let advanceAmount = 0;
+        let monthlyDuringAdvance = pensionMonthly;
+        const validAdvanceYears = Math.min(advanceYears, gradeData.maxAdvanceYears);
+
+        if (gradeData.pension > 0 && validAdvanceYears > 0) {
+          advanceAmount = Math.round(pensionAnnual * validAdvanceYears * 0.5);
+          monthlyDuringAdvance = Math.round(pensionMonthly * 0.5);
+        }
+
+        return {
+          rawDailyWage: Math.round(rawDailyWage),
+          finalDailyWage,
+          limitStatus,
+          grade,
+          gradeType: gradeData.type,
+          lumpSumTotal,
+          pensionAnnual,
+          pensionMonthly,
+          advanceYears: validAdvanceYears,
+          advanceAmount,
+          monthlyDuringAdvance,
+          maxAdvanceYears: gradeData.maxAdvanceYears,
+          gradeData,
+          isDailyWorkerEstimate
+        };
+      }
+
+      const currency = (value) => new Intl.NumberFormat('ko-KR').format(Number(value)) + '원';
+
+      function renderResult(result) {
+        document.getElementById('rawDailyWage').textContent = currency(result.rawDailyWage);
+        
+        const noteElement = document.getElementById('rawDailyWageNote');
+        if (result.isDailyWorkerEstimate) {
+          noteElement.textContent = '추정치(실제 임금·근로일수로 산정)';
+        } else {
+          noteElement.textContent = '';
+        }
+        
+        document.getElementById('finalDailyWage').textContent = currency(result.finalDailyWage);
+        document.getElementById('limitStatus').textContent = `상태: ${result.limitStatus}`;
+        document.getElementById('gradeType').textContent = result.gradeType;
+        document.getElementById('lumpSumTotal').textContent = currency(result.lumpSumTotal);
+        document.getElementById('pensionAnnual').textContent = currency(result.pensionAnnual);
+        document.getElementById('pensionMonthly').textContent = currency(result.pensionMonthly);
+        document.getElementById('advanceAmount').textContent = currency(result.advanceAmount);
+        document.getElementById('monthlyDuringAdvance').textContent = currency(result.monthlyDuringAdvance);
+      }
+
+      function buildExampleTable() {
+        const exampleRows = [
+          { grade: 1, wageType: 'monthly', inputAmount: 3200000, advanceYears: 0 },
+          { grade: 1, wageType: 'daily', inputAmount: 160000, advanceYears: 0 },
+          { grade: 1, wageType: 'direct', inputAmount: 200000, advanceYears: 0 },
+          { grade: 5, wageType: 'monthly', inputAmount: 3500000, advanceYears: 0 },
+          { grade: 5, wageType: 'daily', inputAmount: 150000, advanceYears: 0 },
+          { grade: 5, wageType: 'direct', inputAmount: 175000, advanceYears: 0 },
+          { grade: 10, wageType: 'monthly', inputAmount: 3000000, advanceYears: 0 },
+          { grade: 10, wageType: 'daily', inputAmount: 120000, advanceYears: 0 },
+          { grade: 10, wageType: 'direct', inputAmount: 140000, advanceYears: 0 }
+        ];
+
+        const tbody = document.getElementById('exampleTableBody');
+        tbody.innerHTML = '';
+
+        exampleRows.forEach((row) => {
+          const result = calculateCompensation({
+            year: 2026,
+            wageType: row.wageType,
+            inputAmount: row.inputAmount,
+            isDailyWorkerExempt: false,
+            dailyWorkDays: 22,
+            grade: row.grade,
+            advanceYears: row.advanceYears
+          });
+
+          const tr = document.createElement('tr');
+          
+          let displayValue = '';
+          if (result.gradeType === '연금') {
+            displayValue = `연금: ${currency(result.pensionAnnual)}`;
+          } else if (result.gradeType === '일시금') {
+            displayValue = `일시금: ${currency(result.lumpSumTotal)}`;
+          } else {
+            displayValue = `연금: ${currency(result.pensionAnnual)} / 일시금: ${currency(result.lumpSumTotal)}`;
+          }
+          
+          tr.innerHTML = `
+            <td class="border border-slate-200 px-3 py-2">${row.grade}급</td>
+            <td class="border border-slate-200 px-3 py-2">${row.wageType === 'daily' ? '일급' : row.wageType === 'monthly' ? '월급' : '직접입력'}</td>
+            <td class="border border-slate-200 px-3 py-2">${currency(row.inputAmount)}</td>
+            <td class="border border-slate-200 px-3 py-2">${currency(result.finalDailyWage)}</td>
+            <td class="border border-slate-200 px-3 py-2 text-xs">${displayValue}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('calculatorForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const data = {
+          year: Number(document.getElementById('year').value),
+          wageType: document.getElementById('wageType').value,
+          inputAmount: Number(document.getElementById('inputAmount').value || 0),
+          isDailyWorkerExempt: document.getElementById('isDailyWorkerExempt').checked,
+          dailyWorkDays: Number(document.getElementById('dailyWorkDays').value || 22),
+          grade: Number(document.getElementById('grade').value),
+          advanceYears: Number(document.getElementById('advanceYears').value || 0)
+        };
+
+        renderResult(calculateCompensation(data));
+      });
+
+      // 초기 예시 데이터 렌더링
+      buildExampleTable();
+      renderResult(
+        calculateCompensation({
+          year: 2026,
+          wageType: 'monthly',
+          inputAmount: 3500000,
+          isDailyWorkerExempt: false,
+          dailyWorkDays: 22,
+          grade: 5,
+          advanceYears: 0
+        })
+      );
+    </script>
+  </body>
+</html>

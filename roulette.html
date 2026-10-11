@@ -6,26 +6,22 @@
   <title>Roulette Wheel</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: rgba(15, 23, 42, 0.72);
-      --card: rgba(15, 23, 42, 0.9);
-      --text: #e2e8f0;
-      --muted: #94a3b8;
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
       --primary: #f59e0b;
-      --primary-2: #fb7185;
-      --success: #34d399;
-      --danger: #f87171;
-      --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      --bubble-bg: #ffffff;
     }
 
     * { box-sizing: border-box; }
     html, body {
       margin: 0;
       min-height: 100%;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(96, 165, 250, 0.12), transparent 30%),
-        linear-gradient(135deg, #0f172a 0%, #111827 35%, #0b1220 100%);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+      background: var(--bg);
       color: var(--text);
     }
 
@@ -47,10 +43,9 @@
 
     .panel {
       background: var(--panel);
-      border: 1px solid rgba(148, 163, 184, 0.18);
+      border: 1px solid var(--border);
       border-radius: 28px;
       box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
       padding: 24px;
     }
 
@@ -81,8 +76,9 @@
 
     input[type="text"] {
       flex: 1;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(148, 163, 184, 0.2);
+      min-width: 0;
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
       color: var(--text);
       border-radius: 12px;
       padding: 12px 14px;
@@ -92,8 +88,8 @@
     }
 
     input[type="text"]:focus {
-      border-color: rgba(96, 165, 250, 0.8);
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
 
     button {
@@ -104,6 +100,7 @@
       cursor: pointer;
       transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
       color: white;
+      font-family: inherit;
     }
 
     button:hover { filter: brightness(1.05); }
@@ -141,8 +138,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: rgba(15, 23, 42, 0.72);
-      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: #f9fafb;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 10px 12px;
     }
@@ -154,16 +151,16 @@
     }
 
     .remove-btn {
-      background: rgba(248, 113, 113, 0.12);
-      color: #fecaca;
+      background: #fee2e2;
+      color: #b91c1c;
       padding: 8px 10px;
       font-size: 0.8rem;
       min-width: 56px;
     }
 
     .result-box {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(59, 130, 246, 0.1));
-      border: 1px solid rgba(52, 211, 153, 0.28);
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
       border-radius: 16px;
       padding: 14px 16px;
       min-height: 74px;
@@ -173,39 +170,37 @@
       text-align: center;
       font-size: 1.05rem;
       font-weight: 700;
-      color: #d1fae5;
+      color: #065f46;
       line-height: 1.5;
     }
 
     .wheel-panel {
       position: relative;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 720px;
-      background: rgba(15, 23, 42, 0.5);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      border-radius: 32px;
+      padding: 72px 12px 0;
       overflow: hidden;
-      box-shadow: var(--shadow);
     }
 
     .wheel-wrap {
       position: relative;
-      width: min(90vw, 620px);
+      width: min(80vw, 540px);
       aspect-ratio: 1;
       display: grid;
       place-items: center;
+      z-index: 2;
     }
 
     .wheel-shadow {
       position: absolute;
       inset: 12%;
       border-radius: 50%;
-      background: radial-gradient(circle at center, rgba(255,255,255,0.2), rgba(15,23,42,0.1) 50%, rgba(15,23,42,0.3) 100%);
+      background: rgba(15, 23, 42, 0.18);
       filter: blur(28px);
-      transform: scale(1.08);
-      opacity: 0.7;
+      transform: translateY(4%) scale(1.05);
     }
 
     canvas {
@@ -225,21 +220,21 @@
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 24px solid transparent;
-      border-right: 24px solid transparent;
-      border-top: 48px solid #f8fafc;
-      filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.55));
+      border-left: 22px solid transparent;
+      border-right: 22px solid transparent;
+      border-top: 44px solid #1f2937;
+      filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.3));
       z-index: 3;
     }
 
     .center {
       position: absolute;
-      width: 106px;
-      height: 106px;
+      width: 96px;
+      height: 96px;
       border-radius: 50%;
       background: radial-gradient(circle at 30% 30%, #fef3c7, #fbbf24 38%, #f59e0b 100%);
-      border: 10px solid rgba(255,255,255,0.5);
-      box-shadow: 0 18px 30px rgba(245, 158, 11, 0.3);
+      border: 10px solid rgba(255,255,255,0.7);
+      box-shadow: 0 10px 24px rgba(245, 158, 11, 0.35);
       display: grid;
       place-items: center;
       font-weight: 900;
@@ -281,14 +276,129 @@
       }
     }
 
+    /* ===== 룰렛 뒤편 구경꾼 3명 ===== */
+    .crowd {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: min(92%, 620px);
+      margin-top: -70px;
+    }
+
+    .person {
+      position: relative;
+      width: min(24vw, 150px);
+    }
+    .person.mid { margin-top: 40px; }
+
+    .person svg {
+      position: relative;
+      z-index: 1; /* 룰렛(z-index 2)보다 뒤, 말풍선은 앞 */
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .skin  { fill: #f6c9a4; }
+    .ear   { fill: #eab68f; }
+    .line  { fill: none; stroke: #3b2a20; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .dark  { fill: #3b2a20; }
+    .white { fill: #ffffff; stroke: #3b2a20; stroke-width: 2; }
+    .cheek { fill: #f28b8b; opacity: 0; transition: opacity 0.3s; }
+    .mouth-in { fill: #9b2c2c; }
+    .sleeve { fill: none; stroke-width: 14; stroke-linecap: round; }
+    .glasses { fill: none; stroke: #1f2937; stroke-width: 2.5; }
+
+    .p1 .shirt  { fill: #22c55e; }
+    .p1 .sleeve { stroke: #22c55e; }
+    .p1 .hair   { fill: #2b2118; }
+    .p2 .shirt  { fill: #ec4899; }
+    .p2 .sleeve { stroke: #ec4899; }
+    .p2 .hair   { fill: #7a4a2a; }
+    .p2 .pin    { fill: #facc15; }
+    .p3 .shirt  { fill: #3b82f6; }
+    .p3 .sleeve { stroke: #3b82f6; }
+    .p3 .hair   { fill: #111827; }
+
+    .body-g { transform-origin: 60px 200px; transition: transform 0.4s ease; }
+    .head-g { transform-origin: 60px 100px; }
+    .arm { transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1); }
+    .arm-l { transform-origin: 30px 128px; }
+    .arm-r { transform-origin: 90px 128px; }
+    .pupils { transform: translateY(-2px); } /* 위쪽 룰렛을 바라봄 */
+
+    /* 표정 파츠 */
+    .e, .m { display: none; }
+    .s-idle .e-normal, .s-watch .e-normal { display: inline; }
+    .s-cheer .e-happy { display: inline; }
+    .s-idle .m-smile { display: inline; }
+    .s-watch .m-o { display: inline; }
+    .s-cheer .m-open { display: inline; }
+    .s-cheer .cheek { opacity: 0.6; }
+
+    /* 돌아가는 동안: 두 손 모으고 들썩들썩 */
+    .s-watch .arm-l { transform: rotate(-35deg); }
+    .s-watch .arm-r { transform: rotate(35deg); }
+    .s-watch .head-g { animation: nervous 0.3s ease-in-out infinite alternate; }
+
+    /* 결과 발표: 만세 + 점프 (사람마다 박자 다르게) */
+    .s-cheer .arm-l { transform: rotate(140deg); }
+    .s-cheer .arm-r { transform: rotate(-140deg); }
+    .s-cheer .body-g { animation: jump 0.5s ease-in-out 5; }
+    .s-cheer.p2 .body-g { animation-delay: 0.12s; }
+    .s-cheer.p3 .body-g { animation-delay: 0.24s; }
+    .s-cheer .arm { animation: wave 0.25s ease-in-out 10 alternate; }
+
+    @keyframes jump    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    @keyframes nervous { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+    @keyframes wave    { from { rotate: 0deg; } to { rotate: 8deg; } }
+
+    /* 말풍선 */
+    .bubble {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      width: max-content;
+      max-width: 34vw;
+      padding: 7px 11px;
+      border-radius: 14px;
+      background: var(--bubble-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: clamp(12px, 3.2vw, 15px);
+      font-weight: 800;
+      line-height: 1.3;
+      text-align: center;
+      box-shadow: 0 6px 16px -6px rgba(15, 23, 42, 0.25);
+      opacity: 0;
+      transform: translate(-50%, 6px) scale(0.9);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .p1 .bubble { left: 0; transform: translate(0, 6px) scale(0.9); }
+    .p3 .bubble { left: auto; right: 0; transform: translate(0, 6px) scale(0.9); }
+    .bubble.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    .p1 .bubble.show, .p3 .bubble.show { transform: translate(0, 0) scale(1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .body-g, .head-g, .arm { animation: none !important; }
+    }
+
     @media (max-width: 900px) {
       .app {
         grid-template-columns: 1fr;
       }
 
       .wheel-panel {
-        min-height: 520px;
+        min-height: 0;
+        padding-top: 64px;
       }
+
+      .crowd { margin-top: -40px; }
+      .person.mid { margin-top: 24px; }
     }
   </style>
 </head>
@@ -322,6 +432,89 @@
         <div class="center" aria-hidden="true"></div>
         <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
       </div>
+
+      <div class="crowd" aria-hidden="true">
+        <!-- 1: 안경 쓴 남자 -->
+        <div class="person p1 s-idle">
+          <div class="bubble"></div>
+          <svg viewBox="0 0 120 200">
+            <g class="body-g">
+              <path class="shirt" d="M22 200 V142 Q22 112 60 110 Q98 112 98 142 V200 Z"/>
+              <g class="arm arm-l"><line class="sleeve" x1="30" y1="128" x2="22" y2="178"/><circle class="skin" cx="22" cy="184" r="7"/></g>
+              <g class="arm arm-r"><line class="sleeve" x1="90" y1="128" x2="98" y2="178"/><circle class="skin" cx="98" cy="184" r="7"/></g>
+              <rect class="skin" x="52" y="92" width="16" height="20"/>
+              <g class="head-g">
+                <circle class="ear" cx="31" cy="70" r="6"/>
+                <circle class="ear" cx="89" cy="70" r="6"/>
+                <circle class="skin" cx="60" cy="68" r="30"/>
+                <path class="hair" d="M30 62 Q30 34 60 34 Q90 34 90 62 Q80 44 60 44 Q40 44 30 62 Z"/>
+                <g class="e e-normal"><g class="pupils"><circle class="dark" cx="49" cy="70" r="4"/><circle class="dark" cx="71" cy="70" r="4"/></g></g>
+                <g class="e e-happy"><path class="line" d="M43 72 Q49 64 55 72"/><path class="line" d="M65 72 Q71 64 77 72"/></g>
+                <g class="glasses"><circle cx="49" cy="70" r="8"/><circle cx="71" cy="70" r="8"/><path d="M57 70 L63 70"/></g>
+                <ellipse class="cheek" cx="41" cy="83" rx="5" ry="3"/>
+                <ellipse class="cheek" cx="79" cy="83" rx="5" ry="3"/>
+                <path class="m m-smile line" d="M52 86 Q60 92 68 86"/>
+                <ellipse class="m m-o mouth-in" cx="60" cy="88" rx="4" ry="5"/>
+                <path class="m m-open mouth-in" d="M47 83 Q60 102 73 83 Z"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 2: 긴 머리 여자 -->
+        <div class="person p2 mid s-idle">
+          <div class="bubble"></div>
+          <svg viewBox="0 0 120 200">
+            <g class="body-g">
+              <g class="head-g">
+                <path class="hair" d="M25 72 Q22 30 60 30 Q98 30 95 72 L99 124 Q80 116 60 116 Q40 116 21 124 Z"/>
+              </g>
+              <path class="shirt" d="M22 200 V142 Q22 112 60 110 Q98 112 98 142 V200 Z"/>
+              <g class="arm arm-l"><line class="sleeve" x1="30" y1="128" x2="22" y2="178"/><circle class="skin" cx="22" cy="184" r="7"/></g>
+              <g class="arm arm-r"><line class="sleeve" x1="90" y1="128" x2="98" y2="178"/><circle class="skin" cx="98" cy="184" r="7"/></g>
+              <rect class="skin" x="52" y="92" width="16" height="20"/>
+              <g class="head-g">
+                <circle class="skin" cx="60" cy="68" r="30"/>
+                <path class="hair" d="M29 68 Q28 32 60 32 Q92 32 91 68 Q84 48 64 46 Q50 52 29 68 Z"/>
+                <circle class="pin" cx="82" cy="46" r="5"/>
+                <g class="e e-normal"><g class="pupils"><circle class="dark" cx="49" cy="70" r="4"/><circle class="dark" cx="71" cy="70" r="4"/><path class="line" d="M44 65 L42 63"/><path class="line" d="M76 65 L78 63"/></g></g>
+                <g class="e e-happy"><path class="line" d="M43 72 Q49 64 55 72"/><path class="line" d="M65 72 Q71 64 77 72"/></g>
+                <ellipse class="cheek" cx="41" cy="81" rx="5" ry="3"/>
+                <ellipse class="cheek" cx="79" cy="81" rx="5" ry="3"/>
+                <path class="m m-smile line" d="M52 84 Q60 90 68 84"/>
+                <ellipse class="m m-o mouth-in" cx="60" cy="86" rx="4" ry="5"/>
+                <path class="m m-open mouth-in" d="M47 81 Q60 100 73 81 Z"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 3: 짧은 머리 남자 -->
+        <div class="person p3 s-idle">
+          <div class="bubble"></div>
+          <svg viewBox="0 0 120 200">
+            <g class="body-g">
+              <path class="shirt" d="M22 200 V142 Q22 112 60 110 Q98 112 98 142 V200 Z"/>
+              <g class="arm arm-l"><line class="sleeve" x1="30" y1="128" x2="22" y2="178"/><circle class="skin" cx="22" cy="184" r="7"/></g>
+              <g class="arm arm-r"><line class="sleeve" x1="90" y1="128" x2="98" y2="178"/><circle class="skin" cx="98" cy="184" r="7"/></g>
+              <rect class="skin" x="52" y="92" width="16" height="20"/>
+              <g class="head-g">
+                <circle class="ear" cx="31" cy="70" r="6"/>
+                <circle class="ear" cx="89" cy="70" r="6"/>
+                <circle class="skin" cx="60" cy="68" r="30"/>
+                <path class="hair" d="M29 66 Q28 34 60 33 Q92 34 91 66 Q86 50 74 47 Q62 54 46 47 Q34 52 29 66 Z"/>
+                <g class="e e-normal"><g class="pupils"><circle class="dark" cx="49" cy="70" r="4"/><circle class="dark" cx="71" cy="70" r="4"/></g></g>
+                <g class="e e-happy"><path class="line" d="M43 72 Q49 64 55 72"/><path class="line" d="M65 72 Q71 64 77 72"/></g>
+                <ellipse class="cheek" cx="41" cy="81" rx="5" ry="3"/>
+                <ellipse class="cheek" cx="79" cy="81" rx="5" ry="3"/>
+                <path class="m m-smile line" d="M52 84 Q60 90 68 84"/>
+                <ellipse class="m m-o mouth-in" cx="60" cy="86" rx="4" ry="5"/>
+                <path class="m m-open mouth-in" d="M47 81 Q60 100 73 81 Z"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -344,6 +537,7 @@
     const resultBox = document.getElementById("resultBox");
     const wheelCanvas = document.getElementById("wheelCanvas");
     const confettiLayer = document.getElementById("confettiLayer");
+    const people = Array.from(document.querySelectorAll(".crowd .person"));
 
     const ctx = wheelCanvas.getContext("2d");
     const wheelState = {
@@ -351,6 +545,41 @@
       spinning: false,
       currentWinner: null
     };
+
+    // 구경꾼 대사
+    const WATCH_LINES = ["두근두근…", "어디서 멈출까?", "제발~!", "떨린다!", "빙글빙글~"];
+    const CHEER_LINES = ["와아~!", "{item}{이}다!!", "{item} 당첨!", "최고야!", "나이스!!", "축하해요~!"];
+
+    // 마지막 글자 받침 유무에 따라 "치킨이다" / "카페다"
+    function withJosa(line, item) {
+      const code = item.charCodeAt(item.length - 1) - 0xac00;
+      const hasBatchim = code >= 0 && code <= 11171 && code % 28 !== 0;
+      return line.replace("{item}", item).replace("{이}", hasBatchim ? "이" : "");
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function setCrowd(state, lines) {
+      people.forEach((p, i) => {
+        p.classList.remove("s-idle", "s-watch", "s-cheer");
+        void p.offsetWidth; // 애니메이션 재시작
+        p.classList.add("s-" + state);
+        const bubble = p.querySelector(".bubble");
+        if (lines && lines[i]) {
+          bubble.textContent = lines[i];
+          bubble.classList.add("show");
+        } else {
+          bubble.classList.remove("show");
+        }
+      });
+    }
 
     let items = loadItems();
 
@@ -366,7 +595,11 @@
     }
 
     function saveItems() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      } catch {
+        // 저장 불가 환경(시크릿 모드 등)에서는 무시
+      }
     }
 
     function renderList() {
@@ -393,6 +626,7 @@
         removeBtn.textContent = "삭제";
         removeBtn.setAttribute("aria-label", `${item} 삭제`);
         removeBtn.addEventListener("click", () => {
+          if (wheelState.spinning) return;
           items.splice(index, 1);
           if (!items.length) {
             wheelState.currentWinner = null;
@@ -444,7 +678,7 @@
         ctx.fillStyle = palette[i % palette.length];
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(255,255,255,0.45)";
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -455,10 +689,12 @@
         ctx.fillStyle = "#fff";
         ctx.font = "700 24px sans-serif";
         ctx.textBaseline = "middle";
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+        ctx.shadowBlur = 4;
 
-        const text = items[i];
+        const text = items[i] || "";
         const textLength = Math.min(text.length, 12);
-        const pad = radius * 0.56;
+        const pad = radius * 0.9;
 
         ctx.fillText(text.substring(0, textLength), pad, 0);
         ctx.restore();
@@ -481,9 +717,9 @@
 
       // decorative outer ring
       ctx.beginPath();
-      ctx.arc(cx, cy, radius + 14, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(255,255,255,0.18)";
-      ctx.lineWidth = 16;
+      ctx.arc(cx, cy, radius + 10, 0, Math.PI * 2);
+      ctx.strokeStyle = "#1f2937";
+      ctx.lineWidth = 12;
       ctx.stroke();
     }
 
@@ -523,22 +759,27 @@
         return;
       }
 
+      const TAU = Math.PI * 2;
       const winnerIndex = getWinnerIndex();
       const total = items.length;
-      const slice = (Math.PI * 2) / total;
+      const slice = TAU / total;
       const chosenAngle = (winnerIndex + 0.5) * slice;
 
-      const pointerAngle = Math.PI / 2; // top pointer position
+      const pointerAngle = TAU * 0.75; // 캔버스 기준 12시 방향(-90°)
       const fullTurns = 12; // 최소 회전 수
-      const extraRotation = fullTurns * Math.PI * 2;
-      const current = ((wheelState.rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const startRotation = wheelState.rotation;
+      const current = ((startRotation % TAU) + TAU) % TAU;
 
-      // 현재 위치를 기준으로 선택된 섹션이 포인터 위치로 오도록 보정
-      let delta = (Math.PI * 2 - ((current + pointerAngle) % (Math.PI * 2)) + chosenAngle) % (Math.PI * 2);
-      const target = wheelState.rotation + extraRotation + delta;
+      // 멈췄을 때 선택된 칸의 중앙이 12시 포인터 아래에 오도록:
+      // (최종 회전각 + chosenAngle) ≡ pointerAngle
+      const delta = (((pointerAngle - chosenAngle - current) % TAU) + TAU) % TAU;
+      const target = startRotation + fullTurns * TAU + delta;
 
       wheelState.spinning = true;
       wheelState.currentWinner = items[winnerIndex];
+      spinBtn.disabled = true;
+      resultBox.textContent = "돌아가는 중...";
+      setCrowd("watch", shuffle(WATCH_LINES));
 
       const start = performance.now();
       const duration = 5000;
@@ -547,19 +788,21 @@
         const elapsed = now - start;
         const t = Math.min(elapsed / duration, 1);
         const ease = 1 - Math.pow(1 - t, 4);
-        wheelState.rotation = lerp(wheelState.rotation, target, ease);
+        wheelState.rotation = lerp(startRotation, target, ease);
         drawWheel();
 
         if (t < 1) {
           requestAnimationFrame(animate);
         } else {
-          const finalIndex = winnerIndex;
-          resultBox.textContent = `${items[finalIndex]} 당첨!`;
+          const winner = items[winnerIndex];
+          resultBox.textContent = `${winner} 당첨!`;
           createConfettiBurst();
-          wheelState.rotation = ((target % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+          setCrowd("cheer", shuffle(CHEER_LINES).map((s) => withJosa(s, winner)));
+          wheelState.rotation = ((target % TAU) + TAU) % TAU;
           drawWheel();
           setTimeout(() => {
             wheelState.spinning = false;
+            spinBtn.disabled = false;
           }, 200);
         }
       }
@@ -572,6 +815,7 @@
     }
 
     addBtn.addEventListener("click", () => {
+      if (wheelState.spinning) return;
       const value = itemInput.value.trim();
       if (!value) {
         itemInput.focus();

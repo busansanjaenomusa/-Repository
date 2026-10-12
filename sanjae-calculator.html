@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="ko" id="root-html">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>산재 직업병 보상금(휴업·장해급여) 예상 계산기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for clean icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+              950: '#172554',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    /* Senior text zoom */
+    .text-large-mode {
+      font-size: 120% !important;
+    }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+    details summary {
+      list-style: none;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: #fff !important; color: #000 !important; font-size: 19px !important; }
+      .print-large { font-size: 20px !important; line-height: 1.8 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white pb-24 lg:pb-12">
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 pointer-events-none flex items-center gap-3 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl text-base font-semibold">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+    <span id="toast-message">알림 메시지</span>
+  </div>
+
+  <header class="bg-white border-b border-slate-300 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 text-white flex items-center justify-center font-bold text-2xl shadow-md shadow-brand-500/20">
+          <i class="fa-solid fa-calculator"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            산재 직업병 보상금 계산기
+          </h1>
+          <p class="text-sm text-slate-600 hidden sm:block">소음성 난청·어깨·무릎·허리 직업병 예상 보상금 모의계산</p>
+        </div>
+      </div>
+      
+      <!-- Quick Actions (Font Zoom & Print) -->
+      <div class="flex items-center gap-2">
+        <button type="button" id="btn-font-toggle" onclick="toggleFontSize()" aria-label="글자 크기 변경"
+          class="h-12 px-3.5 sm:px-4 rounded-xl border-2 border-brand-600 bg-brand-50 hover:bg-brand-100 text-brand-800 font-extrabold text-sm sm:text-base transition flex items-center gap-1.5 shadow-xs">
+          <i class="fa-solid fa-text-height text-brand-600"></i>
+          <span id="txt-font-toggle">글자 크게</span>
+        </button>
+        <button type="button" onclick="printResult()" class="h-12 px-3.5 sm:px-4 text-sm sm:text-base font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5 border border-slate-300">
+          <i class="fa-solid fa-print"></i>
+          <span class="hidden sm:inline">크게 인쇄하기</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+    <!-- Tab Controls -->
+    <div class="flex border-b-2 border-slate-300 gap-2 sm:gap-6 font-bold overflow-x-auto no-scrollbar bg-white p-1.5 rounded-2xl shadow-xs">
+      <button id="tab-btn-calc" onclick="switchTab('calc')" class="min-h-[50px] py-3 px-4 border-b-4 border-brand-600 text-brand-700 flex items-center gap-2 whitespace-nowrap text-base sm:text-lg">
+        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+        <span>1. 예상 금액 알아보기</span>
+      </button>
+      <button id="tab-btn-guide" onclick="switchTab('guide')" class="min-h-[50px] py-3 px-4 border-b-4 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 whitespace-nowrap text-base sm:text-lg">
+        <i class="fa-solid fa-list-check text-xl"></i>
+        <span>2. 직업병 등급표 보기</span>
+      </button>
+      <button id="tab-btn-info" onclick="switchTab('info')" class="min-h-[50px] py-3 px-4 border-b-4 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 whitespace-nowrap text-base sm:text-lg">
+        <i class="fa-solid fa-circle-question text-xl"></i>
+        <span>3. 신청 방법과 꿀팁</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: CALCULATOR -->
+    <div id="tab-calc" class="space-y-6">
+      
+      <!-- Top Alert Notice (Friendly) -->
+      <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 flex items-start gap-3.5 text-amber-950 shadow-xs">
+        <i class="fa-solid fa-circle-info text-amber-600 text-2xl mt-0.5 shrink-0"></i>
+        <div class="text-base sm:text-[17px] space-y-1.5 leading-relaxed">
+          <p class="font-extrabold text-amber-900 text-lg">처음 오신 분을 위한 안내</p>
+          <p class="text-amber-900">
+            이 계산기는 예상 금액을 미리 알아보는 도구입니다. 실제 금액은 근로복지공단이 결정합니다. 직업병은 하루 평균 임금을 계산하는 기준 날짜가 일반 사고와 다를 수 있으니, 정확한 금액은 상담으로 확인하세요.
+          </p>
+          <p class="text-amber-900 font-bold">
+            👷 건설 현장 등에서 <u>일당</u>을 받으셨다면 1단계에서 ‘일당으로 받음’을 눌러 주세요. 계산 방법이 다릅니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Input Form (7 Cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- STEP 1: 내 월급 -->
+          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">1</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900">1단계: 내 월급을 알려 주세요</h2>
+              </div>
+              <button type="button" onclick="toggleTermTip('tip-wage')" class="text-slate-500 hover:text-brand-600 flex items-center gap-1 text-sm font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition">
+                <i class="fa-solid fa-circle-question text-brand-600 text-base"></i>
+                <span>하루 평균 임금이란?</span>
+              </button>
+            </div>
+
+            <!-- Inline Explain Tip -->
+            <div id="tip-wage" class="hidden p-4 bg-brand-50 border border-brand-200 rounded-2xl text-[15px] text-brand-950 space-y-1 leading-relaxed">
+              <p class="font-bold">💡 하루 평균 임금(평균임금)이란?</p>
+              <p>산재 보상금을 계산할 때 가장 기본이 되는 하루 치 임금입니다. 보통 직업병 진단 전 3개월 동안 받은 세전 임금을 그 기간의 날짜 수(달력 일수)로 나누어 계산합니다.</p>
+              <p>일당을 받는 건설 일용직 등은 <strong>일당 × 0.73</strong>(통상근로계수)으로 계산하는 것이 원칙입니다. 위에서 <strong>‘일당으로 받음’</strong>을 눌러 주세요.</p>
+            </div>
+
+            <!-- Input Mode Selector -->
+            <p class="text-base font-extrabold text-slate-800">급여를 어떻게 받으셨나요?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-2xl text-sm sm:text-base font-bold">
+              <button type="button" id="btn-mode-monthly" onclick="setInputMode('monthly')" aria-pressed="true" class="min-h-[48px] py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-xs transition border-2 border-brand-600">
+                💼 월급으로 받음
+              </button>
+              <button type="button" id="btn-mode-daily" onclick="setInputMode('daily')" class="min-h-[48px] py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition">
+                👷 일당으로 받음<br class="hidden sm:inline"><span class="text-xs sm:text-sm font-semibold">(건설 일용직 등)</span>
+              </button>
+              <button type="button" id="btn-mode-direct" onclick="setInputMode('direct')" class="min-h-[48px] py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition">
+                📄 공단 통지서 금액 입력
+              </button>
+            </div>
+
+            <!-- Monthly inputs -->
+            <div id="wrapper-monthly-inputs" class="space-y-5">
+              <div class="p-4 bg-brand-50 border border-brand-200 rounded-2xl space-y-3">
+                <p class="font-extrabold text-brand-950">평균임금 산정기간을 입력해 주세요</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label class="font-bold">시작일 (포함)<input type="date" id="inp-wage-period-start" onchange="calculateAll()" class="block w-full mt-1 min-h-[48px] border border-slate-300 rounded-xl p-2 bg-white"></label>
+                  <label class="font-bold">종료일 (포함)<input type="date" id="inp-wage-period-end" onchange="calculateAll()" class="block w-full mt-1 min-h-[48px] border border-slate-300 rounded-xl p-2 bg-white"></label>
+                </div>
+                <p id="wage-period-note" role="status" class="text-sm text-brand-950">공단에서 적용할 산정기간의 시작일과 종료일을 입력하세요.</p>
+                <p class="text-sm text-slate-700">입력한 기간의 실제 일수로 나눕니다. 월급 3개월분과 연간 상여금·연차수당의 1/4을 사용하는 간편 추정 방식입니다. 제외기간 등이 있는 경우에는 공단 통지서의 하루 평균임금을 직접 입력하세요.</p>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label for="inp-monthly-salary" class="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-1.5">
+                    직업병 진단 전 3개월간 한 달 평균 월급
+                    <span class="text-slate-600 font-semibold text-sm">(세금 떼기 전 금액)</span>
+                  </label>
+                  <button type="button" onclick="toggleTermTip('tip-salary-help')" class="text-slate-500 hover:text-brand-600 text-sm font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-circle-question text-brand-500"></i> 설명
+                  </button>
+                </div>
+                <div id="tip-salary-help" class="hidden mb-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700">
+                  기본급과 고정 수당(각종 수당)을 모두 더한 세전 금액을 적어 주세요. 통장에 찍힌 실수령액이 아닙니다.
+                </div>
+                
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="inp-monthly-salary" placeholder="예) 3,500,000" oninput="handleMoneyInput(this)"
+                    class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-5 py-3 text-right pr-12 font-black text-slate-900 text-2xl tracking-tight transition">
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">원</span>
+                </div>
+                
+                <!-- Korean Won Reader -->
+                <div class="flex items-center justify-between mt-1.5 px-1">
+                  <span id="read-monthly-salary" class="text-base font-extrabold text-brand-700 min-h-[24px]">금액을 입력하세요</span>
+                  <span class="text-sm text-slate-500">세금 떼기 전(세전)</span>
+                </div>
+
+                <!-- Quick add buttons -->
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <button type="button" onclick="addMoney('inp-monthly-salary', 100000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+10만</button>
+                  <button type="button" onclick="addMoney('inp-monthly-salary', 500000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+50만</button>
+                  <button type="button" onclick="addMoney('inp-monthly-salary', 1000000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+100만</button>
+                  <button type="button" onclick="clearMoney('inp-monthly-salary')" class="min-h-[48px] px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-sm sm:text-base font-bold border border-rose-200 transition">지우기</button>
+                </div>
+              </div>
+
+              <div>
+                <label for="inp-annual-bonus" class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">
+                  지난 1년간 받은 상여금과 연차수당 총액
+                  <span class="text-slate-600 font-semibold text-sm">(없으면 비워두세요)</span>
+                </label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="inp-annual-bonus" placeholder="예) 3,000,000" oninput="handleMoneyInput(this)"
+                    class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-5 py-3 text-right pr-12 font-black text-slate-900 text-2xl tracking-tight transition">
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">원</span>
+                </div>
+                <div id="read-annual-bonus" class="text-base font-extrabold text-brand-700 mt-1 min-h-[24px] px-1"></div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <button type="button" onclick="addMoney('inp-annual-bonus', 500000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+50만</button>
+                  <button type="button" onclick="addMoney('inp-annual-bonus', 1000000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+100만</button>
+                  <button type="button" onclick="clearMoney('inp-annual-bonus')" class="min-h-[48px] px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-sm sm:text-base font-bold border border-rose-200 transition">지우기</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Daily-wage inputs for day laborers (hidden by default) -->
+            <div id="wrapper-daily-inputs" class="space-y-5 hidden">
+              <div class="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-[15px] text-amber-950 leading-relaxed space-y-1">
+                <p class="font-extrabold text-amber-900 text-base">👷 일당 받으신 분(건설 일용직 등)은 계산 방법이 다릅니다</p>
+                <p>일당제 근로자는 보통 <strong>“일당 × 0.73”</strong>을 하루 평균임금으로 봅니다. 한 달 내내 일하지 못하는 일용직 특성을 반영한 법정 계수(통상근로계수)입니다.</p>
+                <p class="text-sm text-amber-800">근거: 산재보험법 제36조 제5항, 같은 법 시행령 제23조·제24조, 고용노동부고시 제2025-90호(통상근로계수 73/100, 2026. 1. 1. 시행)</p>
+              </div>
+
+              <div>
+                <label for="inp-daily-pay" class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">
+                  하루 일당
+                  <span class="text-slate-600 font-semibold text-sm">(세금 떼기 전, 하루 정해진 시간 일하고 받는 금액)</span>
+                </label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="inp-daily-pay" placeholder="예) 200,000" oninput="handleMoneyInput(this)"
+                    class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-5 py-3 text-right pr-12 font-black text-slate-900 text-2xl tracking-tight transition">
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">원</span>
+                </div>
+                <div id="read-daily-pay" class="text-base font-extrabold text-brand-700 mt-1 min-h-[24px] px-1"></div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <button type="button" onclick="addMoney('inp-daily-pay', 10000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+1만</button>
+                  <button type="button" onclick="addMoney('inp-daily-pay', 50000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+5만</button>
+                  <button type="button" onclick="addMoney('inp-daily-pay', 100000)" class="min-h-[48px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm sm:text-base font-bold border border-slate-300 transition">+10만</button>
+                  <button type="button" onclick="clearMoney('inp-daily-pay')" class="min-h-[48px] px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-sm sm:text-base font-bold border border-rose-200 transition">지우기</button>
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">마지막 현장(회사)에서 계속 일한 기간</span>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" role="radiogroup" aria-label="계속 근무 기간">
+                  <label class="flex items-center gap-2.5 p-3 bg-white rounded-xl border-2 border-slate-300 cursor-pointer font-bold text-slate-800 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50">
+                    <input type="radio" name="daily-tenure" value="lt1" checked onchange="calculateAll()" class="w-5 h-5 text-brand-600">
+                    1개월 미만
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 bg-white rounded-xl border-2 border-slate-300 cursor-pointer font-bold text-slate-800 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50">
+                    <input type="radio" name="daily-tenure" value="1to3" onchange="calculateAll()" class="w-5 h-5 text-brand-600">
+                    1개월 ~ 3개월 미만
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 bg-white rounded-xl border-2 border-slate-300 cursor-pointer font-bold text-slate-800 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50">
+                    <input type="radio" name="daily-tenure" value="gte3" onchange="calculateAll()" class="w-5 h-5 text-brand-600">
+                    3개월 이상
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label for="inp-daily-workdays" class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">
+                  한 달에 보통 며칠 일하셨나요?
+                  <span class="text-slate-600 font-semibold text-sm">(최근 3개월 평균, 모르면 비워두세요)</span>
+                </label>
+                <div class="grid grid-cols-4 gap-2 mb-2">
+                  <button type="button" onclick="setWorkdays(15)" class="workday-chip-btn min-h-[48px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold border border-slate-300 transition" data-days="15">15일</button>
+                  <button type="button" onclick="setWorkdays(20)" class="workday-chip-btn min-h-[48px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold border border-slate-300 transition" data-days="20">20일</button>
+                  <button type="button" onclick="setWorkdays(25)" class="workday-chip-btn min-h-[48px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold border border-slate-300 transition" data-days="25">25일</button>
+                  <button type="button" onclick="setWorkdays(28)" class="workday-chip-btn min-h-[48px] rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold border border-slate-300 transition" data-days="28">28일</button>
+                </div>
+                <div class="relative">
+                  <input type="number" id="inp-daily-workdays" placeholder="예) 25" min="0" max="31" step="1" oninput="calculateAll()"
+                    class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-5 py-3 text-right pr-16 font-black text-slate-900 text-2xl tracking-tight transition">
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">일/월</span>
+                </div>
+              </div>
+
+              <!-- Day-laborer method result / advice -->
+              <div id="daily-method-box" class="p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 text-[15px] leading-relaxed space-y-1.5">
+                <p class="font-bold text-slate-700">일당을 입력하시면 계산 방법을 안내해 드립니다.</p>
+              </div>
+              <label id="daily-exclude-wrap" for="chk-daily-exclude" class="hidden flex items-start gap-3 p-3.5 bg-emerald-50 hover:bg-emerald-100 rounded-2xl border-2 border-emerald-300 cursor-pointer transition">
+                <input type="checkbox" id="chk-daily-exclude" onchange="calculateAll()" class="w-6 h-6 mt-0.5 rounded text-emerald-600 shrink-0">
+                <div class="text-base text-emerald-950 leading-snug">
+                  <span class="font-extrabold">‘0.73 계수 적용 제외’를 신청한 것으로 계산해 보기</span>
+                  <p class="text-sm text-emerald-800 mt-1">실제로 일한 날짜를 증명하는 서류(출역일보, 노무비 명세서, 통장 입금내역 등)를 내야 합니다. (시행령 제24조 제2항)</p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Direct inputs (hidden by default) -->
+            <div id="wrapper-direct-inputs" class="space-y-4 hidden">
+              <div>
+                <label for="inp-direct-wage" class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">
+                  공단에서 받은 결정 통지서에 적힌 하루 평균임금
+                </label>
+                <div class="relative">
+                  <input type="text" inputmode="numeric" id="inp-direct-wage" placeholder="예) 120,000" oninput="handleMoneyInput(this)"
+                    class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-5 py-3 text-right pr-12 font-black text-slate-900 text-2xl tracking-tight transition">
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">원</span>
+                </div>
+                <div id="read-direct-wage" class="text-base font-extrabold text-brand-700 mt-1 min-h-[24px] px-1"></div>
+              </div>
+            </div>
+
+            <!-- Calculated daily wage display banner -->
+            <div class="p-4 bg-brand-50 rounded-2xl border-2 border-brand-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-base">
+              <span class="font-bold text-brand-950">산정된 하루 평균 임금(평균임금) :</span>
+              <div class="text-left sm:text-right">
+                <span id="disp-calc-daily-wage" class="text-2xl font-black text-brand-700">0</span>
+                <span class="text-brand-950 font-extrabold">원 / 일</span>
+                <div id="disp-cap-note" class="text-sm font-semibold text-slate-600">월급 또는 일당을 입력하시면 계산됩니다</div>
+              </div>
+            </div>
+
+            <!-- C-1: Expert Details (Folded by default) -->
+            <details class="group bg-slate-50 rounded-2xl border border-slate-300 p-4 transition">
+              <summary class="cursor-pointer font-bold text-slate-700 hover:text-slate-900 flex items-center justify-between text-base">
+                <span class="flex items-center gap-2">
+                  <i class="fa-solid fa-scale-balanced text-brand-600"></i>
+                  <span>▶ 법적 근거·전문가용 정보 보기 (접혀있음)</span>
+                </span>
+                <span class="text-xs px-2.5 py-1 bg-slate-200 rounded-lg text-slate-700 font-semibold group-open:hidden">열기</span>
+              </summary>
+              <div class="mt-4 pt-3 border-t border-slate-200 text-sm text-slate-600 space-y-2 leading-relaxed">
+                <div>• <strong>2026년 최고 보상기준금액:</strong> 268,299원/일 (고용노동부고시 제2025-84호)</div>
+                <div>• <strong>2026년 최저 보상기준금액:</strong> 82,560원/일 (휴업급여·상병보상연금에는 적용하지 않음: 산재보험법 제36조 제7항 단서)</div>
+                <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+                  <span>• <strong>2026년 1일 최저임금액(8시간):</strong></span>
+                  <div class="inline-flex items-center gap-1">
+                    <input type="number" id="inp-min-wage-day" value="82560" oninput="calculateAll()" class="w-28 text-right bg-white border border-slate-300 rounded px-2 py-1 text-sm font-bold text-slate-800">
+                    <span>원</span>
+                  </div>
+                </div>
+                <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+                  <span>• <strong>통상근로계수(일용근로자):</strong></span>
+                  <div class="inline-flex items-center gap-1">
+                    <input type="number" id="inp-daily-coef" value="0.73" step="0.01" min="0" max="1" oninput="calculateAll()" class="w-28 text-right bg-white border border-slate-300 rounded px-2 py-1 text-sm font-bold text-slate-800">
+                  </div>
+                </div>
+                <div class="text-xs text-slate-500">고용노동부고시 제2025-90호 「통상근로계수」(73/100, 2026. 1. 1. 시행). 매년 고시 개정 여부를 확인하세요.</div>
+                <div class="text-xs text-slate-500 pt-1">
+                  ※ 산재보험법 제36조(평균임금·최고/최저 보상기준), 제52조(휴업급여 70%), 제54조(저소득 특례), 제55조(고령자 감액), 시행령 제23조·제24조(일용근로자 특례), 제25조(직업병 특례) 기준이 적용됩니다.
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- STEP 2: 일 못 한 기간 (치료/입원/통원 기간) -->
+          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">2</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900">2단계: 치료 때문에 일 못 한 기간</h2>
+              </div>
+              <button type="button" onclick="toggleTermTip('tip-leave')" class="text-slate-500 hover:text-brand-600 flex items-center gap-1 text-sm font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition">
+                <i class="fa-solid fa-circle-question text-emerald-600 text-base"></i>
+                <span>휴업급여란?</span>
+              </button>
+            </div>
+
+            <!-- Inline Explain Tip -->
+            <div id="tip-leave" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-[15px] text-emerald-950 space-y-1 leading-relaxed">
+              <p class="font-bold">💡 치료 때문에 일을 못 한 날 받는 돈(휴업급여)이란?</p>
+              <p>산재 치료(입원 또는 통원)를 받느라 출근하여 일하지 못한 기간 동안 생활을 보장하기 위해 국가가 지급하는 지원금입니다. 기본적으로 하루 평균 임금의 70%가 지급됩니다.</p>
+            </div>
+
+            <div class="space-y-4">
+              <label for="inp-leave-days" class="block text-base sm:text-lg font-extrabold text-slate-800">
+                치료(요양)로 취업하지 못한 기간 (일수)
+              </label>
+
+              <!-- Simplified 5 Day Chips -->
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <button type="button" onclick="setLeaveDays(30)" class="leave-chip-btn min-h-[48px] py-3 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base border border-slate-300 transition" data-days="30">1개월(30일)</button>
+                <button type="button" onclick="setLeaveDays(90)" class="leave-chip-btn min-h-[48px] py-3 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base border border-slate-300 transition" data-days="90">3개월(90일)</button>
+                <button type="button" onclick="setLeaveDays(180)" class="leave-chip-btn min-h-[48px] py-3 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base border border-slate-300 transition" data-days="180">6개월(180일)</button>
+                <button type="button" onclick="setLeaveDays(365)" class="leave-chip-btn min-h-[48px] py-3 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base border border-slate-300 transition" data-days="365">1년(365일)</button>
+                <button type="button" onclick="focusLeaveInput()" class="leave-chip-btn min-h-[48px] py-3 px-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-800 font-extrabold text-base border-2 border-brand-300 transition">직접 입력</button>
+              </div>
+
+              <!-- Day input with approximate month reader -->
+              <div class="relative">
+                <input type="number" id="inp-leave-days" value="" placeholder="예) 90" min="0" max="3650" step="1" oninput="calculateAll()"
+                  class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-5 py-3 text-right pr-28 font-black text-slate-900 text-2xl tracking-tight transition">
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                  <span id="disp-approx-months" class="text-sm sm:text-base font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-lg">약 0개월</span>
+                  <span class="text-base font-bold text-slate-500">일</span>
+                </div>
+              </div>
+
+              <div id="leave-3day-alert" class="hidden p-3.5 bg-rose-50 border-2 border-rose-300 rounded-2xl text-[15px] text-rose-800 font-bold leading-relaxed">
+                <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> 치료 기간이 3일 이하인 경우에는 법 규정에 따라 휴업급여가 지급되지 않습니다 (4일 이상 치료받아야 첫날부터 전액 지급됩니다).
+              </div>
+              <div id="leave-longterm-alert" class="hidden p-3.5 bg-amber-50 border-2 border-amber-300 rounded-2xl text-[15px] text-amber-900 font-bold leading-relaxed">
+                <i class="fa-solid fa-circle-info text-amber-600"></i> 치료 기간이 1년(365일)을 넘는 경우, 매년 물가와 임금 상승률이 반영되어 실제 받는 금액이 더 올라갈 수 있습니다.
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: 내 나이 -->
+          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">3</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900">3단계: 내 나이를 알려 주세요</h2>
+              </div>
+              <span class="text-sm font-bold text-slate-600">만 61세 이상 감액 여부 확인</span>
+            </div>
+
+            <!-- Date Selectors (Year, Month, Day) -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">근로자 생년월일</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <select id="sel-birth-year" onchange="syncBirthDate()" class="min-h-[50px] bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:border-brand-600">
+                    <option value="">년도 선택</option>
+                  </select>
+                  <select id="sel-birth-month" onchange="syncBirthDate()" class="min-h-[50px] bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:border-brand-600">
+                    <option value="">월</option>
+                  </select>
+                  <select id="sel-birth-day" onchange="syncBirthDate()" class="min-h-[50px] bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:border-brand-600">
+                    <option value="">일</option>
+                  </select>
+                </div>
+                <input type="hidden" id="inp-birth-date">
+              </div>
+
+              <div>
+                <label class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">치료(요양) 시작 날짜</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <select id="sel-leave-year" onchange="syncLeaveDate()" class="min-h-[50px] bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:border-brand-600">
+                    <option value="">년도 선택</option>
+                  </select>
+                  <select id="sel-leave-month" onchange="syncLeaveDate()" class="min-h-[50px] bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:border-brand-600">
+                    <option value="">월</option>
+                  </select>
+                  <select id="sel-leave-day" onchange="syncLeaveDate()" class="min-h-[50px] bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800 focus:border-brand-600">
+                    <option value="">일</option>
+                  </select>
+                </div>
+                <input type="hidden" id="inp-leave-start-date">
+              </div>
+
+              <!-- Friendly Question Checkboxes -->
+              <div class="space-y-3 pt-2 border-t border-slate-200">
+                <label for="chk-aged-post61-employed" class="flex items-start gap-3 p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-200 cursor-pointer transition">
+                  <input type="checkbox" id="chk-aged-post61-employed" onchange="calculateAll()" class="w-6 h-6 mt-0.5 rounded text-brand-600 focus:ring-brand-500 shrink-0">
+                  <div class="text-base text-slate-800 leading-snug">
+                    <span class="font-extrabold">만 61세가 넘어서 일하던 중에 치료를 시작하셨나요?</span>
+                    <p class="text-sm text-slate-600 mt-1">치료 시작일로부터 2년 동안은 나이로 인한 감액을 하지 않습니다.</p>
+                  </div>
+                </label>
+
+                <label for="chk-aged-prev-disease-disability" class="flex items-start gap-3 p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-200 cursor-pointer transition">
+                  <input type="checkbox" id="chk-aged-prev-disease-disability" onchange="calculateAll()" class="w-6 h-6 mt-0.5 rounded text-brand-600 focus:ring-brand-500 shrink-0">
+                  <div class="text-base text-slate-800 leading-snug">
+                    <span class="font-extrabold">61세 전에 같은 직업병으로 장해급여를 받은 적이 있나요?</span>
+                    <p class="text-sm text-slate-600 mt-1">예전에 보상받은 병으로 61세 이후 처음 다시 치료받는 경우 해당합니다.</p>
+                  </div>
+                </label>
+
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-sm text-amber-900 font-semibold flex items-center gap-2">
+                  <i class="fa-solid fa-circle-question text-amber-600 text-base"></i>
+                  <span>잘 모르시면 체크하지 마세요. 상담 때 확인해 드립니다.</span>
+                </div>
+
+                <div id="disp-aged-grace-note" class="hidden p-3.5 bg-emerald-50 border-2 border-emerald-300 rounded-2xl text-[15px] text-emerald-900 font-bold">
+                  <i class="fa-solid fa-circle-check text-emerald-600"></i> 치료 시작일로부터 2년간 고령자 감액이 제외(유예)됩니다.
+                </div>
+              </div>
+
+              <!-- Expert details for elderly -->
+              <details class="group bg-slate-50 rounded-2xl border border-slate-300 p-3.5">
+                <summary class="cursor-pointer text-sm font-bold text-slate-600 hover:text-slate-900 flex items-center justify-between">
+                  <span>▶ 고령자 감액 법적 근거 보기 (산재보험법 제55조·별표 1)</span>
+                  <span class="text-xs text-slate-500 group-open:hidden">열기</span>
+                </summary>
+                <div class="mt-2 text-xs text-slate-500 space-y-1 leading-relaxed">
+                  <p>• 만 61세 이상 휴업급여 지급률: 61세 66/70, 62세 62/70, 63세 58/70, 64세 54/70, 65세 이후 50/70</p>
+                  <p>• 직업병의 경우 '취업 중' 해당 여부는 공단 판단 사항</p>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <!-- STEP 4: 장해 정도 -->
+          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">4</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900">4단계: 장해 정도를 알려 주세요</h2>
+              </div>
+              <button type="button" onclick="toggleTermTip('tip-disability')" class="text-slate-500 hover:text-brand-600 flex items-center gap-1 text-sm font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition">
+                <i class="fa-solid fa-circle-question text-indigo-600 text-base"></i>
+                <span>장해급여란?</span>
+              </button>
+            </div>
+
+            <!-- Inline Explain Tip -->
+            <div id="tip-disability" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-2xl text-[15px] text-indigo-950 space-y-1 leading-relaxed">
+              <p class="font-bold">💡 치료가 끝난 뒤 몸에 남은 장해에 대해 받는 돈(장해급여)이란?</p>
+              <p>수술이나 치료가 모두 끝났음에도 불구하고 팔·다리가 덜 움직이거나 귀가 잘 안 들리는 등 후유증이 영구히 남았을 때 등급(1급~14급)에 따라 받는 국가 보상금입니다.</p>
+            </div>
+
+            <!-- E-2: Quick Disease Category Buttons -->
+            <div class="space-y-2">
+              <span class="block text-sm sm:text-base font-extrabold text-slate-700">내가 아픈 부위의 등급표 바로 보기 :</span>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <button type="button" onclick="jumpToGuideWithFilter('hearing')" class="min-h-[48px] py-2.5 px-2 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 rounded-xl text-indigo-900 font-extrabold text-sm sm:text-base transition text-center">
+                  👂 귀(난청)
+                </button>
+                <button type="button" onclick="jumpToGuideWithFilter('shoulder')" class="min-h-[48px] py-2.5 px-2 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 rounded-xl text-indigo-900 font-extrabold text-sm sm:text-base transition text-center">
+                  💪 어깨
+                </button>
+                <button type="button" onclick="jumpToGuideWithFilter('upper')" class="min-h-[48px] py-2.5 px-2 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 rounded-xl text-indigo-900 font-extrabold text-sm sm:text-base transition text-center">
+                  🖐 팔꿈치·손목
+                </button>
+                <button type="button" onclick="jumpToGuideWithFilter('lower')" class="min-h-[48px] py-2.5 px-2 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 rounded-xl text-indigo-900 font-extrabold text-sm sm:text-base transition text-center">
+                  🦵 무릎·다리
+                </button>
+                <button type="button" onclick="jumpToGuideWithFilter('spine')" class="min-h-[48px] py-2.5 px-2 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 rounded-xl text-indigo-900 font-extrabold text-sm sm:text-base transition text-center">
+                  🦴 허리
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-4 pt-2">
+              <div>
+                <label for="sel-disability-grade" class="block text-base sm:text-lg font-extrabold text-slate-800 mb-2">
+                  예상되는 장해 등급 선택
+                </label>
+
+                <!-- Grade Selection Dropdown (Default: none) -->
+                <select id="sel-disability-grade" onchange="handleGradeChange()"
+                  class="w-full min-h-[56px] bg-slate-50 border-2 border-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-100 rounded-2xl px-4 py-3 font-extrabold text-slate-900 text-base sm:text-lg transition">
+                  <option value="none" selected>아직 모르겠어요 (장해급여 빼고 계산)</option>
+                  <optgroup label="[중증] 1~3급 : 매달 나누어 평생 수령(연금 의무)">
+                    <option value="1">장해 1급 (매달 나누어 평생 수령: 하루 평균 임금 × 329일/년)</option>
+                    <option value="2">장해 2급 (매달 나누어 평생 수령: 하루 평균 임금 × 291일/년)</option>
+                    <option value="3">장해 3급 (매달 나누어 평생 수령: 하루 평균 임금 × 257일/년)</option>
+                  </optgroup>
+                  <optgroup label="[중등도] 4~7급 : 매달 나누어 받거나 한 번에 목돈 수령 선택">
+                    <option value="4">장해 4급 (연금 224일 / 한 번에 목돈으로 1,012일)</option>
+                    <option value="5">장해 5급 (연금 193일 / 한 번에 목돈으로 869일)</option>
+                    <option value="6">장해 6급 (연금 164일 / 한 번에 목돈으로 737일)</option>
+                    <option value="7">장해 7급 (연금 138일 / 한 번에 목돈으로 616일)</option>
+                  </optgroup>
+                  <optgroup label="[경도] 8~14급 : 한 번에 목돈으로 지급 (직업병 다수 해당)">
+                    <option value="8">장해 8급 (한 번에 목돈으로: 하루 평균 임금 × 495일)</option>
+                    <option value="9">장해 9급 (한 번에 목돈으로: 하루 평균 임금 × 385일)</option>
+                    <option value="10">장해 10급 (한 번에 목돈으로: 하루 평균 임금 × 297일)</option>
+                    <option value="11">장해 11급 (한 번에 목돈으로: 하루 평균 임금 × 220일)</option>
+                    <option value="12">장해 12급 (한 번에 목돈으로: 하루 평균 임금 × 154일)</option>
+                    <option value="13">장해 13급 (한 번에 목돈으로: 하루 평균 임금 × 99일)</option>
+                    <option value="14">장해 14급 (한 번에 목돈으로: 하루 평균 임금 × 55일)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <!-- Payout type radio (Only active for 4~7 grade) -->
+              <div id="payout-type-box" class="p-4 bg-slate-50 border-2 border-slate-300 rounded-2xl space-y-2 hidden">
+                <span class="text-base font-extrabold text-slate-800 block">4~7급 수령 방식 선택:</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base">
+                  <label class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-300 cursor-pointer font-bold text-slate-800">
+                    <input type="radio" name="payout-type" value="lump" checked onchange="calculateAll()" class="w-5 h-5 text-brand-600 focus:ring-brand-500">
+                    한 번에 목돈으로 받기
+                  </label>
+                  <label class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-300 cursor-pointer font-bold text-slate-800">
+                    <input type="radio" name="payout-type" value="pension" onchange="calculateAll()" class="w-5 h-5 text-brand-600 focus:ring-brand-500">
+                    매달 나누어 평생 받기
+                  </label>
+                </div>
+              </div>
+
+              <div id="grade-detail-tip" class="text-base text-indigo-950 bg-indigo-50 p-4 rounded-2xl border border-indigo-200 flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-info text-indigo-600 text-lg mt-0.5 shrink-0"></i>
+                <span id="grade-desc-text" class="font-bold">장해 등급을 아직 모르면 그대로 두셔도 됩니다. 치료 기간 동안의 휴업급여만 먼저 계산해 드립니다.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Result Panel (5 Cols, Sticky) -->
+        <div id="panel-result" class="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+          
+          <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 text-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-700 space-y-6">
+            
+            <div class="flex items-center justify-between border-b border-slate-700 pb-4">
+              <div>
+                <span class="text-sm text-brand-300 font-extrabold">내 산재 보상금 모의계산 결과</span>
+                <h3 class="text-2xl font-black text-white">예상 총 보상금</h3>
+              </div>
+              <span class="text-sm px-3 py-1 bg-brand-500/30 text-brand-200 border border-brand-400/40 rounded-full font-bold">비과세·압류금지</span>
+            </div>
+
+            <!-- F-3: Spoken Summary Sentence -->
+            <div id="disp-spoken-summary" class="p-4 bg-white/10 rounded-2xl border border-white/15 text-base sm:text-lg leading-relaxed text-slate-100 font-bold">
+              월급(또는 일당)을 입력하거나 하루 평균임금을 직접 입력하면 예상 금액이 나옵니다.
+            </div>
+
+            <!-- Grand Total Display (F-2: Roughly in Man-won) -->
+            <div class="bg-white/5 rounded-2xl p-5 border border-white/10 text-center space-y-1">
+              <span class="text-base text-slate-300 font-semibold"><span id="disp-total-label">휴업급여 + 장해일시금 합산 예상액</span></span>
+              <div class="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight" id="disp-total-manwon">
+                0만 원
+              </div>
+              <p class="text-sm font-semibold text-slate-300 pt-1" id="disp-total-amount">
+                (입력값 기준 예상액: 0원)
+              </p>
+              <p class="text-xs text-slate-400 pt-1">※ 병원 치료비는 공단이 병원에 직접 지급하여 별도입니다.</p>
+            </div>
+
+            <!-- Detailed Breakdown items -->
+            <div class="space-y-4 text-base">
+              
+              <!-- Daily Wage Item -->
+              <div class="flex items-center justify-between py-2 border-b border-slate-700/70">
+                <span class="text-slate-200 flex items-center gap-2">
+                  <i class="fa-regular fa-calendar-check text-brand-400"></i> 하루 평균 임금
+                </span>
+                <span id="disp-item-daily-wage" class="font-extrabold text-white text-lg">0 원</span>
+              </div>
+
+              <!-- Leave Compensation Item -->
+              <div class="flex items-start justify-between py-2 border-b border-slate-700/70">
+                <div>
+                  <span class="text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-bed-pulse text-emerald-400"></i> 일을 못 한 날 받는 돈
+                  </span>
+                  <div class="text-sm text-slate-300 mt-1 font-semibold" id="disp-item-leave-detail">월급 또는 일당을 입력하세요</div>
+                </div>
+                <div class="text-right">
+                  <span id="disp-item-leave-total" class="font-extrabold text-emerald-300 text-lg">0 원</span>
+                  <div class="text-xs text-slate-300 mt-0.5" id="disp-item-leave-monthly">월 환산 약 0원</div>
+                </div>
+              </div>
+
+              <!-- Disability Benefit Item -->
+              <div class="flex items-start justify-between py-2 border-b border-slate-700/70">
+                <div>
+                  <span class="text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-award text-indigo-400"></i> 몸에 남은 장해 보상금
+                  </span>
+                  <div class="text-sm text-slate-300 mt-1 font-semibold" id="disp-item-grade-label">아직 선택 안 함</div>
+                  <div class="text-xs text-slate-400" id="disp-item-grade-days"></div>
+                </div>
+                <div class="text-right">
+                  <span id="disp-item-disability-amount" class="font-extrabold text-indigo-300 text-lg">0 원</span>
+                  <div class="text-xs text-slate-300 mt-0.5" id="disp-item-pension-monthly"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- F-4: How it was calculated (Folded) -->
+            <details class="bg-slate-800/90 rounded-2xl p-4 text-sm text-slate-200 border border-slate-700">
+              <summary class="cursor-pointer font-bold flex items-center justify-between text-slate-200 hover:text-white">
+                <span>▶ 어떻게 계산했나요? (계산 근거 보기)</span>
+                <span class="text-xs text-slate-400">열기</span>
+              </summary>
+              <div class="mt-3 pt-2 border-t border-slate-700 text-xs text-slate-300 space-y-1.5 leading-relaxed" id="disp-calc-details-content">
+                <p>• 치료 기간 휴업급여: 하루 평균 임금의 70%를 기준으로 계산합니다.</p>
+                <p>• 장해급여: 치료 종결 후 확정된 장해등급 일수 × 하루 평균 임금으로 산정합니다.</p>
+              </div>
+            </details>
+
+            <!-- Tax benefit -->
+            <div class="bg-slate-800/80 rounded-2xl p-4 text-sm text-slate-200 space-y-1 border border-slate-700">
+              <div class="flex items-center gap-2 text-amber-300 font-extrabold text-base">
+                <i class="fa-solid fa-shield-halved"></i> 산재 보상금의 법적 혜택
+              </div>
+              <p>• 산재보험급여는 <strong>소득세가 붙지 않고</strong>(소득세법 제12조 제3호 다목·제4호 다목), 국가·지자체 공과금도 부과되지 않습니다(산재보험법 제91조).</p>
+              <p>• 받을 권리는 <strong>남에게 넘기거나 압류할 수 없고</strong>, 회사를 그만둬도 사라지지 않습니다(산재보험법 제88조).</p>
+            </div>
+
+            <!-- Action buttons (G-1) -->
+            <div class="space-y-3 pt-2">
+              <button type="button" onclick="shareWithFamily()" class="w-full min-h-[50px] py-3.5 px-4 bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white rounded-2xl font-black text-base sm:text-lg transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/30">
+                <i class="fa-solid fa-share-nodes text-xl"></i>
+                <span>가족에게 계산 결과 보내기</span>
+              </button>
+              
+              <div class="grid grid-cols-2 gap-3">
+                <button type="button" onclick="copySummaryText()" class="min-h-[48px] py-3 px-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2">
+                  <i class="fa-regular fa-copy"></i>
+                  <span>요약 복사</span>
+                </button>
+                <button type="button" onclick="printResult()" class="min-h-[48px] py-3 px-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-print"></i>
+                  <span>크게 인쇄</span>
+                </button>
+              </div>
+
+              <!-- G-1 Office Phone Button placeholder (If configured) -->
+              <div id="office-call-wrapper" class="hidden pt-1">
+                <a id="btn-office-call" href="#" class="w-full min-h-[52px] py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-lg transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30">
+                  <i class="fa-solid fa-phone text-xl"></i>
+                  <span id="txt-office-call">📞 상담 전화하기</span>
+                </a>
+                <a id="btn-office-kakao" href="#" target="_blank" rel="noopener" class="hidden mt-3 w-full min-h-[52px] py-3.5 px-4 bg-yellow-300 hover:bg-yellow-200 text-slate-900 rounded-2xl font-black text-lg transition flex items-center justify-center gap-2">
+                  <span>💬 카카오톡으로 상담하기</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- G-2: Public Center Call (tel link) -->
+          <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 flex items-center gap-4 text-base text-slate-700 shadow-xs">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-2xl shrink-0">
+              <i class="fa-solid fa-phone-volume"></i>
+            </div>
+            <div>
+              <p class="font-extrabold text-slate-900">근로복지공단 대표상담 콜센터</p>
+              <a href="tel:15880075" class="font-black text-brand-700 hover:underline text-lg flex items-center gap-1">
+                <span>1588-0075</span>
+                <span class="text-xs text-slate-500 font-normal">(터치하여 바로 통화)</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: GUIDE TABLE (Mobile Cards & Desktop Table) -->
+    <div id="tab-guide" class="space-y-6 hidden">
+      <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-6">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 mb-1">직업성 질병 장해등급 판정 기준표</h2>
+          <p class="text-base text-slate-600">
+            소음성 난청 및 주요 신체부위별 직업성 질병에 대한 법정 장해등급 기준입니다. 내가 해당하는 항목의 [이 등급으로 계산하기] 버튼을 누르면 계산기에 자동으로 반영됩니다.
+          </p>
+        </div>
+
+        <!-- Disease Filter Buttons -->
+        <div class="flex flex-wrap gap-2 text-base font-bold">
+          <button onclick="filterGuide('all')" class="guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-brand-600 text-white transition shadow-xs" data-filter="all">전체</button>
+          <button onclick="filterGuide('hearing')" class="guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition" data-filter="hearing">소음성 난청</button>
+          <button onclick="filterGuide('shoulder')" class="guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition" data-filter="shoulder">어깨</button>
+          <button onclick="filterGuide('upper')" class="guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition" data-filter="upper">상지(팔꿈치·손목·손가락)</button>
+          <button onclick="filterGuide('lower')" class="guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition" data-filter="lower">무릎·하지</button>
+          <button onclick="filterGuide('spine')" class="guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition" data-filter="spine">허리(척추)</button>
+        </div>
+
+        <!-- E-3: Mobile Card View (sm:hidden) -->
+        <div class="block sm:hidden space-y-4" id="guide-mobile-cards">
+          <!-- Cards injected via script matching desktop rows -->
+        </div>
+
+        <!-- Desktop Table Container (hidden on mobile < 640px) -->
+        <div class="hidden sm:block overflow-x-auto rounded-2xl border border-slate-300">
+          <table class="w-full text-left border-collapse text-base">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-300 text-slate-800 font-extrabold text-sm sm:text-base">
+                <th class="py-3.5 px-3.5 w-24">질병 구분</th>
+                <th class="py-3.5 px-3.5 w-28">등급(호)</th>
+                <th class="py-3.5 px-3.5 w-40">지급 기준</th>
+                <th class="py-3.5 px-3.5">세부 판정 요건 및 시행령 별표 6 문구</th>
+                <th class="py-3.5 px-3.5 w-48">법적 근거</th>
+                <th class="py-3.5 px-3.5 w-28 text-center">계산기 적용</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-slate-800" id="guide-table-body">
+              
+              <!-- HEARING -->
+              <tr class="guide-row" data-cat="hearing" data-grade="4" data-label="소음성 난청 4급 제3호" data-days="연금 224일 / 일시금 1,012일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">4급 제3호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 224일 / 일시금 1,012일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>두 귀의 평균 청력손실치가 각각 90dB 이상</strong>인 사람, 또는 <strong>두 귀의 평균 청력손실치가 각각 80dB 이상이면서 최고 명료도가 30% 이하</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 두 귀의 청력을 완전히 잃은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제4급 제3호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(4)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="6" data-label="소음성 난청 6급 제3호" data-days="연금 164일 / 일시금 737일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">6급 제3호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 164일 / 일시금 737일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>두 귀의 평균 청력손실치가 각각 80dB 이상</strong>인 사람, 또는 <strong>두 귀의 평균 청력손실치가 각각 50dB 이상 80dB 미만이면서 최고 명료도가 30% 이하</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 두 귀의 청력이 모두 귀에 대고 말하지 아니하고는 큰 소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제6급 제3호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(6)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="6" data-label="소음성 난청 6급 제4호" data-days="연금 164일 / 일시금 737일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">6급 제4호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 164일 / 일시금 737일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 90dB 이상이면서 다른 쪽 귀의 평균 청력손실치가 70dB 이상</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 귀가 전혀 들리지 않게 되고 다른 쪽 귀의 청력이 40센티미터 이상의 거리에서는 보통의 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제6급 제4호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(6)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="7" data-label="소음성 난청 7급 제2호" data-days="연금 138일 / 일시금 616일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">7급 제2호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 138일 / 일시금 616일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>두 귀의 평균 청력손실치가 각각 70dB 이상</strong>인 사람, 또는 <strong>두 귀의 평균 청력손실치가 각각 50dB 이상이면서 최고 명료도가 50% 이하</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 두 귀의 청력이 모두 40센티미터 이상의 거리에서는 보통의 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제7급 제2호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(7)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="7" data-label="소음성 난청 7급 제3호" data-days="연금 138일 / 일시금 616일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">7급 제3호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 138일 / 일시금 616일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 90dB 이상이면서 다른 쪽 귀의 평균 청력손실치가 60dB 이상</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 귀가 전혀 들리지 않게 되고 다른 쪽 귀의 청력이 1미터 이상의 거리에서는 보통의 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제7급 제3호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(7)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="9" data-label="소음성 난청 9급 제7호" data-days="일시금 385일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">9급 제7호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 385일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>두 귀의 평균 청력손실치가 각각 60dB 이상</strong>인 사람, 또는 <strong>두 귀의 평균 청력손실치가 각각 50dB 이상이면서 최고 명료도가 70% 이하</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 두 귀의 청력이 모두 1미터 이상의 거리에서는 큰 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제9급 제7호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(9)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="9" data-label="소음성 난청 9급 제8호" data-days="일시금 385일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">9급 제8호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 385일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 80dB 이상이면서 다른 쪽 귀의 평균 청력손실치가 50dB 이상</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한 귀의 청력이 귀에 대고 말하지 아니하고는 큰 소리를 알아듣지 못하고 다른 귀의 청력이 1미터 이상의 거리에서는 보통의 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제9급 제8호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(9)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="9" data-label="소음성 난청 9급 제9호" data-days="일시금 385일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">9급 제9호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 385일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 90dB 이상</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 귀의 청력을 완전히 잃은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제9급 제9호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(9)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="10" data-label="소음성 난청 10급 제6호" data-days="일시금 297일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급 제6호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 297일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 80dB 이상 90dB 미만</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한 귀의 청력이 귀에 대고 말하지 아니하고는 큰 소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제10급 제6호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="10" data-label="소음성 난청 10급 제7호" data-days="일시금 297일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급 제7호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 297일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>두 귀의 평균 청력손실치가 각각 50dB 이상</strong>인 사람, 또는 <strong>두 귀의 평균 청력손실치가 각각 40dB 이상이면서 최고 명료도가 70% 이하</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 두 귀의 청력이 모두 1미터 이상의 거리에서는 보통의 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제10급 제7호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="11" data-label="소음성 난청 11급 제4호" data-days="일시금 220일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">11급 제4호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 220일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 70dB 이상 80dB 미만</strong>인 사람, 또는 <strong>한쪽 귀의 평균 청력손실치가 50dB 이상이면서 최고 명료도가 50% 이하</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한 귀의 청력이 40센티미터 이상의 거리에서는 보통의 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제11급 제4호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(11)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="11" data-label="소음성 난청 11급 제5호" data-days="일시금 220일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">11급 제5호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 220일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>두 귀의 평균 청력손실치가 각각 40dB 이상</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 두 귀의 청력이 모두 1미터 이상의 거리에서는 작은 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제11급 제5호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(11)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="14" data-label="소음성 난청 14급 제1호" data-days="일시금 55일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">14급 제1호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 55일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 귀의 평균 청력손실치가 40dB 이상 70dB 미만</strong>인 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한 귀의 청력이 1미터 이상의 거리에서는 작은 말소리를 알아듣지 못하게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제14급 제1호<br>시행규칙 별표 5 제2호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(14)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="hearing" data-grade="12" data-label="소음성 난청 12급(준용)" data-days="일시금 154일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">소음성 난청</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급(준용)</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 154일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  난청이 있고 <strong>항상 뚜렷한 이명(귀울림)이 있어 객관적 검사로 증명</strong>되는 사람.
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행규칙 별표 5 제2호 다목 2) / 시행령 제53조 제3항</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(12)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <!-- SHOULDER -->
+              <tr class="guide-row" data-cat="shoulder" data-grade="8" data-label="어깨 8급 제6호(인공관절)" data-days="일시금 495일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">8급 제6호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 495일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>어깨 인공관절 또는 인공골두를 삽입해 치환</strong>한 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제6호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(8)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="shoulder" data-grade="8" data-label="어깨 8급 제6호(강직/제한)" data-days="일시금 495일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">8급 제6호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 495일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  어깨관절 <strong>완전강직</strong> 또는 <strong>운동가능영역 4분의 3 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제6호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(8)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="shoulder" data-grade="10" data-label="어깨 10급 제13호" data-days="일시금 297일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급 제13호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 297일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  어깨관절 <strong>운동가능영역 2분의 1 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절의 기능에 뚜렷한 장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제10급 제13호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="shoulder" data-grade="12" data-label="어깨 12급 제9호" data-days="일시금 154일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급 제9호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 154일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  어깨관절 <strong>운동가능영역 4분의 1 이상 제한</strong>된 사람. (회전근개 파열 봉합술 후 가동범위 제한은 이 기준 적용)<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절의 기능에 장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제12급 제9호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(12)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="shoulder" data-grade="14" data-label="어깨 14급 제10호(신경증상)" data-days="12급(154일) / 14급(55일)">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급 15호 / 14급 10호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">12급(154일) / 14급(55일)</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  가동범위 제한 없이 통증·신경증상만 잔존: <strong>때로 노동에 지장이 있는 심한 동통</strong>은 12급 제15호, <strong>항상 동통이 있거나 이상감각</strong>이 있는 경우는 14급 제10호 인정.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 신체 일부에 심한 신경증상이 남은 사람(12급) / 신체 일부에 신경증상이 남은 사람(14급)</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제12급 제15호, 제14급 제10호<br>시행규칙 별표 5 제5호 마목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(14)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">14급 적용</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="shoulder" data-grade="6" data-label="어깨 6급 제6호" data-days="연금 164일 / 일시금 737일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">6급 제6호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 164일 / 일시금 737일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>어깨 + 팔꿈치</strong>(같은 팔 3대 관절 중 2개 관절)를 <strong>제대로 못 쓰게 된 사람</strong> (각 관절 완전강직, 3/4 이상 제한, 또는 인공관절 치환).<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 2개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제6급 제6호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(6)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="shoulder" data-grade="6" data-label="어깨 6급(조정)" data-days="연금 164일 / 일시금 737일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">어깨</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">6급 (조정)</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 164일 / 일시금 737일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>양쪽 어깨 인공관절 치환</strong> (각 8급 제6호): 8급 이상 장해가 둘 이상이므로 <strong>시행령 제53조 제2항에 따라 2개 등급 상향되어 6급으로 조정</strong>됨.
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제6호<br>시행령 제53조 제2항(등급조정)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(6)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <!-- UPPER -->
+              <tr class="guide-row" data-cat="upper" data-grade="8" data-label="상지 8급 제6호" data-days="일시금 495일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">상지 (팔꿈치·손목)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">8급 제6호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 495일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  팔꿈치 또는 손목관절을 <strong>제대로 못 쓰게 된 사람</strong> (인공관절 치환, 완전강직, 또는 운동가능영역 4분의 3 이상 제한).<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제6호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(8)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="upper" data-grade="10" data-label="상지 10급 제13호" data-days="일시금 297일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">상지 (팔꿈치·손목)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급 제13호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 297일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  팔꿈치 또는 손목관절 <strong>운동가능영역 2분의 1 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절의 기능에 뚜렷한 장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제10급 제13호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="upper" data-grade="12" data-label="상지 12급 제9호" data-days="일시금 154일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">상지 (팔꿈치·손목)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급 제9호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 154일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  팔꿈치 또는 손목관절 <strong>운동가능영역 4분의 1 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 팔의 3대 관절 중 1개 관절의 기능에 장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제12급 제9호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(12)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="upper" data-grade="10" data-label="상지 10급(준용)" data-days="일시금 297일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">상지 (전체 준용)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급(준용)</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 297일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>같은 팔의 3대 관절(어깨·팔꿈치·손목) 전부에 장해</strong>(제대로 못 쓰게 된 경우 제외)가 남은 사람.
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 제53조 제1항(준용)<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="upper" data-grade="11" data-label="손가락 관절 운동제한" data-days="손가락 부위별 상이">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">손가락 (운동제한)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10·11·12·14급</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">손가락 부위별 상이</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  손허리손가락관절 또는 제1손가락관절 <strong>운동가능영역 2분의 1 이상 제한</strong> (손가락을 제대로 못 쓰게 된 사람):<br>
+                  • 엄지손가락 1개: <strong>10급 제10호</strong> (297일)<br>
+                  • 둘째손가락 1개: <strong>11급 제9호</strong> (220일)<br>
+                  • 가운데 또는 넷째손가락 1개: <strong>12급 제12호</strong> (154일)<br>
+                  • 새끼손가락 1개: <strong>14급 제6호</strong> (55일)
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 (해당 급수·호)<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(11)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">11급 적용</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="upper" data-grade="13" data-label="손가락 끝마디 관절" data-days="13급(99일) / 14급(55일)">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">손가락 (끝마디)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">13급 8호 / 14급 8호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">13급(99일) / 14급(55일)</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  손가락 <strong>끝마디 관절을 굽히고 펼 수 없게 된 사람</strong> (완전강직 또는 3/4 이상 제한):<br>
+                  • 둘째손가락: <strong>13급 제8호</strong> (99일)<br>
+                  • 엄지·둘째 외 손가락: <strong>14급 제8호</strong> (55일)
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제13급 제8호, 제14급 제8호<br>시행규칙 별표 5 제9호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(13)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">13급 적용</button>
+                </td>
+              </tr>
+
+              <!-- LOWER -->
+              <tr class="guide-row" data-cat="lower" data-grade="8" data-label="무릎 8급 제7호(인공관절)" data-days="일시금 495일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">무릎·하지</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">8급 제7호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 495일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>무릎 인공관절을 삽입해 치환</strong>한 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 다리의 3대 관절 중 1개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제7호<br>시행규칙 별표 5 제10호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(8)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="lower" data-grade="8" data-label="무릎 8급 제7호(강직/제한)" data-days="일시금 495일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">무릎·하지</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">8급 제7호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 495일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  무릎관절 <strong>완전강직</strong> 또는 <strong>운동가능영역 4분의 3 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 다리의 3대 관절 중 1개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제7호<br>시행규칙 별표 5 제10호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(8)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="lower" data-grade="10" data-label="무릎 10급 제14호" data-days="일시금 297일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">무릎·하지</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급 제14호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 297일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  무릎관절 <strong>운동가능영역 2분의 1 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 다리의 3대 관절 중 1개 관절의 기능에 뚜렷한 장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제10급 제14호<br>시행규칙 별표 5 제10호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="lower" data-grade="12" data-label="무릎 12급 제10호" data-days="일시금 154일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">무릎·하지</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급 제10호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 154일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  무릎관절 <strong>운동가능영역 4분의 1 이상 제한</strong>된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 다리의 3대 관절 중 1개 관절의 기능에 장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제12급 제10호<br>시행규칙 별표 5 제10호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(12)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="lower" data-grade="6" data-label="하지 6급 제7호" data-days="연금 164일 / 일시금 737일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">무릎·하지</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">6급 제7호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 164일 / 일시금 737일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>한쪽 다리의 3대 관절 중 2개 관절을 제대로 못 쓰게 된 사람</strong> (예: 무릎 + 발목, 또는 무릎 + 엉덩관절 인공관절 치환 또는 강직).<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 한쪽 다리의 3대 관절 중 2개 관절을 제대로 못 쓰게 된 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제6급 제7호<br>시행규칙 별표 5 제10호 가목</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(6)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="lower" data-grade="6" data-label="양쪽 무릎 6급(조정)" data-days="연금 164일 / 일시금 737일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">무릎·하지</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">6급 (조정)</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">연금 164일 / 일시금 737일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>양쪽 무릎 인공관절 치환</strong> (각 8급 제7호): 8급 이상 장해가 둘 이상이므로 <strong>시행령 제53조 제2항에 따라 2개 등급 상향되어 6급으로 조정</strong>됨.
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제8급 제7호<br>시행령 제53조 제2항(등급조정)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(6)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <!-- SPINE -->
+              <tr class="guide-row" data-cat="spine" data-grade="14" data-label="척추 14급 제11호(시술)" data-days="일시금 55일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">허리(척추)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">14급 제11호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 55일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  척추분절 <strong>비관혈적 수술(시술)</strong>을 받은 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 척주에 경미한 변형장해가 남은 사람 또는 척추의 수상 부위에 비기질적 변화가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제14급 제11호<br>시행규칙 별표 5 제8호 나목 9)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(14)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="spine" data-grade="13" data-label="척추 13급 제12호(관혈수술)" data-days="일시금 99일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">허리(척추)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">13급 제12호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 99일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  척추분절 <strong>관혈적 수술(현미경·내시경 수술 포함)</strong>을 받은 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 척주에 경도의 변형장해가 남은 사람 또는 척주의 수상 부위에 기질적 변화가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제13급 제12호<br>시행규칙 별표 5 제8호 나목 8)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(13)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="spine" data-grade="12" data-label="척추 12급 제16호(경미기능)" data-days="일시금 154일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">허리(척추)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급 제16호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 154일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>경미한 기능장해</strong>: 2개 이상 분절 관혈적 수술, 한 분절 2회 이상 관혈적 수술, 인공디스크 삽입, 준고정술을 받은 사람. 또는 운동가능영역 5~10% 제한된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 척추에 경미한 기능장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제12급 제16호<br>시행규칙 별표 5 제8호 나목 3)~7)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(12)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="spine" data-grade="12" data-label="척추 12급 제16호(신경근)" data-days="일시금 154일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">허리(척추)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">12급 제16호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 154일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>경도의 척추 신경근장해</strong>: 뚜렷한 근위축은 없고 근전도 검사 등에서 신경증상이 확인되는 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 척주에 경도의 척추 신경근장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제12급 제16호<br>시행규칙 별표 5 제8호 라목 5)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(12)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="spine" data-grade="11" data-label="척추 11급 제7호" data-days="일시금 220일">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">허리(척추)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">11급 제7호</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">일시금 220일</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  <strong>경도의 기능장해</strong>: 척추분절 불안정증이 있는 사람, 또는 골유합술 등으로 고정되어 운동가능영역 10~30% 제한된 사람.<br>
+                  <span class="text-slate-600 text-xs">[영 별표 6] 척추에 경도의 기능장해가 남은 사람</span>
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 제11급 제7호<br>시행규칙 별표 5 제8호 나목 3)~7)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(11)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">적용하기</button>
+                </td>
+              </tr>
+
+              <tr class="guide-row" data-cat="spine" data-grade="10" data-label="척추 10급·9급·8급" data-days="10급(297일) / 9급(385일) / 8급(495일)">
+                <td class="py-3 px-3.5 font-bold text-slate-900 bg-slate-50/50">허리(척추)</td>
+                <td class="py-3 px-3.5"><span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-extrabold text-sm">10급 / 9급 / 8급</span></td>
+                <td class="py-3 px-3.5 font-bold text-slate-900 text-sm">10급(297일) ~ 8급(495일)</td>
+                <td class="py-3 px-3.5 leading-relaxed text-sm">
+                  골유합술 등으로 고정되어 운동가능영역이 고도 제한된 경우:<br>
+                  • <strong>중등도의 기능장해 (30~50% 제한)</strong>: <strong>10급 제8호</strong> (297일)<br>
+                  • <strong>고도의 기능장해 (50~70% 제한)</strong>: <strong>9급 제17호</strong> (385일)<br>
+                  • <strong>극도의 기능장해 (70% 이상 제한)</strong>: <strong>8급 제2호</strong> (495일)
+                </td>
+                <td class="py-3 px-3.5 text-xs text-slate-600">시행령 별표 6 (해당 급수·호)<br>시행규칙 별표 5 제8호 나목 3)~7)</td>
+                <td class="py-3 px-3.5 text-center">
+                  <button type="button" onclick="applyGradeFromGuide(10)" class="min-h-[44px] px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold rounded-xl border border-brand-300 transition text-sm">10급 적용</button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- C-1 Expert details for guide table -->
+        <details class="bg-slate-50 rounded-2xl p-4 border border-slate-300">
+          <summary class="cursor-pointer text-sm font-bold text-slate-700 hover:text-slate-900 flex items-center justify-between">
+            <span>▶ 전문가용 법정 원칙 및 판정 기준 상세 보기</span>
+            <span class="text-xs text-slate-500">열기</span>
+          </summary>
+          <div class="mt-3 text-xs text-slate-600 space-y-2 leading-relaxed">
+            <p>• <strong>소음성 난청 공통 판정 원칙:</strong> 순음청력검사의 기도청력역치를 6분법 (a+2b+2c+d)/6으로 계산하되, 가장 좋은 역치를 사용합니다 (소수점 이하 버림, 100dB 이상은 100dB, 0dB 이하는 0dB로 봄, ISO 기준). 급성 재해성 난청은 직업성 난청과 구분합니다.</p>
+            <p>• <strong>관절 운동기능장해 평가 원칙:</strong> "제대로 못 쓰게 된 사람"은 완전강직, 운동가능영역 3/4 이상 제한, 또는 인공골두·인공관절 삽입 치환자입니다. "뚜렷한 장해"는 1/2 이상 제한, "장해"는 1/4 이상 제한입니다.</p>
+            <p>• <strong>복수 장해 등급 조정 원칙 (시행령 제53조 제2항):</strong> 장해가 둘 이상이면 등급을 조정합니다. 8급 이상이 둘 이상이면 2개 등급 상향(예: 양쪽 무릎 인공관절 각 8급 → 6급), 5급 이상 둘 이상은 3개 등급 상향, 13급 이상 둘 이상은 1개 등급 상향 조정합니다.</p>
+          </div>
+        </details>
+
+        <p class="text-sm text-slate-600 font-bold text-center">
+          ※ 장해등급은 치료 종결 후 장해진단서와 공단 심사로 결정되며, 이 표는 법령상 기준을 이해하기 위한 참고용입니다.
+        </p>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: INFO & TIPS -->
+    <div id="tab-info" class="space-y-6 hidden">
+      <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-6">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 mb-1">직업성 질병 산재 신청 방법과 절차</h2>
+          <p class="text-base text-slate-600">
+            직업병(소음성 난청, 근골격계 질환 등)은 일반 사고와 신청 절차가 다릅니다. 차근차근 확인해 보세요.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-5 bg-slate-50 rounded-2xl border border-slate-300 space-y-2">
+            <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 font-black flex items-center justify-center text-lg">1</div>
+            <h4 class="font-extrabold text-slate-900 text-lg">요양급여 신청서 접수</h4>
+            <p class="text-base text-slate-700 leading-relaxed">
+              병원에서 발급받은 진단서와 함께 근로복지공단에 접수합니다. 회사가 도장을 안 찍어줘도 근로자가 직접 신청할 수 있습니다.
+            </p>
+          </div>
+          <div class="p-5 bg-slate-50 rounded-2xl border border-slate-300 space-y-2">
+            <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 font-black flex items-center justify-center text-lg">2</div>
+            <h4 class="font-extrabold text-slate-900 text-lg">재해조사 및 질병판정위원회</h4>
+            <p class="text-base text-slate-700 leading-relaxed">
+              공단에서 일했던 환경과 직업력을 조사하고, 의사·전문가로 구성된 '업무상질병판정위원회'에서 산재 여부를 심사합니다.
+            </p>
+          </div>
+          <div class="p-5 bg-slate-50 rounded-2xl border border-slate-300 space-y-2">
+            <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 font-black flex items-center justify-center text-lg">3</div>
+            <h4 class="font-extrabold text-slate-900 text-lg">승인 후 보상금 지급</h4>
+            <p class="text-base text-slate-700 leading-relaxed">
+              산재가 승인되면 치료 기간의 휴업급여를 지급받고, 치료가 다 끝난 후에도 장해가 남으면 장해진단서를 내서 장해급여를 받습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 text-base text-amber-950 space-y-2 leading-relaxed">
+          <div class="font-extrabold text-lg flex items-center gap-2 text-amber-900">
+            <i class="fa-solid fa-clock-rotate-left"></i> 산재 보상금 청구 기한 (소멸시효)
+          </div>
+          <p class="font-semibold">
+            휴업급여·요양급여 등 일반 보험급여: 3년 / 장해급여·유족급여·장례비·진폐보상연금·진폐유족연금: 5년 (산재보험법 제112조, 기산일은 법에 규정된 것 외에는 민법에 따름)
+          </p>
+        </div>
+
+        <!-- 건설 일용직 평균임금 -->
+        <div class="p-5 bg-white rounded-2xl border-2 border-brand-200 space-y-3 text-base leading-relaxed">
+          <h3 class="font-black text-xl text-slate-900 flex items-center gap-2"><span>👷</span> 건설 일용직 분들의 하루 평균임금 계산법</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-[15px]">
+              <thead>
+                <tr class="bg-slate-100 font-extrabold text-slate-800">
+                  <th class="p-2.5 border border-slate-300">이런 경우</th>
+                  <th class="p-2.5 border border-slate-300">하루 평균임금</th>
+                  <th class="p-2.5 border border-slate-300">근거</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-800">
+                <tr>
+                  <td class="p-2.5 border border-slate-300 font-bold">일당을 받는 일용직 (원칙)</td>
+                  <td class="p-2.5 border border-slate-300">일당 × 0.73</td>
+                  <td class="p-2.5 border border-slate-300 text-sm">시행령 제24조 제1항 제1호, 고용노동부고시 제2025-90호</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 border border-slate-300 font-bold">같은 현장에서 1개월 이상 일했고, 한 달에 약 22일보다 많이 일한 경우</td>
+                  <td class="p-2.5 border border-slate-300">공단에 <strong>‘계수 적용 제외’ 신청</strong> → 실제 임금·일한 날로 계산 가능</td>
+                  <td class="p-2.5 border border-slate-300 text-sm">시행령 제24조 제2항</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 border border-slate-300 font-bold">같은 현장에서 3개월 이상 계속 일한 경우</td>
+                  <td class="p-2.5 border border-slate-300">일용직으로 보지 않음 → 3개월 실제 임금 ÷ 총일수</td>
+                  <td class="p-2.5 border border-slate-300 text-sm">시행령 제23조 제1호 가목</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 border border-slate-300 font-bold">일당제지만 사실상 정규직처럼 일한 경우</td>
+                  <td class="p-2.5 border border-slate-300">일용직으로 보지 않음 → 일반 평균임금</td>
+                  <td class="p-2.5 border border-slate-300 text-sm">시행령 제23조 제1호 나목</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-sm text-slate-600">※ 적용 제외 신청 시에는 출역일보, 노무비 지급명세서, 근로계약서, 임금이 들어온 통장 내역 등 <strong>실제로 일한 날과 받은 임금을 증명하는 서류</strong>가 필요합니다.</p>
+        </div>
+
+        <!-- 퇴직 후 직업병: 평균임금 특례 -->
+        <div class="p-5 bg-white rounded-2xl border-2 border-indigo-200 space-y-2 text-base leading-relaxed">
+          <h3 class="font-black text-xl text-slate-900 flex items-center gap-2"><span>📅</span> 일을 그만둔 뒤에 직업병 진단을 받으셨나요?</h3>
+          <p>소음성 난청·근골격계 질병처럼 오랜 기간 일하면서 생긴 직업병은, 회사를 그만두고 몇 년 뒤에 진단받는 경우가 많습니다. 이때는 하루 평균임금 계산 기준이 일반 사고와 다릅니다.</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>본인의 평균임금이 근로자 보호에 적당하지 않으면, <strong>성별·직종·업종·규모가 비슷한 근로자의 통계 임금</strong>(사업체노동력조사)으로 평균임금을 정할 수 있습니다. <span class="text-sm text-slate-600">(산재보험법 제36조 제6항, 시행령 제25조 제1항·제2항)</span></li>
+            <li>다니던 회사가 이미 휴업·폐업한 뒤 직업병이 확인된 경우 등에는 휴업·폐업일 기준 금액을 진단일까지 증감하여 계산합니다. <span class="text-sm text-slate-600">(시행령 제25조 제5항)</span></li>
+            <li>이 특례는 <strong>본인이 신청하거나 공단이 직권으로</strong> 적용할 수 있습니다. <span class="text-sm text-slate-600">(시행령 제25조 제6항)</span></li>
+          </ul>
+          <p class="text-sm font-bold text-indigo-900 bg-indigo-50 p-3 rounded-xl border border-indigo-200">이 계산기는 입력하신 임금만으로 계산하므로, 특례가 적용되면 실제 금액이 달라질 수 있습니다. 공단 결정 통지서의 평균임금이 너무 낮다고 느껴지면 상담을 받아보세요.</p>
+        </div>
+
+        <!-- 소음성 난청 인정기준 -->
+        <div class="p-5 bg-white rounded-2xl border-2 border-slate-300 space-y-2 text-base leading-relaxed">
+          <h3 class="font-black text-xl text-slate-900 flex items-center gap-2"><span>👂</span> 소음성 난청, 산재로 인정받는 기준</h3>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>85데시벨[dB(A)] 이상</strong>의 시끄러운 소리에 <strong>3년 이상</strong> 노출된 일을 했고,</li>
+            <li>한쪽 귀의 청력손실이 <strong>40데시벨 이상</strong>인 감각신경성 난청이어야 합니다.</li>
+            <li>중이염·돌발성 난청·노인성 난청 등 다른 원인으로 생긴 난청은 제외됩니다.</li>
+            <li>청력검사는 24시간 이상 소음작업을 쉬고, 48시간 이상 간격으로 3회 이상 실시합니다.</li>
+          </ul>
+          <p class="text-sm text-slate-600">근거: 산재보험법 시행령 별표 3 제7호 차목, 시행규칙 별표 5 제2호</p>
+          <p class="text-sm text-slate-700 bg-amber-50 p-3 rounded-xl border border-amber-200"><strong>📢 참고:</strong> 2026년 고용노동부가 ‘진단 당시 만 70세 이상이면 나이에 따른 보정값을 빼고 청력손실을 계산’하는 시행령 개정안을 입법예고한 바 있습니다. 이 페이지 작성 시점(2026. 10.) 현재 시행 중인 시행령 별표 3에는 아직 반영되어 있지 않으며, 시행 여부는 상담 시 다시 확인해 드립니다.</p>
+        </div>
+
+        <!-- 불복 절차 -->
+        <div class="p-5 bg-white rounded-2xl border-2 border-rose-200 space-y-2 text-base leading-relaxed">
+          <h3 class="font-black text-xl text-slate-900 flex items-center gap-2"><span>⚖️</span> 산재가 안 된다고 하거나, 등급·금액이 낮게 나왔다면</h3>
+          <p>공단 결정에 동의할 수 없으면 다시 판단해 달라고 청구할 수 있습니다. <strong class="text-rose-700">기한이 짧으니 결정 통지서를 받으면 바로 상담하세요.</strong></p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>심사청구</strong>: 결정이 있음을 안 날부터 <strong>90일 이내</strong>, 근로복지공단에 (산재보험법 제103조)</li>
+            <li><strong>재심사청구</strong>: 심사 결정을 안 날부터 <strong>90일 이내</strong>, 산업재해보상보험재심사위원회에. 업무상질병판정위원회 심의를 거친 결정은 심사청구 없이 바로 재심사청구 가능 (제106조)</li>
+            <li>행정소송으로 다툴 수도 있습니다.</li>
+          </ul>
+        </div>
+
+        <!-- 상담이 필요한 경우 -->
+        <div class="p-5 bg-emerald-50 rounded-2xl border-2 border-emerald-300 space-y-3 text-base leading-relaxed">
+          <h3 class="font-black text-xl text-emerald-950 flex items-center gap-2"><i class="fa-solid fa-user-tie text-emerald-700"></i> 이런 분은 꼭 전문가 상담을 받아보세요</h3>
+          <ul class="space-y-1.5 text-emerald-950 font-semibold">
+            <li>✔ 여러 건설 현장을 옮겨 다니며 일당을 받으신 분</li>
+            <li>✔ 한 달에 22일 넘게 일했는데 ‘일당 × 0.73’으로만 계산된 분</li>
+            <li>✔ 회사를 그만둔 뒤, 또는 회사가 문을 닫은 뒤 직업병 진단을 받으신 분</li>
+            <li>✔ 양쪽 귀·양쪽 무릎·어깨 등 장해가 두 군데 이상 남은 분 (등급 조정 가능)</li>
+            <li>✔ 만 61세 이상이라 휴업급여가 줄어든 분</li>
+            <li>✔ 불승인되었거나 장해등급이 예상보다 낮게 나온 분 (90일 안에 청구)</li>
+          </ul>
+          <div id="info-office-cta" class="hidden pt-1"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-8 w-full text-sm text-slate-600 space-y-1.5 leading-relaxed">
+    <p id="office-footer-info" class="hidden font-bold text-slate-800"></p>
+    <p>※ 이 계산기는 2026년 법령·고시(고용노동부고시 제2025-84호 최고·최저 보상기준금액, 제2025-90호 통상근로계수)를 기준으로 한 모의계산이며, 실제 보험급여는 근로복지공단의 조사·결정에 따릅니다.</p>
+  </footer>
+
+  <!-- F-1: Mobile Bottom Fixed Bar (sm:hidden) -->
+  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-700 px-4 py-3 flex items-center justify-between shadow-2xl">
+    <div>
+      <span class="text-xs text-slate-300 font-semibold block"><span id="disp-mobile-bar-label">예상 보상금 총액</span></span>
+      <span id="disp-mobile-bar-total" class="text-xl font-black text-emerald-400">0만 원</span>
+    </div>
+    <button type="button" onclick="scrollToResultPanel()" class="min-h-[44px] px-4 py-2 bg-brand-600 hover:bg-brand-500 active:bg-brand-700 rounded-xl font-extrabold text-sm text-white transition flex items-center gap-1.5 shadow-md">
+      <span>자세히 보기</span>
+      <i class="fa-solid fa-arrow-up text-xs"></i>
+    </button>
+  </div>
+
+  <script>
+    // [확정 기준 A] 고용노동부고시 제2025-84호 (2026. 1. 1. ~ 2026. 12. 31.)
+    const STATUTORY_2026 = {
+      MAX_DAILY: 268299,      // 1일 최고 보상기준금액
+      MIN_DAILY: 82560,       // 1일 최저 보상기준금액 (휴업급여·상병보상연금에는 적용하지 않음: 산재보험법 제36조 제7항 단서)
+      MIN_80_PERCENT: 66048,  // 최저 보상기준금액의 80% (저소득 근로자 특례 분기 기준액)
+      DAILY_COEF: 0.73        // 통상근로계수 (고용노동부고시 제2025-90호, 2026. 1. 1. 시행)
+    };
+
+    // [산재보험법 별표 1] 고령자의 휴업급여 지급기준 (제55조 관련) 비율 상수 — 2026. 10. 법령 원문 대조 완료
+    // r1: 제52조 대상(×66/70…50/70), r2: 제54조 제1항 본문·제2항 대상(×86/90…70/90), r3: 제54조 제1항 단서 대상(최저보상기준×80%×86/90…)
+    const AGED_TABLE = {
+      61: { r1: 66 / 70, r2: 86 / 90, r3: 86 / 90 },
+      62: { r1: 62 / 70, r2: 82 / 90, r3: 82 / 90 },
+      63: { r1: 58 / 70, r2: 78 / 90, r3: 78 / 90 },
+      64: { r1: 54 / 70, r2: 74 / 90, r3: 74 / 90 },
+      65: { r1: 50 / 70, r2: 70 / 90, r3: 70 / 90 } // 65세 이후
+    };
+
+    // [산재보험법 별표 2 기준]
+    const DISABILITY_TABLE = {
+      "none": { name: "아직 선택 안 함 (장해급여 제외)", lumpDays: 0, pensionDays: 0, canPension: false, mustPension: false, desc: "장해 등급을 아직 모르면 그대로 두셔도 됩니다. 치료 기간 동안의 휴업급여만 먼저 계산해 드립니다." },
+      "1": { name: "장해 1급", lumpDays: 0, pensionDays: 329, canPension: true, mustPension: true, desc: "생명유지에 상시 개호가 필요한 극심한 중증 (연금 필수)" },
+      "2": { name: "장해 2급", lumpDays: 0, pensionDays: 291, canPension: true, mustPension: true, desc: "수시 개호가 필요하며 취업이 절대 불가한 상태 (연금 필수)" },
+      "3": { name: "장해 3급", lumpDays: 0, pensionDays: 257, canPension: true, mustPension: true, desc: "종신토록 노무에 종사하지 못하는 중증 장해 (연금 필수)" },
+      "4": { name: "장해 4급", lumpDays: 1012, pensionDays: 224, canPension: true, mustPension: false, desc: "노무 종사가 현저히 제한된 상태 (연금/일시금 선택)" },
+      "5": { name: "장해 5급", lumpDays: 869, pensionDays: 193, canPension: true, mustPension: false, desc: "특별히 쉬운 노무 외 종사 불능 (연금/일시금 선택)" },
+      "6": { name: "장해 6급", lumpDays: 737, pensionDays: 164, canPension: true, mustPension: false, desc: "통상 노무가 극히 제한됨 (연금/일시금 선택)" },
+      "7": { name: "장해 7급", lumpDays: 616, pensionDays: 138, canPension: true, mustPension: false, desc: "양쪽 귀 평균 청력손실 70dB 이상 등 (시행령 별표 6 제7급) (연금/일시금 선택)" },
+      "8": { name: "장해 8급", lumpDays: 495, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 한쪽 팔·다리 3대 관절 중 1개 관절을 제대로 못 쓰게 된 경우 등" },
+      "9": { name: "장해 9급", lumpDays: 385, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 양쪽 귀 평균 청력손실 60dB 이상, 척주 고도의 기능장해 등" },
+      "10": { name: "장해 10급", lumpDays: 297, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 한쪽 귀 80~90dB 미만, 양쪽 귀 50dB 이상, 관절 운동가능영역 1/2 이상 제한, 척주 중등도 기능장해 등" },
+      "11": { name: "장해 11급", lumpDays: 220, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 한쪽 귀 70~80dB 미만, 양쪽 귀 40dB 이상, 척주 경도의 기능장해 등" },
+      "12": { name: "장해 12급", lumpDays: 154, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 관절 운동가능영역 1/4 이상 제한, 척주 경미한 기능장해, 신체 일부에 심한 신경증상 등" },
+      "13": { name: "장해 13급", lumpDays: 99, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 척주 경도의 변형장해 또는 수상 부위 기질적 변화(관혈적 수술) 등" },
+      "14": { name: "장해 14급", lumpDays: 55, pensionDays: 0, canPension: false, mustPension: false, desc: "일시금만 지급: 한쪽 귀 40dB 이상 70dB 미만, 신체 일부에 신경증상 등" }
+    };
+
+    // [사무소 정보 설정] 비어있는 항목은 화면에 표시되지 않습니다.
+    // ※ 공인노무사법상 광고 관련 규정을 고려하여 과장 표현(예: "100% 승인")은 넣지 마세요.
+    const OFFICE_INFO = {
+      name: "",       // 상호 (예: "OO노무법인")
+      person: "",     // 담당 공인노무사 (예: "공인노무사 홍길동")
+      tel: "",        // 전화번호 (예: "051-123-4567") — 입력 시 상담 전화 버튼 표시
+      kakao: "",      // 카카오톡 채널/오픈채팅 주소 (예: "https://pf.kakao.com/_xxxx")
+      address: "",    // 사무소 주소
+      note: ""        // 한 줄 안내 (예: "산재 상담은 무료입니다. 평일 09:00~18:00")
+    };
+
+    let currentInputMode = 'monthly';
+    let lastWageMethodLabel = '';
+    let lastCalculatedAgedSummary = "";
+
+    function formatKRW(val) {
+      return Math.round(val).toLocaleString('ko-KR');
+    }
+
+    // Number to Korean unit reader ("350만 원")
+    function formatKoreanManWon(num) {
+      if (!num || num <= 0) return "0원";
+      const man = Math.round(num / 10000);
+      if (man >= 10000) {
+        const eok = Math.floor(man / 10000);
+        const remMan = man % 10000;
+        return remMan > 0 ? `${eok}억 ${remMan.toLocaleString()}만 원` : `${eok}억 원`;
+      }
+      return `${man.toLocaleString()}만 원`;
+    }
+
+    function parseNumericVal(id) {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      const clean = String(el.value || '').replace(/,/g, '').trim();
+      return parseFloat(clean) || 0;
+    }
+
+    function setNumericVal(id, num) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (num === 0 || isNaN(num)) {
+        el.value = '';
+      } else {
+        el.value = Math.round(num).toLocaleString('ko-KR');
+      }
+      updateReader(id, num);
+    }
+
+    function updateReader(id, val) {
+      let readerElId = "";
+      if (id === 'inp-monthly-salary') readerElId = 'read-monthly-salary';
+      if (id === 'inp-annual-bonus') readerElId = 'read-annual-bonus';
+      if (id === 'inp-direct-wage') readerElId = 'read-direct-wage';
+      if (id === 'inp-daily-pay') readerElId = 'read-daily-pay';
+
+      const reader = document.getElementById(readerElId);
+      if (!reader) return;
+
+      if (!val || val <= 0) {
+        reader.innerText = id === 'inp-monthly-salary' ? "금액을 입력하세요" : "";
+      } else {
+        reader.innerText = `= ${formatKoreanManWon(val)}`;
+      }
+    }
+
+    function handleMoneyInput(inputEl) {
+      const rawVal = inputEl.value.replace(/[^0-9]/g, '');
+      const num = parseFloat(rawVal) || 0;
+      inputEl.value = num > 0 ? num.toLocaleString('ko-KR') : '';
+      updateReader(inputEl.id, num);
+      calculateAll();
+    }
+
+    function addMoney(id, addAmount) {
+      const cur = parseNumericVal(id);
+      const next = cur + addAmount;
+      setNumericVal(id, next);
+      calculateAll();
+    }
+
+    function clearMoney(id) {
+      setNumericVal(id, 0);
+      calculateAll();
+    }
+
+    function toggleTermTip(tipId) {
+      const tip = document.getElementById(tipId);
+      if (tip) tip.classList.toggle('hidden');
+    }
+
+    function focusLeaveInput() {
+      const inp = document.getElementById('inp-leave-days');
+      if (inp) {
+        inp.focus();
+        inp.select();
+      }
+    }
+
+    // 일용근로자 평균임금 (산재보험법 제36조 제5항, 시행령 제23조·제24조)
+    //  - 원칙: 일당 × 통상근로계수
+    //  - 근로관계 3개월 이상 계속: 일용근로자로 보지 않음 → 실제 3개월 임금총액 ÷ 총일수
+    //  - 1개월 이상 근로 + 계수 방식이 실제보다 불리: 적용 제외 신청 가능
+    function calculateDailyLaborerWage() {
+      const dailyPay = parseNumericVal('inp-daily-pay');
+      const coefInput = parseFloat(document.getElementById('inp-daily-coef').value);
+      const coef = coefInput > 0 && coefInput <= 1 ? coefInput : STATUTORY_2026.DAILY_COEF;
+      const workdaysRaw = parseInt(document.getElementById('inp-daily-workdays').value, 10);
+      const workdays = workdaysRaw > 0 ? Math.min(workdaysRaw, 31) : 0;
+      const tenureEl = document.querySelector('input[name="daily-tenure"]:checked');
+      const tenure = tenureEl ? tenureEl.value : 'lt1';
+      const box = document.getElementById('daily-method-box');
+      const excludeWrap = document.getElementById('daily-exclude-wrap');
+      const excludeChk = document.getElementById('chk-daily-exclude');
+
+      updateWorkdayChipActiveState(workdays);
+
+      if (dailyPay <= 0) {
+        box.className = 'p-4 rounded-2xl border-2 border-slate-300 bg-slate-50 text-[15px] leading-relaxed space-y-1.5';
+        box.innerHTML = '<p class="font-bold text-slate-700">일당을 입력하시면 계산 방법을 안내해 드립니다.</p>';
+        excludeWrap.classList.add('hidden');
+        lastWageMethodLabel = '일당 기준';
+        return 0;
+      }
+
+      const coefWage = dailyPay * coef;
+      // 실제 근로일수 방식(간이 추정): 월평균 근로일수 × 12개월 ÷ 365일
+      const actualWage = workdays > 0 ? dailyPay * workdays * 12 / 365 : 0;
+      const breakEvenDays = Math.round(coef * 365 / 12 * 10) / 10;
+      const lines = [];
+      let applied = coefWage;
+      let tone = 'brand';
+      excludeWrap.classList.add('hidden');
+
+      lines.push(`<p>• <strong>원칙(일당 × ${coef})</strong>: ${formatKRW(dailyPay)}원 × ${coef} = <strong>${formatKRW(coefWage)}원</strong></p>`);
+      if (workdays > 0) {
+        lines.push(`<p>• <strong>실제 일한 날 기준</strong>(월 ${workdays}일 일한 경우 추정): ${formatKRW(dailyPay)}원 × ${workdays}일 × 12 ÷ 365 = <strong>${formatKRW(actualWage)}원</strong></p>`);
+      }
+
+      if (tenure === 'gte3') {
+        if (workdays > 0) {
+          applied = actualWage;
+          lastWageMethodLabel = `3개월 이상 계속 근로 → 실제 임금 기준 (일당 × 월 ${workdays}일 × 12 ÷ 365)`;
+          lines.unshift('<p class="font-extrabold text-base">✅ 같은 현장에서 3개월 이상 계속 일하셨다면 ‘일용근로자’로 보지 않아 0.73 계수를 쓰지 않고, 실제 받은 3개월 임금으로 계산합니다. (시행령 제23조 제1호 가목)</p>');
+        } else {
+          applied = coefWage;
+          tone = 'amber';
+          lastWageMethodLabel = `일당 × 통상근로계수 ${coef} (임시: 출근 일수 미입력)`;
+          lines.unshift('<p class="font-extrabold text-base">⚠️ 3개월 이상 계속 일하신 경우 실제 임금으로 계산합니다. <u>한 달 평균 출근 일수</u>를 입력해 주세요. 지금은 임시로 0.73 계수로 보여드립니다.</p>');
+        }
+      } else if (tenure === '1to3') {
+        if (workdays > 0 && actualWage > coefWage) {
+          excludeWrap.classList.remove('hidden');
+          const gainPerDay = actualWage - coefWage;
+          lines.unshift(`<p class="font-extrabold text-base">💡 한 달에 ${breakEvenDays}일보다 많이 일하셨다면, 공단에 <u>‘통상근로계수 적용 제외’</u>를 신청해 하루 평균임금을 약 <span class="text-emerald-700">${formatKRW(gainPerDay)}원</span> 더 높게 인정받을 수 있습니다. (시행령 제24조 제2항)</p>`);
+          tone = 'emerald';
+          if (excludeChk.checked) {
+            applied = actualWage;
+            lastWageMethodLabel = `통상근로계수 적용 제외 신청 시 (일당 × 월 ${workdays}일 × 12 ÷ 365)`;
+          } else {
+            lastWageMethodLabel = `일당 × 통상근로계수 ${coef} (적용 제외 신청 시 더 유리할 수 있음)`;
+          }
+        } else {
+          lastWageMethodLabel = `일당 × 통상근로계수 ${coef}`;
+          if (workdays > 0) {
+            lines.unshift('<p class="font-extrabold text-base">✅ 입력하신 출근 일수로는 0.73 계수 방식이 더 유리하거나 같습니다. 그대로 계산합니다.</p>');
+          } else {
+            lines.unshift(`<p class="font-extrabold text-base">한 달 평균 출근 일수를 넣으시면, 실제 일한 날 기준이 더 유리한지 비교해 드립니다. (기준: 월 약 ${breakEvenDays}일)</p>`);
+          }
+        }
+      } else {
+        lastWageMethodLabel = `일당 × 통상근로계수 ${coef}`;
+        lines.unshift('<p class="font-extrabold text-base">✅ 일당 × 0.73 으로 하루 평균임금을 계산합니다.</p>');
+        if (workdays > 0 && actualWage > coefWage) {
+          lines.push('<p class="text-sm text-slate-600">※ 실제 일한 날 기준이 더 많지만, ‘적용 제외 신청’은 같은 현장에서 1개월 이상 일한 경우에만 할 수 있습니다. 여러 현장을 옮겨 다니며 일한 경우 등은 상담으로 확인하세요.</p>');
+        }
+      }
+
+      lines.push('<p class="text-sm text-slate-600">※ 일당제라도 고용 형태가 정규직(상용근로자)과 비슷하면 일용근로자로 보지 않습니다(시행령 제23조 제1호 나목). 일당에 포함되는 수당 범위 등 최종 판단은 공단이 합니다.</p>');
+      lines.push(`<p class="font-black text-lg">→ 이 계산기에 적용한 하루 평균임금: ${formatKRW(applied)}원</p>`);
+
+      const toneClass = {
+        brand: 'border-brand-300 bg-brand-50 text-brand-950',
+        amber: 'border-amber-300 bg-amber-50 text-amber-950',
+        emerald: 'border-emerald-400 bg-emerald-50 text-emerald-950'
+      }[tone];
+      box.className = `p-4 rounded-2xl border-2 ${toneClass} text-[15px] leading-relaxed space-y-1.5`;
+      box.innerHTML = lines.join('');
+      return applied;
+    }
+
+    function setWorkdays(days) {
+      document.getElementById('inp-daily-workdays').value = days;
+      calculateAll();
+    }
+
+    function updateWorkdayChipActiveState(currentDays) {
+      document.querySelectorAll('.workday-chip-btn').forEach(btn => {
+        const active = parseInt(btn.getAttribute('data-days'), 10) === currentDays;
+        btn.classList.toggle('ring-4', active);
+        btn.classList.toggle('ring-brand-500', active);
+        btn.classList.toggle('bg-white', active);
+      });
+    }
+
+    function calculateAll() {
+      try {
+        let rawDailyWage = 0;
+
+        if (currentInputMode === 'monthly') {
+          const monthlySalary = parseNumericVal('inp-monthly-salary');
+          const annualBonus = parseNumericVal('inp-annual-bonus');
+          
+          if (monthlySalary > 0) {
+            const threeMonthsTotal = (monthlySalary * 3) + (annualBonus * 0.25);
+            const periodStart = parseCalendarDate(document.getElementById('inp-wage-period-start').value);
+            const periodEnd = parseCalendarDate(document.getElementById('inp-wage-period-end').value);
+            const periodDays = periodStart && periodEnd ? Math.round((periodEnd - periodStart) / 86400000) + 1 : 0;
+            const periodNote = document.getElementById('wage-period-note');
+            if (periodDays > 0) {
+              rawDailyWage = threeMonthsTotal / periodDays;
+              periodNote.innerText = `산정기간 총 ${periodDays}일 (시작일·종료일 포함)`;
+            } else {
+              periodNote.innerText = '유효한 산정기간을 입력하세요. 종료일은 시작일보다 빠를 수 없습니다.';
+            }
+          } else {
+            rawDailyWage = 0;
+          }
+          lastWageMethodLabel = '월급 기준 (3개월 임금총액 ÷ 산정기간 총일수)';
+        } else if (currentInputMode === 'daily') {
+          rawDailyWage = calculateDailyLaborerWage();
+        } else {
+          rawDailyWage = parseNumericVal('inp-direct-wage');
+          lastWageMethodLabel = '공단 결정 통지서의 평균임금';
+        }
+
+        // 1. 휴업급여용 평균임금 W 산정: 최고 보상기준금액만 적용, 최저는 적용 제외 (법 제36조 제7항 단서)
+        let wageForLeave = rawDailyWage;
+        let capNote = rawDailyWage > 0 ? "2026년 법정 기준 내 정상" : "월급 또는 일당을 입력하시면 계산됩니다";
+
+        if (wageForLeave > STATUTORY_2026.MAX_DAILY) {
+          wageForLeave = STATUTORY_2026.MAX_DAILY;
+          capNote = `최고 보상한도 상한 적용 (${formatKRW(STATUTORY_2026.MAX_DAILY)}원)`;
+        }
+
+        // 장해급여용 평균임금 산정: 최고 및 최저 보상기준금액 모두 적용 (법 제36조 제7항 본문)
+        let wageForDisability = rawDailyWage;
+        if (wageForDisability > STATUTORY_2026.MAX_DAILY) {
+          wageForDisability = STATUTORY_2026.MAX_DAILY;
+        } else if (wageForDisability < STATUTORY_2026.MIN_DAILY && wageForDisability > 0) {
+          wageForDisability = STATUTORY_2026.MIN_DAILY;
+        }
+
+        // DOM 표기 (평균임금)
+        document.getElementById('disp-calc-daily-wage').innerText = rawDailyWage > 0 ? formatKRW(wageForLeave) : '0';
+        document.getElementById('disp-cap-note').innerText = capNote;
+        document.getElementById('disp-item-daily-wage').innerText = rawDailyWage > 0 ? `${formatKRW(wageForLeave)} 원` : '0 원';
+
+        // 2. 휴업급여 계산 (법 제52조, 제54조, 제55조, 별표 1, 시행령 제51조)
+        const minWagePerDay = parseFloat(document.getElementById('inp-min-wage-day').value) || 82560;
+        const basicLeaveRate = 0.70;
+        const leaveDaysVal = document.getElementById('inp-leave-days').value;
+        const leaveDays = parseInt(leaveDaysVal) || 0;
+        const alert3Day = document.getElementById('leave-3day-alert');
+        const alertLongterm = document.getElementById('leave-longterm-alert');
+        const graceNoteEl = document.getElementById('disp-aged-grace-note');
+
+        // Approx month reader
+        const approxMonth = Math.round((leaveDays / 30) * 10) / 10;
+        document.getElementById('disp-approx-months').innerText = leaveDays > 0 ? `약 ${approxMonth}개월` : "약 0개월";
+
+        let totalLeavePay = 0;
+        let leaveDetailHtml = "";
+        let calcDetailsExplanation = [];
+        lastCalculatedAgedSummary = "";
+
+        if (rawDailyWage <= 0) {
+          totalLeavePay = 0;
+          leaveDetailHtml = "월급 또는 일당을 입력하세요";
+          alert3Day.classList.add('hidden');
+          alertLongterm.classList.add('hidden');
+          graceNoteEl.classList.add('hidden');
+          calcDetailsExplanation.push("월급 또는 일당을 입력하시면 치료 기간에 따른 휴업급여와 장해급여 계산 상세 내역이 표시됩니다.");
+        } else {
+          // A. 기준 기본 1일 휴업급여 유형 판정
+          const basicLeaveDaily = wageForLeave * basicLeaveRate; // W * 70%
+          let baseRuleType = 'rule52';
+          let standardDailyPay = 0;
+          let standardRuleLabel = "";
+
+          if (basicLeaveDaily <= STATUTORY_2026.MIN_80_PERCENT) {
+            const ninetyPercentWage = wageForLeave * 0.90;
+
+            if (ninetyPercentWage <= STATUTORY_2026.MIN_80_PERCENT) {
+              baseRuleType = 'rule54_1_main';
+              let appliedAmount = ninetyPercentWage;
+              standardRuleLabel = "제54조제1항본문(90%)";
+
+              if (appliedAmount < minWagePerDay) {
+                appliedAmount = minWagePerDay;
+                standardRuleLabel = "제54조제2항(최저임금보정)";
+              }
+              standardDailyPay = appliedAmount;
+            } else {
+              baseRuleType = 'rule54_1_proviso';
+              standardDailyPay = STATUTORY_2026.MIN_80_PERCENT;
+              standardRuleLabel = "제54조제1항단서(66,048원)";
+            }
+          } else {
+            baseRuleType = 'rule52';
+            standardDailyPay = basicLeaveDaily;
+            standardRuleLabel = "제52조본문(70%)";
+          }
+
+          calcDetailsExplanation.push(`• 평균임금 산정 방식: ${lastWageMethodLabel} → 1일 ${formatKRW(rawDailyWage)}원${rawDailyWage > STATUTORY_2026.MAX_DAILY ? ` (최고 보상기준 ${formatKRW(STATUTORY_2026.MAX_DAILY)}원 적용)` : ''}`);
+          calcDetailsExplanation.push(`• 1일 기준 휴업급여: 하루 평균 임금(${formatKRW(wageForLeave)}원) × 기준 적용 = 1일 ${formatKRW(standardDailyPay)}원 [근거: ${standardRuleLabel}]`);
+
+          // B. 날짜 및 고령자 감액/유예 구간 산정
+          const birthDateStr = document.getElementById('inp-birth-date').value;
+          const leaveStartDateStr = document.getElementById('inp-leave-start-date').value;
+          const chkPost61 = document.getElementById('chk-aged-post61-employed').checked;
+          const chkPrevDisease = document.getElementById('chk-aged-prev-disease-disability').checked;
+          const isGraceEligible = (chkPost61 || chkPrevDisease);
+
+          if (isGraceEligible && leaveStartDateStr) {
+            graceNoteEl.classList.remove('hidden');
+          } else {
+            graceNoteEl.classList.add('hidden');
+          }
+
+          if (birthDateStr && leaveStartDateStr && leaveDays > 0) {
+            const birthDate = new Date(birthDateStr);
+            const leaveStartDate = new Date(leaveStartDateStr);
+
+            const graceEndDate = new Date(leaveStartDate);
+            graceEndDate.setFullYear(graceEndDate.getFullYear() + 2);
+
+            let pre61Days = 0;
+            let post61Days = 0;
+            let graceAppliedDays = 0;
+
+            const agedBreakdown = { 61: 0, 62: 0, 63: 0, 64: 0, 65: 0 };
+
+            for (let i = 0; i < leaveDays; i++) {
+              const curDate = new Date(leaveStartDate);
+              curDate.setDate(curDate.getDate() + i);
+
+              let age = curDate.getFullYear() - birthDate.getFullYear();
+              const monthDiff = curDate.getMonth() - birthDate.getMonth();
+              if (monthDiff < 0 || (monthDiff === 0 && curDate.getDate() < birthDate.getDate())) {
+                age--;
+              }
+
+              if (age < 61) {
+                pre61Days++;
+                totalLeavePay += standardDailyPay;
+              } else {
+                post61Days++;
+                if (isGraceEligible && curDate < graceEndDate) {
+                  graceAppliedDays++;
+                  totalLeavePay += standardDailyPay;
+                } else {
+                  const ageKey = age >= 65 ? 65 : age;
+                  agedBreakdown[ageKey]++;
+                  const ratios = AGED_TABLE[ageKey];
+
+                  let agedDaily = 0;
+                  if (baseRuleType === 'rule52') {
+                    const case1Val = standardDailyPay * ratios.r1;
+                    const case3Val = STATUTORY_2026.MIN_80_PERCENT * ratios.r3;
+                    agedDaily = Math.max(case1Val, case3Val);
+                  } else if (baseRuleType === 'rule54_1_main') {
+                    agedDaily = standardDailyPay * ratios.r2;
+                  } else {
+                    agedDaily = STATUTORY_2026.MIN_80_PERCENT * ratios.r3;
+                  }
+                  totalLeavePay += agedDaily;
+                }
+              }
+            }
+
+            const detailLines = [];
+            if (pre61Days > 0) {
+              detailLines.push(`만 61세 도래 전 ${pre61Days}일 × ${formatKRW(standardDailyPay)}원`);
+            }
+            if (graceAppliedDays > 0) {
+              detailLines.push(`61세 이후 유예 ${graceAppliedDays}일 × ${formatKRW(standardDailyPay)}원 (2년 유예)`);
+            }
+            for (let a = 61; a <= 65; a++) {
+              if (agedBreakdown[a] > 0) {
+                const label = a === 65 ? "65세 이후" : `${a}세`;
+                const r = AGED_TABLE[a];
+                let dailyAgedVal = 0;
+                if (baseRuleType === 'rule52') {
+                  dailyAgedVal = Math.max(standardDailyPay * r.r1, STATUTORY_2026.MIN_80_PERCENT * r.r3);
+                } else if (baseRuleType === 'rule54_1_main') {
+                  dailyAgedVal = standardDailyPay * r.r2;
+                } else {
+                  dailyAgedVal = STATUTORY_2026.MIN_80_PERCENT * r.r3;
+                }
+                detailLines.push(`만 ${label} 구간 ${agedBreakdown[a]}일 × ${formatKRW(dailyAgedVal)}원`);
+              }
+            }
+
+            leaveDetailHtml = detailLines.join("<br>");
+            if (post61Days > 0) {
+              lastCalculatedAgedSummary = `(만 61세 이후 치료 ${post61Days}일 포함: ${isGraceEligible ? '2년 유예 및 ' : ''}고령자 감액 규정 반영)`;
+              calcDetailsExplanation.push(`• 고령자 감액 내역: 만 61세 이후 ${post61Days}일 기간에 대해 연령별 법정 감액 비율이 적용되었습니다.`);
+            }
+
+          } else {
+            totalLeavePay = standardDailyPay * leaveDays;
+            leaveDetailHtml = `1일당 ${formatKRW(standardDailyPay)}원 × ${leaveDays}일`;
+            if (leaveDays > 0) {
+              leaveDetailHtml += `<br><span class="text-xs text-slate-300">생년월일을 넣으시면 61세 이후 감액 여부가 자동 반영됩니다</span>`;
+            }
+          }
+
+          // 취업하지 못한 기간 3일 이내 불지급 (법 제52조 단서)
+          if (leaveDays <= 3) {
+            if (leaveDays > 0) {
+              alert3Day.classList.remove('hidden');
+              leaveDetailHtml = "3일 이내 불지급 (산재보험법 제52조 단서)";
+            } else {
+              alert3Day.classList.add('hidden');
+            }
+            totalLeavePay = 0;
+          } else {
+            alert3Day.classList.add('hidden');
+          }
+
+          if (leaveDays > 365) {
+            alertLongterm.classList.remove('hidden');
+          } else {
+            alertLongterm.classList.add('hidden');
+          }
+        }
+
+        updateLeaveChipActiveState(leaveDays);
+
+        const monthlyLeaveApprox = (leaveDays > 0 && totalLeavePay > 0) ? (totalLeavePay / leaveDays) * 30 : 0;
+
+        document.getElementById('disp-item-leave-detail').innerHTML = leaveDetailHtml;
+        document.getElementById('disp-item-leave-total').innerText = `${formatKRW(totalLeavePay)} 원`;
+        document.getElementById('disp-item-leave-monthly').innerText = rawDailyWage <= 0 ? "월급 또는 일당을 입력하세요" : (leaveDays >= 4 ? `한 달 약 ${formatKRW(monthlyLeaveApprox)}원` : (leaveDays > 0 ? '3일 이내 불지급(0원)' : '해당 없음'));
+
+        // 3. 장해급여 계산
+        const selectedGrade = document.getElementById('sel-disability-grade').value;
+        const gradeInfo = DISABILITY_TABLE[selectedGrade] || DISABILITY_TABLE["none"];
+        
+        const payoutRadios = document.getElementsByName('payout-type');
+        let chosenPayoutType = 'lump';
+        for (const radio of payoutRadios) {
+          if (radio.checked) {
+            chosenPayoutType = radio.value;
+            break;
+          }
+        }
+
+        let disabilityTotal = 0;
+        let isPensionMode = false;
+        let annualPension = 0;
+
+        if (gradeInfo.mustPension) {
+          isPensionMode = true;
+          annualPension = wageForDisability * gradeInfo.pensionDays;
+          disabilityTotal = annualPension;
+        } else if (gradeInfo.canPension && chosenPayoutType === 'pension') {
+          isPensionMode = true;
+          annualPension = wageForDisability * gradeInfo.pensionDays;
+          disabilityTotal = annualPension;
+        } else {
+          disabilityTotal = wageForDisability * gradeInfo.lumpDays;
+        }
+
+        document.getElementById('disp-item-grade-label').innerText = gradeInfo.name;
+        
+        if (selectedGrade === 'none') {
+          document.getElementById('disp-item-grade-days').innerText = "장해급여 제외됨";
+          document.getElementById('disp-item-disability-amount').innerText = "0 원";
+          document.getElementById('disp-item-pension-monthly').innerText = "";
+        } else if (isPensionMode) {
+          document.getElementById('disp-item-grade-days').innerText = `연간 ${gradeInfo.pensionDays}일분 (1년차 연금 기준)`;
+          document.getElementById('disp-item-disability-amount').innerText = `연 ${formatKRW(annualPension)} 원`;
+          document.getElementById('disp-item-pension-monthly').innerText = `(매달 약 ${formatKRW(annualPension / 12)}원 평생 수령)`;
+          calcDetailsExplanation.push(`• 장해급여: ${gradeInfo.name} 연금 적용(하루 평균 임금 × 연간 ${gradeInfo.pensionDays}일분), 매달 약 ${formatKRW(annualPension / 12)}원을 평생 분할 수령합니다.`);
+        } else {
+          document.getElementById('disp-item-grade-days').innerText = `하루 평균 임금 × ${gradeInfo.lumpDays}일`;
+          document.getElementById('disp-item-disability-amount').innerText = `${formatKRW(disabilityTotal)} 원`;
+          document.getElementById('disp-item-pension-monthly').innerText = `(한 번에 목돈 수령)`;
+          calcDetailsExplanation.push(`• 장해급여: ${gradeInfo.name} 일시금 적용(하루 평균 임금 ${formatKRW(wageForDisability)}원 × ${gradeInfo.lumpDays}일 = ${formatKRW(disabilityTotal)}원)`);
+        }
+
+        // F-4 계산 상세 업데이트
+        document.getElementById('disp-calc-details-content').innerHTML = calcDetailsExplanation.map(t => `<p>${t}</p>`).join('');
+
+        // F-2, F-3: Grand Total & Spoken Summary Sentence
+        const grandTotal = isPensionMode ? totalLeavePay : totalLeavePay + disabilityTotal;
+        document.getElementById('disp-total-label').innerText = isPensionMode ? '휴업급여 예상액 (장해연금은 아래에 별도 표시)' : '휴업급여 + 장해일시금 합산 예상액';
+        document.getElementById('disp-mobile-bar-label').innerText = isPensionMode ? '휴업급여 예상액 · 연금 별도' : '예상 보상금 총액';
+        const totalManWonText = rawDailyWage > 0 ? `약 ${formatKoreanManWon(grandTotal)}` : "0만 원";
+
+        document.getElementById('disp-total-manwon').innerText = totalManWonText;
+        document.getElementById('disp-total-amount').innerText = rawDailyWage > 0 ? `(입력값 기준 예상액: ${formatKRW(grandTotal)}원)` : "(월급·일당 또는 하루 평균임금을 입력하세요)";
+        document.getElementById('disp-mobile-bar-total').innerText = totalManWonText;
+
+        // F-3 말하듯이 요약 문장 생성
+        const spokenSummaryEl = document.getElementById('disp-spoken-summary');
+        if (rawDailyWage <= 0) {
+          spokenSummaryEl.innerText = "월급(또는 일당)을 입력하거나 하루 평균임금을 직접 입력하면 예상 금액이 나옵니다.";
+        } else {
+          const sentences = [];
+          if (leaveDays >= 4 && totalLeavePay > 0) {
+            const months = Math.max(1, Math.round(leaveDays / 30));
+            const monthlyLeaveMan = Math.round(monthlyLeaveApprox / 10000);
+            const totalLeaveMan = Math.round(totalLeavePay / 10000);
+            sentences.push(`치료 기간 ${months}개월 동안 한 달에 약 ${monthlyLeaveMan.toLocaleString()}만 원씩, 모두 약 ${totalLeaveMan.toLocaleString()}만 원의 휴업급여를 받을 수 있습니다.`);
+          } else if (leaveDays > 0 && leaveDays <= 3) {
+            sentences.push(`치료 기간이 3일 이하이므로 휴업급여는 지급되지 않습니다.`);
+          }
+
+          if (selectedGrade !== 'none') {
+            if (isPensionMode) {
+              const monthlyPensionMan = Math.round((annualPension / 12) / 10000);
+              sentences.push(`치료가 끝난 뒤 몸에 남은 장해에 대해 매달 약 ${monthlyPensionMan.toLocaleString()}만 원씩 평생 연금을 받을 수 있습니다.`);
+            } else {
+              const disabilityMan = Math.round(disabilityTotal / 10000);
+              sentences.push(`치료가 끝난 뒤 몸에 남은 장해에 대해 한 번에 약 ${disabilityMan.toLocaleString()}만 원을 목돈으로 받을 수 있습니다.`);
+            }
+          } else {
+            sentences.push(`(장해급여는 아직 선택하지 않으셨습니다. 4단계에서 등급을 고르면 함께 합산됩니다.)`);
+          }
+
+          spokenSummaryEl.innerText = sentences.join(' ');
+        }
+
+      } catch (err) {
+        console.error("Calculation Error:", err);
+      }
+    }
+
+    function setInputMode(mode) {
+      currentInputMode = mode;
+      ['monthly', 'daily', 'direct'].forEach(m => {
+        const btn = document.getElementById(`btn-mode-${m}`);
+        const wrap = document.getElementById(`wrapper-${m}-inputs`);
+        const active = m === mode;
+        btn.className = active
+          ? "min-h-[48px] py-2.5 px-3 rounded-xl bg-white text-slate-900 shadow-xs transition border-2 border-brand-600"
+          : "min-h-[48px] py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition";
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        wrap.classList.toggle('hidden', !active);
+      });
+      calculateAll();
+    }
+
+    function setLeaveDays(days) {
+      document.getElementById('inp-leave-days').value = days;
+      calculateAll();
+      showToast(`${days}일로 치료 기간이 설정되었습니다.`);
+    }
+
+    function updateLeaveChipActiveState(currentDays) {
+      const chips = document.querySelectorAll('.leave-chip-btn');
+      chips.forEach(btn => {
+        const btnDays = parseInt(btn.getAttribute('data-days'));
+        if (btnDays && btnDays === currentDays) {
+          btn.classList.add('ring-4', 'ring-brand-500', 'bg-white', 'text-brand-900', 'font-black');
+        } else {
+          btn.classList.remove('ring-4', 'ring-brand-500', 'bg-white', 'text-brand-900', 'font-black');
+        }
+      });
+    }
+
+    function handleGradeChange() {
+      const selectedGrade = document.getElementById('sel-disability-grade').value;
+      const gradeInfo = DISABILITY_TABLE[selectedGrade] || DISABILITY_TABLE["none"];
+      const payoutBox = document.getElementById('payout-type-box');
+      const descText = document.getElementById('grade-desc-text');
+
+      descText.innerText = gradeInfo.desc;
+
+      // 4급~7급만 일시금/연금 라디오박스 노출
+      if (gradeInfo.canPension && !gradeInfo.mustPension) {
+        payoutBox.classList.remove('hidden');
+      } else {
+        payoutBox.classList.add('hidden');
+      }
+
+      calculateAll();
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['calc', 'guide', 'info'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabId) {
+          el.classList.remove('hidden');
+          btn.className = "min-h-[50px] py-3 px-4 border-b-4 border-brand-600 text-brand-700 flex items-center gap-2 whitespace-nowrap text-base sm:text-lg font-black";
+        } else {
+          el.classList.add('hidden');
+          btn.className = "min-h-[50px] py-3 px-4 border-b-4 border-transparent text-slate-600 hover:text-slate-900 flex items-center gap-2 whitespace-nowrap text-base sm:text-lg font-bold";
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function jumpToGuideWithFilter(category) {
+      switchTab('guide');
+      filterGuide(category);
+    }
+
+    function filterGuide(category) {
+      const rows = document.querySelectorAll('.guide-row');
+      const cards = document.querySelectorAll('.guide-mobile-card');
+      const buttons = document.querySelectorAll('.guide-filter-btn');
+
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-filter') === category) {
+          btn.className = "guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-brand-600 text-white transition shadow-xs font-bold";
+        } else {
+          btn.className = "guide-filter-btn min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition font-bold";
+        }
+      });
+
+      rows.forEach(row => {
+        if (category === 'all' || row.getAttribute('data-cat') === category) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-cat') === category) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function applyGradeFromGuide(gradeNum) {
+      switchTab('calc');
+      const select = document.getElementById('sel-disability-grade');
+      select.value = String(gradeNum);
+      handleGradeChange();
+      showToast(`장해 ${gradeNum}급 기준이 계산기에 반영되었습니다.`);
+      scrollToResultPanel();
+    }
+
+    function scrollToResultPanel() {
+      const panel = document.getElementById('panel-result');
+      if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // A-4 Font Size Zoom
+    function toggleFontSize() {
+      try {
+        const root = document.getElementById('root-html');
+        const btnText = document.getElementById('txt-font-toggle');
+        const isZoomed = root.classList.toggle('text-large-mode');
+        
+        if (isZoomed) {
+          btnText.innerText = "보통 글자";
+          localStorage.setItem('sanjae_font_zoom', 'true');
+        } else {
+          btnText.innerText = "글자 크게";
+          localStorage.setItem('sanjae_font_zoom', 'false');
+        }
+      } catch (e) {
+        console.warn("Storage restricted:", e);
+      }
+    }
+
+    function initFontSize() {
+      try {
+        const saved = localStorage.getItem('sanjae_font_zoom');
+        if (saved === 'true') {
+          document.getElementById('root-html').classList.add('text-large-mode');
+          document.getElementById('txt-font-toggle').innerText = "보통 글자";
+        }
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    // D-5 Date Dropdown Generators
+    function initDateDropdowns() {
+      const curYear = new Date().getFullYear();
+      
+      const bYear = document.getElementById('sel-birth-year');
+      const bMonth = document.getElementById('sel-birth-month');
+      const bDay = document.getElementById('sel-birth-day');
+
+      const lYear = document.getElementById('sel-leave-year');
+      const lMonth = document.getElementById('sel-leave-month');
+      const lDay = document.getElementById('sel-leave-day');
+
+      // Birth years: 1940 ~ 2010
+      for (let y = 2010; y >= 1940; y--) {
+        const opt = new Option(`${y}년`, y);
+        if (y === 1965) opt.selected = true; // 1965 default visible
+        bYear.add(opt);
+      }
+
+      // Leave start years: curYear - 5 ~ curYear + 1
+      for (let y = curYear + 1; y >= curYear - 5; y--) {
+        const opt = new Option(`${y}년`, y);
+        if (y === curYear) opt.selected = true;
+        lYear.add(opt);
+      }
+
+      // Months 1 ~ 12
+      for (let m = 1; m <= 12; m++) {
+        bMonth.add(new Option(`${m}월`, m));
+        lMonth.add(new Option(`${m}월`, m));
+      }
+
+      // Days 1 ~ 31
+      for (let d = 1; d <= 31; d++) {
+        bDay.add(new Option(`${d}일`, d));
+        lDay.add(new Option(`${d}일`, d));
+      }
+
+      // Default leave start to today
+      const today = new Date();
+      lMonth.value = today.getMonth() + 1;
+      lDay.value = today.getDate();
+
+      syncBirthDate();
+      syncLeaveDate();
+    }
+
+    function parseCalendarDate(value) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+      if (!match) return null;
+      const [, y, m, d] = match.map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d));
+      return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d ? date : null;
+    }
+
+    function syncCalendarDropdowns(prefix, hiddenId) {
+      const year = document.getElementById(`sel-${prefix}-year`);
+      const month = document.getElementById(`sel-${prefix}-month`);
+      const day = document.getElementById(`sel-${prefix}-day`);
+      const previousDay = Number(day.value) || 1;
+      const maxDay = new Date(Date.UTC(Number(year.value), Number(month.value), 0)).getUTCDate();
+      day.innerHTML = '';
+      for (let d = 1; d <= maxDay; d++) day.add(new Option(`${d}일`, d));
+      day.value = String(Math.min(previousDay, maxDay));
+      const dateText = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day.value).padStart(2, '0')}`;
+      document.getElementById(hiddenId).value = parseCalendarDate(dateText) ? dateText : '';
+      calculateAll();
+    }
+
+    function syncBirthDate() {
+      syncCalendarDropdowns('birth', 'inp-birth-date');
+    }
+
+    function syncLeaveDate() {
+      syncCalendarDropdowns('leave', 'inp-leave-start-date');
+    }
+
+    // E-3 Build Mobile Cards matching table rows
+    function buildMobileGuideCards() {
+      const cardContainer = document.getElementById('guide-mobile-cards');
+      const tableRows = document.querySelectorAll('#guide-table-body tr.guide-row');
+      
+      cardContainer.innerHTML = '';
+      tableRows.forEach(row => {
+        const cat = row.getAttribute('data-cat');
+        const grade = row.getAttribute('data-grade');
+        const label = row.getAttribute('data-label') || "장해 기준";
+        const days = row.getAttribute('data-days') || "";
+        const descHtml = row.cells[3].innerHTML;
+        const lawHtml = row.cells[4].innerHTML;
+
+        const card = document.createElement('div');
+        card.className = "guide-mobile-card p-5 bg-white rounded-3xl border-2 border-slate-300 shadow-sm space-y-3";
+        card.setAttribute('data-cat', cat);
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 border-b border-slate-200 pb-3">
+            <div>
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">${row.cells[0].innerText}</span>
+              <h4 class="text-xl font-black text-slate-900">${label}</h4>
+            </div>
+            <span class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 text-indigo-900 font-extrabold text-sm rounded-xl">${days}</span>
+          </div>
+          <div class="text-base text-slate-800 leading-relaxed font-semibold">
+            ${descHtml}
+          </div>
+          <details class="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 border border-slate-200">
+            <summary class="cursor-pointer font-bold flex items-center justify-between">
+              <span>법적 근거 보기</span>
+              <span>열기</span>
+            </summary>
+            <div class="mt-2 text-slate-500 leading-snug">
+              ${lawHtml}
+            </div>
+          </details>
+          <button type="button" onclick="applyGradeFromGuide(${grade})" class="w-full min-h-[48px] py-3 bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-base rounded-2xl transition shadow-xs flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i>
+            <span>이 등급으로 계산하기</span>
+          </button>
+        `;
+        cardContainer.appendChild(card);
+      });
+    }
+
+    // G-1 Office Phone Button setup
+    function setupOfficeInfo() {
+      const tel = (OFFICE_INFO.tel || '').trim();
+      const kakao = (OFFICE_INFO.kakao || '').trim();
+      const telHref = `tel:${tel.replace(/[^0-9]/g, '')}`;
+      const safeKakao = /^https:\/\//.test(kakao) ? kakao : '';
+
+      if (tel) {
+        const wrapper = document.getElementById('office-call-wrapper');
+        const btn = document.getElementById('btn-office-call');
+        const text = document.getElementById('txt-office-call');
+        btn.href = telHref;
+        text.innerText = `📞 ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}상담 전화하기 (${tel})`;
+        wrapper.classList.remove('hidden');
+      }
+      if (!tel) document.getElementById('btn-office-call').classList.add('hidden');
+      if (safeKakao) {
+        const kakaoBtn = document.getElementById('btn-office-kakao');
+        kakaoBtn.href = safeKakao;
+        kakaoBtn.classList.remove('hidden');
+        document.getElementById('office-call-wrapper').classList.remove('hidden');
+      }
+
+      // 안내 탭 하단 상담 버튼
+      const infoCta = document.getElementById('info-office-cta');
+      if (tel || safeKakao) {
+        infoCta.innerHTML = '';
+        if (tel) {
+          const a = document.createElement('a');
+          a.href = telHref;
+          a.className = 'w-full min-h-[52px] py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-lg transition flex items-center justify-center gap-2 shadow-lg';
+          a.textContent = `📞 ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}상담 전화 (${tel})`;
+          infoCta.appendChild(a);
+        }
+        if (safeKakao) {
+          const k = document.createElement('a');
+          k.href = safeKakao;
+          k.target = '_blank';
+          k.rel = 'noopener';
+          k.className = 'mt-2 w-full min-h-[52px] py-3.5 px-4 bg-yellow-300 hover:bg-yellow-200 text-slate-900 rounded-2xl font-black text-lg transition flex items-center justify-center gap-2';
+          k.textContent = '💬 카카오톡으로 상담하기';
+          infoCta.appendChild(k);
+        }
+        infoCta.classList.remove('hidden');
+      }
+
+      // 하단 사무소 정보
+      const footerLines = [OFFICE_INFO.name, OFFICE_INFO.person, tel && `전화 ${tel}`, OFFICE_INFO.address, OFFICE_INFO.note]
+        .map(v => (v || '').trim()).filter(Boolean);
+      if (footerLines.length) {
+        const footerEl = document.getElementById('office-footer-info');
+        footerEl.textContent = footerLines.join(' · ');
+        footerEl.classList.remove('hidden');
+      }
+    }
+
+    function shareWithFamily() {
+      const summaryText = buildSummaryText();
+      if (navigator.share) {
+        navigator.share({
+          title: '산재 직업병 예상 보상금 계산 결과',
+          text: summaryText
+        }).catch(err => {
+          if (err.name !== 'AbortError') copySummaryText();
+        });
+      } else {
+        copySummaryText();
+      }
+    }
+
+    function buildSummaryText() {
+      const dailyWage = document.getElementById('disp-calc-daily-wage').innerText;
+      const leaveTotal = document.getElementById('disp-item-leave-total').innerText;
+      const grade = document.getElementById('disp-item-grade-label').innerText;
+      const disabilityAmount = document.getElementById('disp-item-disability-amount').innerText;
+      const grandTotal = document.getElementById('disp-total-amount').innerText;
+      const spokenSummary = document.getElementById('disp-spoken-summary').innerText;
+
+      return `[산재 직업병 예상 보상금 모의계산 결과]
+• 한 줄 요약: ${spokenSummary}
+• 하루 평균 임금: ${dailyWage}원 (${lastWageMethodLabel || '입력값 기준'})
+• 치료 기간 휴업급여: ${leaveTotal}
+• 몸에 남은 장해급여(${grade}): ${disabilityAmount}
+----------------------------------------
+${document.getElementById('disp-total-label').innerText}: ${grandTotal} (비과세·압류금지)
+* 실제 공단 심의 결과에 따라 다를 수 있습니다.${OFFICE_INFO.tel ? `\n* 상담: ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}${OFFICE_INFO.tel}` : ''}`;
+    }
+
+    function copySummaryText() {
+      const summaryText = buildSummaryText();
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = summaryText;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+
+      showToast("예상 결과 요약이 복사되었습니다. 카톡이나 문자에 붙여넣으세요!");
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toast-message');
+      msg.innerText = message;
+      toast.classList.remove('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-100px]', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2800);
+    }
+
+    function printResult() {
+      window.print();
+    }
+
+    // Initialize on window load
+    window.addEventListener('DOMContentLoaded', () => {
+      initFontSize();
+      initDateDropdowns();
+      buildMobileGuideCards();
+      setupOfficeInfo();
+      calculateAll();
+      handleGradeChange();
+    });
+  </script>
+</body>
+</html>

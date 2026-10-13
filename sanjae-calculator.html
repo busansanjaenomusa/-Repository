@@ -766,19 +766,16 @@
 
           </div>
 
-          <!-- G-2: Public Center Call (tel link) -->
-          <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 flex items-center gap-4 text-base text-slate-700 shadow-xs">
-            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-2xl shrink-0">
-              <i class="fa-solid fa-phone-volume"></i>
+          <!-- G-2: 카카오톡 오픈채팅 상담 -->
+          <a href="https://open.kakao.com/o/gL5e0stf" target="_blank" rel="noopener" class="bg-yellow-300 hover:bg-yellow-200 active:bg-yellow-400 rounded-2xl border-2 border-yellow-400 p-4 flex items-center gap-4 text-slate-900 shadow-xs transition">
+            <div class="w-12 h-12 rounded-xl bg-slate-900 text-yellow-300 flex items-center justify-center text-2xl shrink-0">
+              <i class="fa-solid fa-comment"></i>
             </div>
             <div>
-              <p class="font-extrabold text-slate-900">근로복지공단 대표상담 콜센터</p>
-              <a href="tel:15880075" class="font-black text-brand-700 hover:underline text-lg flex items-center gap-1">
-                <span>1588-0075</span>
-                <span class="text-xs text-slate-500 font-normal">(터치하여 바로 통화)</span>
-              </a>
+              <p class="font-black text-lg">카카오톡 오픈채팅 상담</p>
+              <p class="text-base font-bold">대신노무법인 송정 · 누르면 채팅방이 열립니다</p>
             </div>
-          </div>
+          </a>
 
         </div>
 
@@ -1566,6 +1563,10 @@
             <span class="text-2xl sm:text-3xl font-black tracking-wide">010-9310-8998</span>
           </span>
         </a>
+        <a href="https://open.kakao.com/o/gL5e0stf" target="_blank" rel="noopener" class="md:col-span-2 min-h-[68px] p-4 bg-yellow-300 hover:bg-yellow-200 active:bg-yellow-400 text-slate-900 rounded-2xl transition flex items-center justify-center gap-3 border-2 border-yellow-400">
+          <i class="fa-solid fa-comment text-3xl shrink-0"></i>
+          <span class="text-xl sm:text-2xl font-black">카카오톡 오픈채팅으로 상담하기</span>
+        </a>
       </div>
     </section>
     <p id="office-footer-info" class="hidden font-bold text-slate-800"></p>
@@ -1635,7 +1636,7 @@
       person: "",     // 담당 공인노무사 (예: "공인노무사 홍길동")
       tel: "051-832-7227",       // 산재 무료상담 대표번호 — 상담 전화 버튼 표시
       telAfterHours: "010-9310-8998", // 업무시간 외(주말 포함) 산재상담
-      kakao: "",      // 카카오톡 채널/오픈채팅 주소 (예: "https://pf.kakao.com/_xxxx")
+      kakao: "https://open.kakao.com/o/gL5e0stf", // 카카오톡 오픈채팅 상담방
       address: "",    // 사무소 주소
       note: ""        // 한 줄 안내 (하단 연락처 카드에 이미 표시되므로 비워둠)
     };
@@ -2623,12 +2624,8 @@
         afterBtn.classList.remove('hidden');
         document.getElementById('office-call-wrapper').classList.remove('hidden');
       }
-      if (safeKakao) {
-        const kakaoBtn = document.getElementById('btn-office-kakao');
-        kakaoBtn.href = safeKakao;
-        kakaoBtn.classList.remove('hidden');
-        document.getElementById('office-call-wrapper').classList.remove('hidden');
-      }
+      // 결과 패널 바로 아래에 카카오톡 상담 카드가 있으므로 패널 안 카카오 버튼은 링크만 맞춰 두고 숨김 유지
+      if (safeKakao) document.getElementById('btn-office-kakao').href = safeKakao;
 
       // 안내 탭 하단 상담 버튼
       const infoCta = document.getElementById('info-office-cta');
@@ -2700,19 +2697,26 @@
 • 몸에 남은 장해급여(${grade}): ${disabilityAmount}
 ----------------------------------------
 ${document.getElementById('disp-total-label').innerText}: ${grandTotal} (비과세·압류금지)
-* 실제 공단 심의 결과에 따라 다를 수 있습니다.${OFFICE_INFO.tel ? `\n* 산재 무료상담: ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}${OFFICE_INFO.tel}` : ''}${OFFICE_INFO.telAfterHours ? `\n* 업무시간 외(주말 포함): ${OFFICE_INFO.telAfterHours}` : ''}`;
+* 실제 공단 심의 결과에 따라 다를 수 있습니다.${OFFICE_INFO.tel ? `\n* 산재 무료상담: ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}${OFFICE_INFO.tel}` : ''}${OFFICE_INFO.telAfterHours ? `\n* 업무시간 외(주말 포함): ${OFFICE_INFO.telAfterHours}` : ''}${OFFICE_INFO.kakao ? `\n* 카카오톡 상담: ${OFFICE_INFO.kakao}` : ''}`;
     }
 
     function copySummaryText() {
       const summaryText = buildSummaryText();
-      const dummy = document.createElement("textarea");
-      document.body.appendChild(dummy);
-      dummy.value = summaryText;
-      dummy.select();
-      document.execCommand("copy");
-      document.body.removeChild(dummy);
-
-      showToast("예상 결과 요약이 복사되었습니다. 카톡이나 문자에 붙여넣으세요!");
+      const done = () => showToast("예상 결과 요약이 복사되었습니다. 카톡이나 문자에 붙여넣으세요!");
+      const legacyCopy = () => {
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = summaryText;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        done();
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(summaryText).then(done).catch(legacyCopy);
+      } else {
+        legacyCopy();
+      }
     }
 
     function showToast(message) {

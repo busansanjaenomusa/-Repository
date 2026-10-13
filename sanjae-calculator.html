@@ -137,8 +137,14 @@
         <!-- Left Input Form (7 Cols) -->
         <div class="lg:col-span-7 space-y-6">
           
+          <!-- PART A 안내: 1~3단계 = 휴업급여 -->
+          <div class="flex items-center gap-3 px-1">
+            <span class="px-3.5 py-1.5 rounded-full bg-emerald-600 text-white font-black text-base sm:text-lg shadow-xs">첫째 · 휴업급여</span>
+            <span class="text-base sm:text-lg font-bold text-slate-700">1~3단계를 채우면 <u>치료 기간에 받는 돈</u>이 계산됩니다</span>
+          </div>
+
           <!-- STEP 1: 내 월급 -->
-          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+          <div id="step-1" class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5 scroll-mt-24">
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
               <div class="flex items-center gap-3">
                 <span class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">1</span>
@@ -174,12 +180,12 @@
             <!-- Monthly inputs -->
             <div id="wrapper-monthly-inputs" class="space-y-5">
               <div class="p-4 bg-brand-50 border border-brand-200 rounded-2xl space-y-3">
-                <p class="font-extrabold text-brand-950">평균임금 산정기간을 입력해 주세요</p>
+                <p class="font-extrabold text-brand-950">평균임금 산정기간 <span class="text-sm font-bold text-slate-600">(모르면 비워두세요)</span></p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label class="font-bold">시작일 (포함)<input type="date" id="inp-wage-period-start" onchange="calculateAll()" class="block w-full mt-1 min-h-[48px] border border-slate-300 rounded-xl p-2 bg-white"></label>
                   <label class="font-bold">종료일 (포함)<input type="date" id="inp-wage-period-end" onchange="calculateAll()" class="block w-full mt-1 min-h-[48px] border border-slate-300 rounded-xl p-2 bg-white"></label>
                 </div>
-                <p id="wage-period-note" role="status" class="text-sm text-brand-950">공단에서 적용할 산정기간의 시작일과 종료일을 입력하세요.</p>
+                <p id="wage-period-note" role="status" class="text-sm text-brand-950">날짜를 모르시면 비워두셔도 됩니다. 3개월을 평균 91.25일로 보고 계산합니다.</p>
                 <p class="text-sm text-slate-700">입력한 기간의 실제 일수로 나눕니다. 월급 3개월분과 연간 상여금·연차수당의 1/4을 사용하는 간편 추정 방식입니다. 제외기간 등이 있는 경우에는 공단 통지서의 하루 평균임금을 직접 입력하세요.</p>
               </div>
               <div>
@@ -371,7 +377,7 @@
           </div>
 
           <!-- STEP 2: 일 못 한 기간 (치료/입원/통원 기간) -->
-          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+          <div id="step-2" class="scroll-mt-24 bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
               <div class="flex items-center gap-3">
                 <span class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">2</span>
@@ -423,7 +429,7 @@
           </div>
 
           <!-- STEP 3: 내 나이 -->
-          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+          <div id="step-3" class="scroll-mt-24 bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
               <div class="flex items-center gap-3">
                 <span class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">3</span>
@@ -508,8 +514,24 @@
             </div>
           </div>
 
+          <!-- 휴업급여 확인 버튼 (1~3단계 마무리) -->
+          <div class="space-y-3">
+            <button type="button" id="btn-check-leave" onclick="revealLeaveResult()"
+              class="w-full min-h-[64px] py-4 px-5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-3xl font-black text-xl sm:text-2xl transition flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/30">
+              <i class="fa-solid fa-file-invoice-dollar text-2xl"></i>
+              <span>휴업급여 확인하기</span>
+            </button>
+            <div id="leave-result-card" class="hidden scroll-mt-24" aria-live="polite"></div>
+          </div>
+
+          <!-- PART B 안내: 4단계 = 장해급여 -->
+          <div class="flex items-center gap-3 px-1 pt-4 border-t-2 border-dashed border-slate-300">
+            <span class="px-3.5 py-1.5 rounded-full bg-indigo-600 text-white font-black text-base sm:text-lg shadow-xs">둘째 · 장해급여</span>
+            <span class="text-base sm:text-lg font-bold text-slate-700">치료가 끝난 뒤 <u>몸에 남은 장해</u>로 받는 돈입니다</span>
+          </div>
+
           <!-- STEP 4: 장해 정도 -->
-          <div class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5">
+          <div id="step-4" class="bg-white rounded-3xl border border-slate-300 p-5 sm:p-7 shadow-xs space-y-5 scroll-mt-24">
             <div class="flex items-center justify-between border-b border-slate-200 pb-3">
               <div class="flex items-center gap-3">
                 <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-base font-extrabold shadow-xs">4</span>
@@ -602,6 +624,16 @@
                 <span id="grade-desc-text" class="font-bold">장해 등급을 아직 모르면 그대로 두셔도 됩니다. 치료 기간 동안의 휴업급여만 먼저 계산해 드립니다.</span>
               </div>
             </div>
+          </div>
+
+          <!-- 장해급여 확인 버튼 (4단계 마무리) -->
+          <div class="space-y-3">
+            <button type="button" id="btn-check-disability" onclick="revealDisabilityResult()"
+              class="w-full min-h-[64px] py-4 px-5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-3xl font-black text-xl sm:text-2xl transition flex items-center justify-center gap-3 shadow-lg shadow-indigo-600/30">
+              <i class="fa-solid fa-file-signature text-2xl"></i>
+              <span>장해급여 확인하기</span>
+            </button>
+            <div id="disability-result-card" class="hidden scroll-mt-24" aria-live="polite"></div>
           </div>
         </div>
 
@@ -721,6 +753,10 @@
                 <a id="btn-office-call" href="#" class="w-full min-h-[52px] py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-lg transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30">
                   <i class="fa-solid fa-phone text-xl"></i>
                   <span id="txt-office-call">📞 상담 전화하기</span>
+                </a>
+                <a id="btn-office-call-after" href="#" class="hidden mt-3 w-full min-h-[52px] py-3.5 px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl font-black text-base sm:text-lg transition flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-mobile-screen-button text-xl"></i>
+                  <span id="txt-office-call-after">업무시간 외(주말 포함) 상담</span>
                 </a>
                 <a id="btn-office-kakao" href="#" target="_blank" rel="noopener" class="hidden mt-3 w-full min-h-[52px] py-3.5 px-4 bg-yellow-300 hover:bg-yellow-200 text-slate-900 rounded-2xl font-black text-lg transition flex items-center justify-center gap-2">
                   <span>💬 카카오톡으로 상담하기</span>
@@ -1503,7 +1539,35 @@
 
   </main>
 
-  <footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-8 w-full text-sm text-slate-600 space-y-1.5 leading-relaxed">
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 pb-8 w-full text-sm text-slate-600 space-y-3 leading-relaxed">
+    <!-- 상담 연락처 (터치하면 바로 전화 연결) -->
+    <section id="contact" class="bg-white rounded-3xl border-2 border-emerald-300 p-5 sm:p-7 shadow-xs space-y-4" aria-label="상담 연락처">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl shrink-0">
+          <i class="fa-solid fa-phone-volume"></i>
+        </div>
+        <div>
+          <p class="text-xl sm:text-2xl font-black text-slate-900">대신노무법인 송정</p>
+          <p class="text-base font-bold text-emerald-800">산재 상담은 무료입니다 · 아래 번호를 누르면 바로 전화가 걸립니다</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <a href="tel:0518327227" class="min-h-[76px] p-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-2xl transition flex items-center gap-4 shadow-lg shadow-emerald-600/30">
+          <i class="fa-solid fa-phone text-3xl shrink-0"></i>
+          <span class="flex flex-col">
+            <span class="text-base font-bold text-emerald-50">산재 무료상담</span>
+            <span class="text-2xl sm:text-3xl font-black tracking-wide">051-832-7227</span>
+          </span>
+        </a>
+        <a href="tel:01093108998" class="min-h-[76px] p-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white rounded-2xl transition flex items-center gap-4 shadow-lg">
+          <i class="fa-solid fa-mobile-screen-button text-3xl shrink-0"></i>
+          <span class="flex flex-col">
+            <span class="text-base font-bold text-slate-200">업무시간 외(주말 포함) 산재상담</span>
+            <span class="text-2xl sm:text-3xl font-black tracking-wide">010-9310-8998</span>
+          </span>
+        </a>
+      </div>
+    </section>
     <p id="office-footer-info" class="hidden font-bold text-slate-800"></p>
     <p>※ 이 계산기는 2026년 법령·고시(고용노동부고시 제2025-84호 최고·최저 보상기준금액, 제2025-90호 통상근로계수)를 기준으로 한 모의계산이며, 실제 보험급여는 근로복지공단의 조사·결정에 따릅니다.</p>
   </footer>
@@ -1514,10 +1578,16 @@
       <span class="text-xs text-slate-300 font-semibold block"><span id="disp-mobile-bar-label">예상 보상금 총액</span></span>
       <span id="disp-mobile-bar-total" class="text-xl font-black text-emerald-400">0만 원</span>
     </div>
+    <div class="flex items-center gap-2">
+    <a href="tel:0518327227" aria-label="대신노무법인 송정 산재 무료상담 전화 051-832-7227" class="min-h-[44px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-xl font-extrabold text-sm text-white transition flex items-center gap-1.5 shadow-md">
+      <i class="fa-solid fa-phone"></i>
+      <span>무료상담</span>
+    </a>
     <button type="button" onclick="scrollToResultPanel()" class="min-h-[44px] px-4 py-2 bg-brand-600 hover:bg-brand-500 active:bg-brand-700 rounded-xl font-extrabold text-sm text-white transition flex items-center gap-1.5 shadow-md">
       <span>자세히 보기</span>
       <i class="fa-solid fa-arrow-up text-xs"></i>
     </button>
+    </div>
   </div>
 
   <script>
@@ -1561,13 +1631,22 @@
     // [사무소 정보 설정] 비어있는 항목은 화면에 표시되지 않습니다.
     // ※ 공인노무사법상 광고 관련 규정을 고려하여 과장 표현(예: "100% 승인")은 넣지 마세요.
     const OFFICE_INFO = {
-      name: "",       // 상호 (예: "OO노무법인")
+      name: "대신노무법인 송정", // 상호
       person: "",     // 담당 공인노무사 (예: "공인노무사 홍길동")
-      tel: "",        // 전화번호 (예: "051-123-4567") — 입력 시 상담 전화 버튼 표시
+      tel: "051-832-7227",       // 산재 무료상담 대표번호 — 상담 전화 버튼 표시
+      telAfterHours: "010-9310-8998", // 업무시간 외(주말 포함) 산재상담
       kakao: "",      // 카카오톡 채널/오픈채팅 주소 (예: "https://pf.kakao.com/_xxxx")
       address: "",    // 사무소 주소
-      note: ""        // 한 줄 안내 (예: "산재 상담은 무료입니다. 평일 09:00~18:00")
+      note: ""        // 한 줄 안내 (하단 연락처 카드에 이미 표시되므로 비워둠)
     };
+
+    // 평균임금 산정기간을 입력하지 않았을 때 쓰는 3개월 평균 일수 (365 ÷ 4)
+    const DEFAULT_PERIOD_DAYS = 91.25;
+
+    // 단계별 [확인하기] 버튼이 보여줄 최근 계산 결과
+    let lastCalc = null;
+    let leaveResultRevealed = false;
+    let disabilityResultRevealed = false;
 
     let currentInputMode = 'monthly';
     let lastWageMethodLabel = '';
@@ -1777,16 +1856,25 @@
             const periodEnd = parseCalendarDate(document.getElementById('inp-wage-period-end').value);
             const periodDays = periodStart && periodEnd ? Math.round((periodEnd - periodStart) / 86400000) + 1 : 0;
             const periodNote = document.getElementById('wage-period-note');
+            const anyDateEntered = periodStart || periodEnd
+              || document.getElementById('inp-wage-period-start').value
+              || document.getElementById('inp-wage-period-end').value;
             if (periodDays > 0) {
               rawDailyWage = threeMonthsTotal / periodDays;
               periodNote.innerText = `산정기간 총 ${periodDays}일 (시작일·종료일 포함)`;
+              lastWageMethodLabel = `월급 기준 (3개월 임금총액 ÷ 산정기간 ${periodDays}일)`;
             } else {
-              periodNote.innerText = '유효한 산정기간을 입력하세요. 종료일은 시작일보다 빠를 수 없습니다.';
+              // 산정기간 미입력(또는 잘못 입력) 시: 3개월 = 365 ÷ 4 = 91.25일로 간편 추정
+              rawDailyWage = threeMonthsTotal / DEFAULT_PERIOD_DAYS;
+              periodNote.innerText = anyDateEntered
+                ? '날짜가 올바르지 않습니다(종료일이 시작일보다 빠름 등). 우선 3개월을 91.25일로 보고 계산했습니다.'
+                : '날짜를 비워두셔서 3개월을 평균 91.25일로 보고 계산했습니다.';
+              lastWageMethodLabel = '월급 기준 (3개월 임금총액 ÷ 91.25일, 산정기간 미입력 간편 추정)';
             }
           } else {
             rawDailyWage = 0;
+            lastWageMethodLabel = '월급 기준';
           }
-          lastWageMethodLabel = '월급 기준 (3개월 임금총액 ÷ 산정기간 총일수)';
         } else if (currentInputMode === 'daily') {
           rawDailyWage = calculateDailyLaborerWage();
         } else {
@@ -1830,6 +1918,8 @@
         document.getElementById('disp-approx-months').innerText = leaveDays > 0 ? `약 ${approxMonth}개월` : "약 0개월";
 
         let totalLeavePay = 0;
+        let leaveDailyPay = 0;
+        let leaveRuleLabel = "";
         let leaveDetailHtml = "";
         let calcDetailsExplanation = [];
         lastCalculatedAgedSummary = "";
@@ -1872,6 +1962,8 @@
             standardRuleLabel = "제52조본문(70%)";
           }
 
+          leaveDailyPay = standardDailyPay;
+          leaveRuleLabel = standardRuleLabel;
           calcDetailsExplanation.push(`• 평균임금 산정 방식: ${lastWageMethodLabel} → 1일 ${formatKRW(rawDailyWage)}원${rawDailyWage > STATUTORY_2026.MAX_DAILY ? ` (최고 보상기준 ${formatKRW(STATUTORY_2026.MAX_DAILY)}원 적용)` : ''}`);
           calcDetailsExplanation.push(`• 1일 기준 휴업급여: 하루 평균 임금(${formatKRW(wageForLeave)}원) × 기준 적용 = 1일 ${formatKRW(standardDailyPay)}원 [근거: ${standardRuleLabel}]`);
 
@@ -2094,9 +2186,144 @@
           spokenSummaryEl.innerText = sentences.join(' ');
         }
 
+        lastCalc = {
+          rawDailyWage, wageForLeave, wageForDisability,
+          leaveDays, leaveDailyPay, leaveRuleLabel, totalLeavePay, monthlyLeaveApprox, leaveDetailHtml,
+          agedSummary: lastCalculatedAgedSummary,
+          selectedGrade, gradeInfo, isPensionMode, annualPension, disabilityTotal
+        };
+        if (leaveResultRevealed) renderLeaveResult();
+        if (disabilityResultRevealed) renderDisabilityResult();
+
       } catch (err) {
         console.error("Calculation Error:", err);
       }
+    }
+
+    // ───────── 단계별 [확인하기] 결과 카드 (산정서 형식) ─────────
+    function receiptRow(label, value, strong) {
+      return `<div class="flex items-start justify-between gap-3 py-2.5 border-b border-dashed border-slate-300">
+        <span class="text-base sm:text-lg font-bold text-slate-700">${label}</span>
+        <span class="text-right text-base sm:text-lg ${strong ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">${value}</span>
+      </div>`;
+    }
+
+    function needInputCard(tone, message, stepId, stepLabel) {
+      return `<div class="p-5 rounded-3xl border-2 border-amber-400 bg-amber-50 text-amber-950 space-y-3">
+        <p class="text-lg sm:text-xl font-black flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-amber-600 mt-1"></i><span>${message}</span></p>
+        <button type="button" onclick="scrollToStep('${stepId}')" class="w-full min-h-[52px] py-3 px-4 bg-amber-500 hover:bg-amber-400 text-white rounded-2xl font-black text-lg transition">${stepLabel}로 가기</button>
+      </div>`;
+    }
+
+    function scrollToStep(stepId) {
+      const el = document.getElementById(stepId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderLeaveResult() {
+      const card = document.getElementById('leave-result-card');
+      const c = lastCalc;
+      if (!c || c.rawDailyWage <= 0) {
+        card.innerHTML = needInputCard('amber', '1단계에서 월급(또는 일당)을 먼저 입력해 주세요.', 'step-1', '1단계');
+        return false;
+      }
+      if (c.leaveDays <= 0) {
+        card.innerHTML = needInputCard('amber', '2단계에서 치료 때문에 일 못 한 기간(일수)을 입력해 주세요.', 'step-2', '2단계');
+        return false;
+      }
+      const notPaid = c.leaveDays <= 3;
+      const rows = [
+        receiptRow('하루 평균임금', `${formatKRW(c.wageForLeave)}원`),
+        receiptRow('하루 휴업급여', notPaid ? '-' : `${formatKRW(c.leaveDailyPay)}원`),
+        receiptRow('일 못 한 기간', `${c.leaveDays.toLocaleString()}일 (약 ${Math.round(c.leaveDays / 30 * 10) / 10}개월)`),
+      ];
+      if (!notPaid && c.monthlyLeaveApprox > 0) rows.push(receiptRow('한 달에 약', `${formatKRW(c.monthlyLeaveApprox)}원`));
+      card.innerHTML = `<div class="rounded-3xl border-4 border-emerald-500 bg-white shadow-xl overflow-hidden">
+        <div class="bg-emerald-600 text-white px-5 py-3 flex items-center justify-between">
+          <span class="text-lg sm:text-xl font-black"><i class="fa-solid fa-receipt mr-1.5"></i>휴업급여 예상 산정서</span>
+          <span class="text-sm font-bold text-emerald-50">1~3단계 기준</span>
+        </div>
+        <div class="p-5 space-y-1">
+          ${rows.join('')}
+          <div class="pt-4 text-center space-y-1">
+            <p class="text-base sm:text-lg font-bold text-slate-600">휴업급여 예상액</p>
+            <p class="text-4xl sm:text-5xl font-black text-emerald-700 tracking-tight">${notPaid ? '0원' : '약 ' + formatKoreanManWon(c.totalLeavePay)}</p>
+            <p class="text-base font-bold text-slate-600">(${formatKRW(c.totalLeavePay)}원)</p>
+          </div>
+          ${notPaid ? '<p class="mt-3 p-3 bg-rose-50 border-2 border-rose-300 rounded-2xl text-base font-bold text-rose-800">치료 기간이 3일 이하이면 휴업급여가 지급되지 않습니다. (산재보험법 제52조 단서)</p>' : ''}
+          ${c.agedSummary ? `<p class="mt-3 p-3 bg-purple-50 border-2 border-purple-200 rounded-2xl text-base font-bold text-purple-900">${c.agedSummary}</p>` : ''}
+          ${!notPaid && c.leaveDetailHtml ? `<p class="mt-3 text-sm text-slate-600 leading-relaxed">계산 내역: ${c.leaveDetailHtml}<br>적용 기준: ${c.leaveRuleLabel}</p>` : ''}
+          <p class="mt-2 text-sm text-slate-500">※ 실제 금액은 근로복지공단이 결정합니다. 소득세가 붙지 않습니다.</p>
+        </div>
+      </div>
+      <button type="button" onclick="scrollToStep('step-4')" class="mt-3 w-full min-h-[56px] py-3 px-4 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-300 text-indigo-900 rounded-2xl font-black text-lg transition flex items-center justify-center gap-2">
+        <span>다음: 장해급여 알아보기 (4단계)</span><i class="fa-solid fa-arrow-down"></i>
+      </button>`;
+      return true;
+    }
+
+    function renderDisabilityResult() {
+      const card = document.getElementById('disability-result-card');
+      const c = lastCalc;
+      if (!c || c.rawDailyWage <= 0) {
+        card.innerHTML = needInputCard('amber', '1단계에서 월급(또는 일당)을 먼저 입력해 주세요. 장해급여도 하루 평균임금으로 계산합니다.', 'step-1', '1단계');
+        return false;
+      }
+      if (c.selectedGrade === 'none') {
+        card.innerHTML = needInputCard('amber', '위에서 예상되는 장해 등급을 골라 주세요. 모르시면 아픈 부위 버튼을 눌러 등급표를 보세요.', 'step-4', '4단계');
+        return false;
+      }
+      const g = c.gradeInfo;
+      const minApplied = c.rawDailyWage < STATUTORY_2026.MIN_DAILY;
+      const rows = [
+        receiptRow('장해 등급', g.name, true),
+        receiptRow('하루 평균임금', `${formatKRW(c.wageForDisability)}원${minApplied ? '<br><span class="text-sm font-bold text-indigo-700">(최저 보상기준금액 적용)</span>' : ''}`),
+        receiptRow('지급 방식', c.isPensionMode ? '매달 연금으로 평생' : '한 번에 목돈(일시금)'),
+        receiptRow('지급 일수', c.isPensionMode ? `1년에 ${g.pensionDays}일분` : `${g.lumpDays}일분`),
+      ];
+      const big = c.isPensionMode
+        ? `<p class="text-base sm:text-lg font-bold text-slate-600">장해연금 예상액 (매달)</p>
+           <p class="text-4xl sm:text-5xl font-black text-indigo-700 tracking-tight">약 ${formatKoreanManWon(c.annualPension / 12)}</p>
+           <p class="text-base font-bold text-slate-600">(1년에 ${formatKRW(c.annualPension)}원)</p>`
+        : `<p class="text-base sm:text-lg font-bold text-slate-600">장해일시금 예상액</p>
+           <p class="text-4xl sm:text-5xl font-black text-indigo-700 tracking-tight">약 ${formatKoreanManWon(c.disabilityTotal)}</p>
+           <p class="text-base font-bold text-slate-600">(${formatKRW(c.wageForDisability)}원 × ${g.lumpDays}일 = ${formatKRW(c.disabilityTotal)}원)</p>`;
+      const both = !c.isPensionMode && c.totalLeavePay > 0
+        ? `<div class="mt-4 p-4 bg-slate-900 text-white rounded-2xl text-center space-y-1">
+             <p class="text-base font-bold text-slate-300">휴업급여 + 장해일시금 합계</p>
+             <p class="text-3xl sm:text-4xl font-black text-emerald-400">약 ${formatKoreanManWon(c.totalLeavePay + c.disabilityTotal)}</p>
+           </div>` : '';
+      card.innerHTML = `<div class="rounded-3xl border-4 border-indigo-500 bg-white shadow-xl overflow-hidden">
+        <div class="bg-indigo-600 text-white px-5 py-3 flex items-center justify-between">
+          <span class="text-lg sm:text-xl font-black"><i class="fa-solid fa-receipt mr-1.5"></i>장해급여 예상 산정서</span>
+          <span class="text-sm font-bold text-indigo-50">4단계 기준</span>
+        </div>
+        <div class="p-5 space-y-1">
+          ${rows.join('')}
+          <div class="pt-4 text-center space-y-1">${big}</div>
+          ${both}
+          <p class="mt-3 text-sm text-slate-500">※ 장해등급은 치료가 끝난 뒤 장해진단서와 공단 심사로 정해집니다. 실제 금액은 근로복지공단이 결정합니다.</p>
+        </div>
+      </div>`;
+      return true;
+    }
+
+    function revealLeaveResult() {
+      calculateAll();
+      leaveResultRevealed = true;
+      const card = document.getElementById('leave-result-card');
+      renderLeaveResult();
+      card.classList.remove('hidden');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function revealDisabilityResult() {
+      calculateAll();
+      disabilityResultRevealed = true;
+      const card = document.getElementById('disability-result-card');
+      renderDisabilityResult();
+      card.classList.remove('hidden');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function setInputMode(mode) {
@@ -2207,7 +2434,7 @@
       select.value = String(gradeNum);
       handleGradeChange();
       showToast(`장해 ${gradeNum}급 기준이 계산기에 반영되었습니다.`);
-      scrollToResultPanel();
+      revealDisabilityResult();
     }
 
     function scrollToResultPanel() {
@@ -2387,6 +2614,15 @@
         wrapper.classList.remove('hidden');
       }
       if (!tel) document.getElementById('btn-office-call').classList.add('hidden');
+      const telAfter = (OFFICE_INFO.telAfterHours || '').trim();
+      const telAfterHref = `tel:${telAfter.replace(/[^0-9]/g, '')}`;
+      if (telAfter) {
+        const afterBtn = document.getElementById('btn-office-call-after');
+        afterBtn.href = telAfterHref;
+        document.getElementById('txt-office-call-after').innerText = `🌙 업무시간 외(주말 포함) 상담 (${telAfter})`;
+        afterBtn.classList.remove('hidden');
+        document.getElementById('office-call-wrapper').classList.remove('hidden');
+      }
       if (safeKakao) {
         const kakaoBtn = document.getElementById('btn-office-kakao');
         kakaoBtn.href = safeKakao;
@@ -2405,6 +2641,13 @@
           a.textContent = `📞 ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}상담 전화 (${tel})`;
           infoCta.appendChild(a);
         }
+        if (telAfter) {
+          const b = document.createElement('a');
+          b.href = telAfterHref;
+          b.className = 'mt-2 w-full min-h-[52px] py-3.5 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black text-lg transition flex items-center justify-center gap-2';
+          b.textContent = `🌙 업무시간 외(주말 포함) 산재상담 (${telAfter})`;
+          infoCta.appendChild(b);
+        }
         if (safeKakao) {
           const k = document.createElement('a');
           k.href = safeKakao;
@@ -2418,7 +2661,8 @@
       }
 
       // 하단 사무소 정보
-      const footerLines = [OFFICE_INFO.name, OFFICE_INFO.person, tel && `전화 ${tel}`, OFFICE_INFO.address, OFFICE_INFO.note]
+      // 상호·전화번호는 하단 연락처 카드에 크게 표시되므로 여기서는 나머지만 표시
+      const footerLines = [OFFICE_INFO.person, OFFICE_INFO.address, OFFICE_INFO.note]
         .map(v => (v || '').trim()).filter(Boolean);
       if (footerLines.length) {
         const footerEl = document.getElementById('office-footer-info');
@@ -2456,7 +2700,7 @@
 • 몸에 남은 장해급여(${grade}): ${disabilityAmount}
 ----------------------------------------
 ${document.getElementById('disp-total-label').innerText}: ${grandTotal} (비과세·압류금지)
-* 실제 공단 심의 결과에 따라 다를 수 있습니다.${OFFICE_INFO.tel ? `\n* 상담: ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}${OFFICE_INFO.tel}` : ''}`;
+* 실제 공단 심의 결과에 따라 다를 수 있습니다.${OFFICE_INFO.tel ? `\n* 산재 무료상담: ${OFFICE_INFO.name ? OFFICE_INFO.name + ' ' : ''}${OFFICE_INFO.tel}` : ''}${OFFICE_INFO.telAfterHours ? `\n* 업무시간 외(주말 포함): ${OFFICE_INFO.telAfterHours}` : ''}`;
     }
 
     function copySummaryText() {

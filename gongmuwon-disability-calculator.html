@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공무원 장해급여 예상액 및 결정액 검산 계산기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, Roboto, sans-serif;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- 헤더 영역 -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800">
+            공인노무사 실무 검산용
+          </span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+            확인된 항목 + 미확인 항목 구분 표시
+          </span>
+        </div>
+        <h1 class="text-lg sm:text-xl font-bold text-slate-900 mt-1">공무원 재해보상 장해급여 산정 및 검산기</h1>
+      </div>
+      <p class="text-xs text-slate-500 max-w-xs sm:text-right">
+        공단 결정통지서 검산 및 예상액 산정 (등급 판정 미포함)
+      </p>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 sm:py-8 flex-1 w-full space-y-6">
+
+    <!-- 상단 툴바: 빠른 예시 불러오기 및 초기화 -->
+    <div class="flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2.5 rounded-lg border border-slate-200 text-xs">
+      <span class="font-semibold text-slate-700">⚡ 빠른 테스트 데이터 로드:</span>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button type="button" onclick="loadSample(1)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition font-medium">
+          기본 예시 (500만원 / 11급)
+        </button>
+        <button type="button" onclick="loadSample(2)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition font-medium">
+          단수 발생 예시 (333.3만원 / 11급)
+        </button>
+        <button type="button" onclick="loadSample(3)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition font-medium">
+          부동소수 검증 예시 (164만원 / 8급)
+        </button>
+        <button type="button" onclick="resetAllInputs()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded transition font-medium">
+          전체 초기화
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 1: 기준소득월액 결정 모드 선택 -->
+    <section class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">1</span>
+          <h2 class="font-bold text-slate-900">기준소득월액 결정 (산정 방식 선택)</h2>
+        </div>
+        <div id="modeAccuracyBadge" class="self-start sm:self-auto"></div>
+      </div>
+
+      <!-- 모드 선택 탭 -->
+      <div class="grid grid-cols-3 border-b border-slate-200 text-xs sm:text-sm font-medium text-center">
+        <button id="tabModeA" onclick="switchMode('A')" class="py-3 px-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/40 font-semibold transition-colors">
+          모드 A. 직접 입력 <span class="hidden sm:inline text-xs text-indigo-500 font-normal">[원문/통지서]</span>
+        </button>
+        <button id="tabModeB" onclick="switchMode('B')" class="py-3 px-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors">
+          모드 B. 기여금 역산 <span class="hidden sm:inline text-xs text-slate-400 font-normal">[근사값]</span>
+        </button>
+        <button id="tabModeC" onclick="switchMode('C')" class="py-3 px-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors">
+          모드 C. 과세소득 추정 <span class="hidden sm:inline text-xs text-slate-400 font-normal">[시행령 제5조]</span>
+        </button>
+      </div>
+
+      <!-- 입력 폼 컨테이너 -->
+      <div class="p-4 sm:p-6 space-y-4">
+
+        <!-- 공통 입력 안내 -->
+        <div class="text-[11px] text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-1 bg-slate-50 px-3 py-1.5 rounded border border-slate-200">
+          <span>ℹ️ 모든 금액 입력란은 쉼표(,) 포함 복사·입력이 지원되며, 소수점 입력 시 정수(원 단위)로 자동 버림 처리됩니다.</span>
+          <span class="shrink-0 font-medium text-slate-600">출처 표기: [원문] / [외부확인] / [미확인]</span>
+        </div>
+
+        <!-- 모드 A: 직접 입력 -->
+        <div id="formModeA" class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label for="inputBaseIncomeA" class="text-sm font-semibold text-slate-800">
+              기준소득월액 (원) <span class="text-red-500">*</span>
+            </label>
+            <span class="text-xs text-slate-500">성격: <strong class="text-emerald-700">결정통지서 직접 입력 [정확]</strong></span>
+          </div>
+          <div class="relative">
+            <input type="text" id="inputBaseIncomeA" placeholder="예: 5,000,000"
+              class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden text-base sm:text-lg font-medium pr-10"
+              oninput="handleAmountInput(this); recalculate();">
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">원</span>
+          </div>
+          <p class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            💡 <strong>출처 안내:</strong> 공단 결정통지서, 장해결정 사정내역서, 또는 개인 기준소득월액 통지서에 기재된 금액을 입력하십시오.
+          </p>
+        </div>
+
+        <!-- 모드 B: 기여금 역산 -->
+        <div id="formModeB" class="space-y-3 hidden">
+          <div class="flex items-center justify-between">
+            <label for="inputContribution" class="text-sm font-semibold text-slate-800">
+              월 연금 기여금 (원) <span class="text-red-500">*</span>
+            </label>
+            <span class="text-xs text-slate-500">근거: <strong class="text-amber-700">[원문: 공무원연금법 제67조② 기여금 9%]</strong></span>
+          </div>
+          <div class="relative">
+            <input type="text" id="inputContribution" placeholder="예: 450,000"
+              class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden text-base sm:text-lg font-medium pr-10"
+              oninput="handleAmountInput(this); recalculate();">
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">원</span>
+          </div>
+          <div class="text-xs space-y-1 bg-amber-50 text-amber-900 p-3 rounded-lg border border-amber-200">
+            <p><strong>역산 공식:</strong> 기준소득월액 = 월 기여금 ÷ 0.09 (정밀 산식: 기여금 × 100 ÷ 9)</p>
+            <p class="text-amber-800">⚠️ <strong>주의 1:</strong> 기여금 납부기간이 36년을 초과하면 기여금을 내지 않으므로 역산할 수 없습니다 <span class="font-bold">[원문: 공무원연금법 제67조①]</span>.</p>
+            <p class="text-amber-800">⚠️ <strong>주의 2 (과소 산정 위험):</strong> 기여금은 기준소득월액이 공무원 전체 평균액의 160%를 넘으면 160% 금액을 기준으로 걷습니다 <span class="font-bold">[원문: 공무원연금법 제67조②]</span>. 장해급여에는 이 상한이 적용되지 않으므로(재해보상법 제10조②는 제3~5호 급여만 대상), 고소득자의 역산값은 실제 기준소득월액보다 낮을 수 있습니다.</p>
+            <p class="text-amber-800">⚠️ <strong>주의 3:</strong> 나누어떨어지지 않을 때의 단수 처리 기준(절사 vs 반올림)은 확인되지 않았습니다 <span class="font-bold">[미확인 ⑤]</span>.</p>
+          </div>
+        </div>
+
+        <!-- 모드 C: 과세소득 추정 -->
+        <div id="formModeC" class="space-y-4 hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500">산정 규칙: <strong class="text-slate-700">[원문: 공무원연금법 시행령 제5조①1호, 제4조②]</strong></span>
+            <span class="text-xs text-slate-500">성격: <strong class="text-blue-700">참고용 추정</strong></span>
+          </div>
+          <div class="text-[11px] space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-slate-600">
+            <p><strong>산식:</strong> (과세소득 − 본인 8개 보수 + 직종·직급별 8개 보수 평균액) ÷ 12 × (1 + 공무원보수인상률)</p>
+            <p>⚠️ 전년도 1.1.~12.31. 계속 근무하지 않았거나 시간제근무기간이 있는 경우(시행령 제5조①2호 → 제6조·제7조), 승진·전직·보직변경으로 봉급월액이 증가한 경우(제5조③ 증가분 가산)는 <strong>본 계산기에 반영되지 않습니다</strong>.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="taxableIncome" class="block text-xs font-semibold text-slate-700 mb-1">
+                ① 전년도 과세소득 연간 합계 (비과세 제외) (원) <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="taxableIncome" placeholder="예: 60,000,000"
+                class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                oninput="handleAmountInput(this); recalculate();">
+            </div>
+            <div>
+              <label for="own8Pay" class="block text-xs font-semibold text-slate-700 mb-1">
+                ② 본인 8개 보수 연간 합계 (원)
+              </label>
+              <input type="text" id="own8Pay" placeholder="예: 12,000,000"
+                class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                oninput="handleAmountInput(this); recalculate();">
+            </div>
+            <div>
+              <label for="avg8Pay" class="block text-xs font-semibold text-slate-700 mb-1">
+                ③ 직종·직급별 8개 보수 평균액 (연간) (원) <span class="text-slate-400 font-normal">[실제값 미확인 ⑥]</span>
+              </label>
+              <input type="text" id="avg8Pay" placeholder="예: 10,000,000"
+                class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                oninput="handleAmountInput(this); recalculate();">
+            </div>
+            <div>
+              <label for="salaryIncreaseRate" class="block text-xs font-semibold text-slate-700 mb-1">
+                ④ 당해연도 공무원보수인상률 (%) <span class="text-slate-400 font-normal">[매년 1.25.까지 관보 고시 — 시행령 제5조⑤]</span>
+              </label>
+              <input type="number" id="salaryIncreaseRate" placeholder="예: 2.5" step="0.1" value="0"
+                class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                oninput="recalculate()">
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100">
+            <label for="eventMonth" class="block text-xs font-semibold text-slate-700 mb-1">
+              장해급여 사유발생월 <span class="text-slate-400 font-normal">(퇴직 후 장해의 사유발생월 판단은 [미확인 ②])</span>
+            </label>
+            <select id="eventMonth" onchange="recalculate()" class="w-full sm:w-1/2 p-2.5 border border-slate-300 rounded-lg text-sm bg-white">
+              <option value="5" selected>5월 ~ 12월 (통상 산정기간)</option>
+              <option value="1">1월</option>
+              <option value="2">2월</option>
+              <option value="3">3월</option>
+              <option value="4">4월</option>
+            </select>
+            <!-- 1~4월 특례 경고문 -->
+            <div id="specialMonthWarning" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-2">
+              <p>⚠️ <strong>1~4월 사유발생 특례 [원문: 공무원연금법 시행령 제5조②]:</strong> 해당 연도 직종·직급별 8개 보수 평균액이 결정되기 전이므로, 위 ③ 평균액 대신 <strong>전년도 기준소득월액의 기초가 된 8개 보수 평균액</strong>에 <strong>전년도 호봉승급률</strong>을 적용합니다.</p>
+              <p class="font-mono text-[11px]">(과세소득 − 본인 8개 보수) ÷ 12 × (1 + 보수인상률) + 전년도 기초 8개 보수 평균액 ÷ 12 × (1 + 전년도 호봉승급률)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label for="prevAvg8Pay" class="block text-[11px] font-semibold mb-1">⑤ 전년도 기준소득월액 기초 8개 보수 평균액 (연간) (원) <span class="text-red-500">*</span></label>
+                  <input type="text" id="prevAvg8Pay" placeholder="예: 9,600,000"
+                    class="w-full p-2 border border-amber-300 rounded-lg text-sm bg-white"
+                    oninput="handleAmountInput(this); recalculate();">
+                </div>
+                <div>
+                  <label for="stepIncreaseRate" class="block text-[11px] font-semibold mb-1">⑥ 직종·직급별 전년도 호봉승급률 (%)</label>
+                  <input type="number" id="stepIncreaseRate" placeholder="예: 3.0" step="0.1" value="0"
+                    class="w-full p-2 border border-amber-300 rounded-lg text-sm bg-white"
+                    oninput="recalculate()">
+                </div>
+              </div>
+              <p class="text-[10px] text-amber-800">※ 8개 보수 평균액은 비과세소득을 제외한 금액으로 입력하십시오. 평균액·승급률 실제값은 계산기에 내장하지 않았습니다 [실제값 미확인 ⑥].</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 유효성 검증 경고 배너 -->
+        <div id="validationWarning" class="hidden p-3 rounded-lg border text-xs"></div>
+
+        <!-- 확정된 기준소득월액 표시 박스 -->
+        <div class="mt-4 p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">적용 기준소득월액</span>
+            </div>
+            <div class="text-2xl font-bold text-indigo-950 mt-0.5 flex flex-wrap items-baseline gap-2">
+              <div>
+                <span id="displayBaseIncome">입력 필요</span> <span id="displayBaseIncomeUnit" class="text-base font-medium text-indigo-700"></span>
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-slate-600 sm:text-right space-y-0.5">
+            <div>적용 모드: <span id="displayModeName" class="font-semibold text-slate-800">모드 A (직접 입력)</span></div>
+            <!-- 정정 반영: 법 제10조 확인 상태로 정확히 표기 -->
+            <div>근거 상태: <span class="text-emerald-700 font-semibold">[원문: 공무원 재해보상법 제10조①] 사유발생월 기준소득월액</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- STEP 2: 장해등급 및 추가 설정 -->
+    <section class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 sm:p-6 space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs">2</span>
+          <h2 class="font-bold text-slate-900">장해등급 선택 및 세부 옵션</h2>
+        </div>
+        <span class="text-xs text-slate-500">
+          근거: <strong class="text-slate-700">[원문: 공무원 재해보상법 제29조① · GEPS 안내 페이지]</strong>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- 등급 선택 -->
+        <div>
+          <label for="disabilityGrade" class="block text-sm font-semibold text-slate-800 mb-1">
+            결정 장해등급 <span class="text-red-500">*</span>
+          </label>
+          <select id="disabilityGrade" onchange="recalculate()" class="w-full p-3 border border-slate-300 rounded-lg text-slate-900 text-base font-medium bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-hidden">
+            <option value="1">제1급 (지급비율 52.00%) [원문: GEPS 안내]</option>
+            <option value="2">제2급 (지급비율 48.75%) [원문: GEPS 안내]</option>
+            <option value="3">제3급 (지급비율 45.50%) [원문: GEPS 안내]</option>
+            <option value="4">제4급 (지급비율 42.25%) [원문: GEPS 안내]</option>
+            <option value="5">제5급 (지급비율 39.00%) [원문: GEPS 안내]</option>
+            <option value="6">제6급 (지급비율 35.75%) [원문: GEPS 안내]</option>
+            <option value="7">제7급 (지급비율 32.50%) [원문: GEPS 안내]</option>
+            <option value="8">제8급 (지급비율 29.25%) [원문: GEPS 안내]</option>
+            <option value="9">제9급 (지급비율 26.00%) [원문: GEPS 안내]</option>
+            <option value="10">제10급 (지급비율 22.75%) [원문: GEPS 안내]</option>
+            <option value="11" selected>제11급 (지급비율 19.50%) [원문: GEPS 안내]</option>
+            <option value="12">제12급 (지급비율 16.25%) [원문: GEPS 안내]</option>
+            <option value="13">제13급 (지급비율 13.00%) [원문: GEPS 안내]</option>
+            <option value="14">제14급 (지급비율 9.75%) [원문: GEPS 안내]</option>
+          </select>
+        </div>
+
+        <!-- 상한·하한(160%/50%) 미적용 안내: 재해보상법 제10조②는 제1항 제3~5호 급여만 대상 -->
+        <div class="bg-slate-50 p-3.5 rounded-lg border border-slate-200">
+          <div class="text-xs font-bold text-slate-800 flex flex-wrap items-center gap-1.5">
+            최고·최저 보상기준 금액(평균의 160% / 50%)
+            <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 font-semibold">[원문: 재해보상법 제10조②]</span>
+          </div>
+          <p class="text-[11px] text-slate-600 mt-1 leading-normal">
+            제10조제2항은 "같은 항 <strong>제3호부터 제5호까지</strong>의 급여"(순직유족연금, 위험직무순직유족연금, 사망조위금)에만 적용됩니다. 장해급여는 제1항 <strong>제1호</strong>이므로 <strong>상한·하한을 적용하지 않습니다</strong>. 본 계산기는 입력한 기준소득월액을 그대로 사용합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 퇴직 후 시점 알림 -->
+      <div class="text-xs text-slate-600 bg-blue-50/60 p-3 rounded-lg border border-blue-100 flex items-start gap-2">
+        <span class="text-blue-600 font-bold">ℹ️</span>
+        <p>
+          <strong>퇴직 후 장해상태 발생 시점 기준 [미확인 ②]:</strong> 퇴직 당시 기준소득월액을 승계하는지, 사유 발생 연도 기준인지 법문상 명시적이지 않으므로 본 계산기에서는 사용자가 상단에 입력한 기준소득월액을 그대로 적용합니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- STEP 3: 계산 결과 및 상세 산출식 -->
+    <section class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 sm:p-6 space-y-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs">3</span>
+          <h2 class="font-bold text-slate-900">장해급여 산출 결과</h2>
+        </div>
+        <span class="text-xs text-slate-500">산식 기반 자동 계산 (단위: 원)</span>
+      </div>
+
+      <!-- 핵심 결과 3대 카드 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- 장해연금(월) -->
+        <div class="p-4 rounded-xl bg-slate-900 text-white flex flex-col justify-between shadow-xs">
+          <div>
+            <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+              <span>장해연금 (매월 지급)</span>
+              <span class="text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded text-[10px]">월액 [원문]</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-2 tracking-tight">
+              <span id="resultPensionMonthly">입력 필요</span> <span id="resultPensionMonthlyUnit" class="text-base font-normal text-slate-300"></span>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800">
+            기준소득월액 × 등급별 지급비율 (원 미만 절사 [미확인 ⑤])
+          </p>
+        </div>
+
+        <!-- 연간 환산액 -->
+        <div class="p-4 rounded-xl bg-indigo-50/80 border border-indigo-200 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-indigo-700 text-xs font-semibold">
+              <span>장해연금 연간 환산액</span>
+              <span class="text-[10px] bg-indigo-200/70 text-indigo-800 px-1.5 py-0.5 rounded font-normal">월액 × 12개월</span>
+            </div>
+            <div class="text-2xl font-bold text-indigo-950 mt-2 tracking-tight">
+              <span id="resultPensionAnnual">입력 필요</span> <span id="resultPensionAnnualUnit" class="text-base font-normal text-indigo-700"></span>
+            </div>
+          </div>
+          <p class="text-[11px] text-indigo-800/80 mt-3 pt-2 border-t border-indigo-200/50">
+            퇴직급여와 병급 가능 [원문]
+          </p>
+        </div>
+
+        <!-- 장해일시금 -->
+        <div class="p-4 rounded-xl bg-amber-50/80 border border-amber-200 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-amber-800 text-xs font-semibold">
+              <span>장해일시금 (선택 시)</span>
+              <span class="text-[10px] bg-amber-200/70 text-amber-900 px-1.5 py-0.5 rounded font-normal">5년분(60개월) [원문]</span>
+            </div>
+            <div class="text-2xl font-bold text-amber-950 mt-2 tracking-tight">
+              <span id="resultLumpSum">입력 필요</span> <span id="resultLumpSumUnit" class="text-base font-normal text-amber-800"></span>
+            </div>
+          </div>
+          <p class="text-[11px] text-amber-900/80 mt-3 pt-2 border-t border-amber-200/50">
+            방식 1(월액 절사 후 60배) 기본 표시 [미확인 ⑤]
+          </p>
+        </div>
+
+      </div>
+
+      <!-- 일시금 단수처리 2대 방식 비교 박스 [미확인 ⑤] -->
+      <div id="lumpSumCompareBox" class="p-3.5 rounded-lg border border-amber-200 bg-amber-50/50 text-xs text-amber-950 space-y-1.5">
+        <div class="font-semibold flex items-center justify-between">
+          <span>⚖️ 장해일시금 단수처리 방식 비교 [미확인 ⑤]</span>
+          <span id="lumpSumDiffStatus" class="text-[11px] font-normal px-2 py-0.5 rounded bg-white border border-amber-300">
+            대기 중
+          </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+          <div class="p-2 bg-white rounded border border-amber-200">
+            <strong>방식 1 (월액 절사 후 60배):</strong> <span id="lumpMethod1Display" class="font-semibold">입력 필요</span>
+            <div class="text-[10px] text-slate-500">산식: Math.floor(기준소득월액 × 비율) × 60</div>
+          </div>
+          <div class="p-2 bg-white rounded border border-amber-200">
+            <strong>방식 2 (총액 산출 후 최종 절사):</strong> <span id="lumpMethod2Display" class="font-semibold">입력 필요</span>
+            <div class="text-[10px] text-slate-500">산식: Math.floor(기준소득월액 × 비율 × 60)</div>
+          </div>
+        </div>
+        <p class="text-[10px] text-amber-800 pt-1">
+          ※ 법령 원문상 '장해연금의 5년분' 규정이 월액을 절사한 후 60을 곱하는 것인지, 전체 60개월분을 일괄 산출하여 단수처리하는지 불명확하므로 두 산출액을 모두 병기합니다.
+        </p>
+      </div>
+
+      <!-- 산식 단계별 분해 (검산용) -->
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs font-mono text-slate-700">
+        <div class="text-xs font-bold text-slate-800 font-sans flex items-center justify-between">
+          <span>📋 산식 단계별 검산 내역 (Formula Breakdown)</span>
+          <span class="text-[11px] text-slate-500 font-normal">원 단위 미만 절사(Math.floor) 적용 [미확인 ⑤]</span>
+        </div>
+        <div class="p-2.5 bg-white rounded border border-slate-200 space-y-1.5">
+          <div><strong>1. 적용 기준소득월액:</strong> <span id="formulaBaseIncome">-</span> (적용 모드: <span id="formulaMode">-</span>)</div>
+          <div><strong>2. 등급 및 법정 지급비율:</strong> <span id="formulaGrade">-</span> (<span id="formulaRate">-</span>%) [원문: 재해보상법 제29조①]</div>
+          <div><strong>3. 월 장해연금 산식:</strong> <span id="formulaPensionCalc">-</span> = <strong class="text-indigo-600" id="formulaPensionResult">-</strong></div>
+          <div><strong>4. 장해일시금 산식 (방식 1 기준):</strong> <span id="formulaLumpCalc">-</span> = <strong class="text-amber-600" id="formulaLumpResult">-</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: 실제 공단 결정액 검산 (Cross-Check) -->
+    <section class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-slate-700 text-white font-bold text-xs">4</span>
+          <h2 class="font-bold text-slate-900">선택 기능 — 공단 실제 결정액 검산 (Cross-Check)</h2>
+        </div>
+        <span class="text-xs text-slate-400">결정통지서 대조용</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="actualDecisionAmount" class="block text-xs font-semibold text-slate-700 mb-1">
+            공단 결정통지서 상 실제 지급결정액 (원)
+          </label>
+          <input type="text" id="actualDecisionAmount" placeholder="통지서의 결정금액 입력"
+            class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 focus:outline-hidden"
+            oninput="handleAmountInput(this); recalculate();">
+        </div>
+        <div>
+          <label for="actualDecisionType" class="block text-xs font-semibold text-slate-700 mb-1">
+            대조 대상 급여 형태
+          </label>
+          <select id="actualDecisionType" onchange="recalculate()" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white">
+            <option value="pension">장해연금(월액)과 대조</option>
+            <option value="lumpsum1">장해일시금 (방식 1: 월액절사×60)과 대조</option>
+            <option value="lumpsum2">장해일시금 (방식 2: 총액절사)과 대조</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 검산 결과 피드백 박스 -->
+      <div id="crossCheckResultBox" class="hidden p-3.5 rounded-lg border text-xs"></div>
+    </section>
+
+    <!-- 상담 연락처 (누르면 바로 전화·카카오톡 연결) -->
+    <section id="contact" class="bg-white rounded-xl border-2 border-emerald-300 p-4 sm:p-6 shadow-xs space-y-4" aria-label="상담 연락처">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div>
+          <p class="text-lg sm:text-xl font-black text-slate-900">대신노무법인 송정</p>
+          <p class="text-sm font-bold text-emerald-800">공무원 재해보상 의뢰·상담 · 아래 버튼을 누르면 바로 연결됩니다</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <a href="tel:0518327227" aria-label="주중 업무시간 의뢰상담 전화 051-832-7227" class="min-h-[76px] p-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-2xl transition flex items-center gap-4 shadow-lg shadow-emerald-600/30">
+          <svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span class="flex flex-col">
+            <span class="text-sm font-bold text-emerald-50">주중 업무시간 의뢰·상담</span>
+            <span class="text-2xl sm:text-3xl font-black tracking-wide">051-832-7227</span>
+          </span>
+        </a>
+        <a href="tel:01093108998" aria-label="업무시간 외 상담 전화 010-9310-8998" class="min-h-[76px] p-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white rounded-2xl transition flex items-center gap-4 shadow-lg">
+          <svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          <span class="flex flex-col">
+            <span class="text-sm font-bold text-slate-200">업무시간 외 (주말·야간) 상담</span>
+            <span class="text-2xl sm:text-3xl font-black tracking-wide">010-9310-8998</span>
+          </span>
+        </a>
+        <a href="https://open.kakao.com/o/gL5e0stf" target="_blank" rel="noopener" aria-label="카카오톡 오픈채팅으로 상담하기" class="md:col-span-2 min-h-[68px] p-4 bg-yellow-300 hover:bg-yellow-200 active:bg-yellow-400 text-slate-900 rounded-2xl transition flex items-center justify-center gap-3 border-2 border-yellow-400">
+          <svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.48 3 2 6.58 2 11c0 2.85 1.86 5.35 4.66 6.77l-.95 3.48c-.08.3.26.54.52.37l4.13-2.74c.54.07 1.08.12 1.64.12 5.52 0 10-3.58 10-8S17.52 3 12 3z"/></svg>
+          <span class="text-lg sm:text-2xl font-black">카카오톡 오픈채팅으로 상담하기</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 하단: 미확인 사항 주석 및 면책 공고 -->
+    <footer class="bg-slate-100 rounded-xl p-4 sm:p-5 border border-slate-200 space-y-3 text-xs text-slate-600 leading-relaxed">
+      <div class="font-bold text-slate-800 flex items-center gap-2">
+        <span>⚖️ 법적 근거 및 실무 확인 필요 사항 (공인노무사 안내용)</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5 text-[11px]">
+        <div>• <strong>[원문: 재해보상법 제10조]</strong> 장해급여는 사유발생일이 속하는 달의 기준소득월액을 기초로 함(①). 160%·50% 보상기준 금액(②)은 제3~5호 급여에만 적용되어 장해급여에는 적용되지 않음.</div>
+        <div>• <strong>[원문: 재해보상법 제29조]</strong> 등급별 지급비율(①) 및 장해일시금 = 장해연금 5년분(②).</div>
+        <div>• <strong>[확인 필요 ②]</strong> 퇴직 후 장해상태 발생 시 기준소득월액 적용 시점(퇴직월 vs 사유발생월) 구체적 적용 해석 미확인.</div>
+        <div>• <strong>[원문: 공무원연금법 시행령 제5조]</strong> 기준소득월액 산식(①1호)과 1~4월 사유발생 특례(②)는 모드 C에 반영. 중도 임용·시간제근무(①2호)와 승진 등 봉급 증가분(③)은 미반영.</div>
+        <div>• <strong>[확인 필요 ⑤]</strong> 산출금액의 원 단위 미만 단수처리(절사/반올림 기준 및 일시금 산출 시 중간절사 vs 최종절사) 기준 미확인.</div>
+        <div>• <strong>[확인 필요 ⑥]</strong> 직종·직급별 8개 보수 평균액, 공무원보수인상률(매년 1.25.까지 관보 고시), 호봉승급률의 실제값은 계산기에 내장하지 않음(사용자 입력 필요).</div>
+        <div>• <strong>[미확인 ⑦]</strong> 시행령 별표 3 장해등급표 및 시행규칙 별표 2 세부 판정기준 본문 미확인.</div>
+      </div>
+      <div class="pt-3 border-t border-slate-200 text-slate-500 font-medium">
+        ※ <strong>면책 문구:</strong> 본 계산 결과는 관계 안내자료를 바탕으로 계산된 단순 예상액이며, 실제 최종 지급액은 인사혁신처 공무원재해보상심의회의 심의 결정 및 공무원연금공단의 실제 사정에 따릅니다.
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // 등급별 법정 지급비율 [원문: 공무원 재해보상법 제29조①, GEPS 안내]
+    // 부동소수점 오차(예: 1,640,000 × 0.2925 → 479,699.99…)를 피하기 위해 만분율(정수)로 보관하고 정수 연산 후 절사한다.
+    const GRADE_RATES_BP = {
+      1: 5200,   // 제1급: 52%
+      2: 4875,   // 제2급: 48.75%
+      3: 4550,   // 제3급: 45.5%
+      4: 4225,   // 제4급: 42.25%
+      5: 3900,   // 제5급: 39%
+      6: 3575,   // 제6급: 35.75%
+      7: 3250,   // 제7급: 32.5%
+      8: 2925,   // 제8급: 29.25%
+      9: 2600,   // 제9급: 26%
+      10: 2275,  // 제10급: 22.75%
+      11: 1950,  // 제11급: 19.5%
+      12: 1625,  // 제12급: 16.25%
+      13: 1300,  // 제13급: 13%
+      14: 975    // 제14급: 9.75%
+    };
+
+    let currentMode = 'A'; // 'A' | 'B' | 'C'
+
+    // 콤마 제거 및 숫자 파싱 헬퍼
+    function cleanNumberString(val) {
+      if (val === null || val === undefined) return '';
+      return String(val).replace(/,/g, '').trim();
+    }
+
+    // 커서 위치 보존형 콤마 포맷터
+    function handleAmountInput(inputElem) {
+      const val = inputElem.value;
+      const cursorPos = inputElem.selectionStart;
+      const digitsBeforeCursor = val.slice(0, cursorPos).replace(/\D/g, '').length;
+
+      const raw = cleanNumberString(val);
+      if (raw === '') {
+        inputElem.value = '';
+        return;
+      }
+      // 숫자 및 소수점 허용 (음수 기호 '-' 도 일단 허용하여 유효성 에러 메시지 유도)
+      if (!/^-?\d*\.?\d*$/.test(raw)) {
+        return;
+      }
+      const num = Number(raw);
+      if (!isNaN(num) && Number.isInteger(num) && !raw.includes('.')) {
+        const formatted = num.toLocaleString('ko-KR');
+        inputElem.value = formatted;
+        
+        // 커서 위치 보존
+        let newPos = 0;
+        let count = 0;
+        for (let i = 0; i < formatted.length; i++) {
+          if (/\d/.test(formatted[i])) {
+            count++;
+          }
+          if (count === digitsBeforeCursor) {
+            newPos = i + 1;
+            break;
+          }
+        }
+        if (newPos === 0 && digitsBeforeCursor > 0) newPos = formatted.length;
+        inputElem.setSelectionRange(newPos, newPos);
+      }
+    }
+
+    // 모드 전환
+    function switchMode(mode) {
+      currentMode = mode;
+      
+      const tabA = document.getElementById('tabModeA');
+      const tabB = document.getElementById('tabModeB');
+      const tabC = document.getElementById('tabModeC');
+      const formA = document.getElementById('formModeA');
+      const formB = document.getElementById('formModeB');
+      const formC = document.getElementById('formModeC');
+      const badgeBox = document.getElementById('modeAccuracyBadge');
+      const modeNameDisplay = document.getElementById('displayModeName');
+
+      // 탭 스타일 초기화
+      [tabA, tabB, tabC].forEach(tab => {
+        tab.className = "py-3 px-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors";
+      });
+      [formA, formB, formC].forEach(form => form.classList.add('hidden'));
+
+      if (mode === 'A') {
+        tabA.className = "py-3 px-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/40 font-semibold transition-colors";
+        formA.classList.remove('hidden');
+        badgeBox.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">모드 A: 결정통지서 직접 입력 [권장]</span>';
+        modeNameDisplay.textContent = "모드 A (직접 입력)";
+      } else if (mode === 'B') {
+        tabB.className = "py-3 px-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/40 font-semibold transition-colors";
+        formB.classList.remove('hidden');
+        badgeBox.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">모드 B: 기여금 ÷ 0.09 역산 [근사값]</span>';
+        modeNameDisplay.textContent = "모드 B (기여금 역산)";
+      } else if (mode === 'C') {
+        tabC.className = "py-3 px-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/40 font-semibold transition-colors";
+        formC.classList.remove('hidden');
+        badgeBox.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">모드 C: 시행령 제5조 산식 추정 [참고용]</span>';
+        modeNameDisplay.textContent = "모드 C (과세소득 공식 추정)";
+      }
+
+      recalculate();
+    }
+
+    // 계산 실행 함수
+    function recalculate() {
+      const warningBox = document.getElementById('validationWarning');
+      warningBox.classList.add('hidden');
+      warningBox.innerHTML = '';
+
+      let rawBaseIncome = null;
+      let isInputProvided = false;
+      let hasValidationError = false;
+      let validationMessage = '';
+
+      // 모드별 입력 파싱
+      if (currentMode === 'A') {
+        const inputElem = document.getElementById('inputBaseIncomeA');
+        const raw = cleanNumberString(inputElem.value);
+        if (raw !== '') {
+          isInputProvided = true;
+          const val = Number(raw);
+          if (isNaN(val)) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 숫자를 올바르게 입력해 주십시오.';
+          } else if (val < 0) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 기준소득월액은 0 또는 음수일 수 없습니다.';
+          } else if (val === 0) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 기준소득월액으로 0원이 입력되었습니다. 양의 정수를 입력하십시오.';
+          } else if (val > 100000000) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 입력값이 1억 원을 초과하여 비정상적으로 큽니다. 금액을 다시 확인하십시오.';
+          } else {
+            rawBaseIncome = Math.floor(val);
+          }
+        }
+      } else if (currentMode === 'B') {
+        const inputElem = document.getElementById('inputContribution');
+        const raw = cleanNumberString(inputElem.value);
+        if (raw !== '') {
+          isInputProvided = true;
+          const val = Number(raw);
+          if (isNaN(val)) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 기여금 숫자를 올바르게 입력해 주십시오.';
+          } else if (val <= 0) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 월 기여금은 양의 정수이어야 합니다.';
+          } else if (val > 10000000) {
+            hasValidationError = true;
+            validationMessage = '⚠️ 월 기여금이 1천만 원을 초과하여 비정상적으로 큽니다. 금액을 다시 확인하십시오.';
+          } else {
+            // [미확인 ⑤]: 부동소수점 오차 방지를 위해 (val * 100 / 9) 정수 연산 적용
+            rawBaseIncome = Math.floor((val * 100) / 9);
+          }
+        }
+      } else if (currentMode === 'C') {
+        const rawTax = cleanNumberString(document.getElementById('taxableIncome').value);
+        const rawOwn = cleanNumberString(document.getElementById('own8Pay').value);
+        const rawAvg = cleanNumberString(document.getElementById('avg8Pay').value);
+        const rawPrevAvg = cleanNumberString(document.getElementById('prevAvg8Pay').value);
+
+        // 1~4월 사유발생 특례 [원문: 공무원연금법 시행령 제5조②]
+        const eventMonth = parseInt(document.getElementById('eventMonth').value, 10);
+        const isEarlyMonth = eventMonth >= 1 && eventMonth <= 4;
+        document.getElementById('specialMonthWarning').classList.toggle('hidden', !isEarlyMonth);
+
+        if (rawTax !== '' || rawOwn !== '' || rawAvg !== '' || (isEarlyMonth && rawPrevAvg !== '')) {
+          isInputProvided = true;
+          if (rawTax === '') {
+            hasValidationError = true;
+            validationMessage = '⚠️ 과세소득 연간 합계 금액을 입력해 주십시오.';
+          } else if (isEarlyMonth && rawPrevAvg === '') {
+            hasValidationError = true;
+            validationMessage = '⚠️ 1~4월 사유발생: 전년도 기준소득월액 기초 8개 보수 평균액(⑤)을 입력해 주십시오.';
+          } else {
+            const taxable = Number(rawTax);
+            const own8 = rawOwn !== '' ? Number(rawOwn) : 0;
+            const avg8 = rawAvg !== '' ? Number(rawAvg) : 0;
+            const prevAvg8 = rawPrevAvg !== '' ? Number(rawPrevAvg) : 0;
+            // 인상률·승급률(%)을 만분율 정수로 변환 (예: 2.5% → 250)
+            const increaseBp = Math.round((Number(document.getElementById('salaryIncreaseRate').value) || 0) * 100);
+            const stepBp = Math.round((Number(document.getElementById('stepIncreaseRate').value) || 0) * 100);
+
+            if ([taxable, own8, avg8, prevAvg8].some(isNaN)) {
+              hasValidationError = true;
+              validationMessage = '⚠️ 과세소득 및 보수 금액 항목에 올바른 숫자를 입력해 주십시오.';
+            } else if (taxable < 0 || own8 < 0 || avg8 < 0 || prevAvg8 < 0) {
+              hasValidationError = true;
+              validationMessage = '⚠️ 소득 및 보수 금액 항목에 음수를 입력할 수 없습니다.';
+            } else if (increaseBp < 0 || stepBp < 0) {
+              hasValidationError = true;
+              validationMessage = '⚠️ 보수인상률·호봉승급률은 음수로 입력할 수 없습니다.';
+            } else if (Math.floor(own8) > Math.floor(taxable)) {
+              hasValidationError = true;
+              validationMessage = '⚠️ 본인 8개 보수가 과세소득 합계보다 클 수 없습니다.';
+            } else {
+              const ownBase = Math.floor(taxable) - Math.floor(own8);
+              // 정수 연산(÷12 × (1+률) = × (10000+bp) ÷ 120000) 후 최종 원 미만 절사 [미확인 ⑤]
+              let numerator;
+              if (isEarlyMonth) {
+                // 제5조②: [제1항제1호 금액 − 해당연도 평균액분] + 전년도 기초 평균액 ÷ 12 × (1 + 전년도 호봉승급률)
+                numerator = ownBase * (10000 + increaseBp) + Math.floor(prevAvg8) * (10000 + stepBp);
+              } else {
+                // 제5조①1호: (과세소득 − 본인 8개 보수 + 직급별 평균액) ÷ 12 × (1 + 보수인상률)
+                numerator = (ownBase + Math.floor(avg8)) * (10000 + increaseBp);
+              }
+              if (numerator > 0) {
+                rawBaseIncome = Math.floor(numerator / 120000);
+              } else {
+                hasValidationError = true;
+                validationMessage = '⚠️ 산정된 연간 소득액이 0 이하입니다. 입력값을 확인해 주십시오.';
+              }
+            }
+          }
+        }
+      }
+
+      // 장해급여에는 재해보상법 제10조② 상한·하한 미적용 → 입력값 그대로 사용 [원문: 법 제10조]
+      const appliedBaseIncome = rawBaseIncome;
+
+      // 유효성 경고 렌더링
+      if (hasValidationError) {
+        warningBox.className = "p-3 rounded-lg border text-xs bg-red-50 border-red-200 text-red-800";
+        warningBox.innerHTML = validationMessage;
+        warningBox.classList.remove('hidden');
+      }
+
+      // 기준소득월액 미입력 또는 유효성 오류 시 "입력 필요" 처리
+      if (!isInputProvided || hasValidationError || appliedBaseIncome === null || appliedBaseIncome <= 0) {
+        document.getElementById('displayBaseIncome').textContent = "입력 필요";
+        document.getElementById('displayBaseIncomeUnit').textContent = "";
+        
+        document.getElementById('resultPensionMonthly').textContent = "입력 필요";
+        document.getElementById('resultPensionMonthlyUnit').textContent = "";
+        document.getElementById('resultPensionAnnual').textContent = "입력 필요";
+        document.getElementById('resultPensionAnnualUnit').textContent = "";
+        document.getElementById('resultLumpSum').textContent = "입력 필요";
+        document.getElementById('resultLumpSumUnit').textContent = "";
+
+        document.getElementById('lumpMethod1Display').textContent = "입력 필요";
+        document.getElementById('lumpMethod2Display').textContent = "입력 필요";
+        document.getElementById('lumpSumDiffStatus').textContent = "대기 중";
+        document.getElementById('lumpSumDiffStatus').className = "text-[11px] font-normal px-2 py-0.5 rounded bg-white border border-amber-300";
+
+        document.getElementById('formulaBaseIncome').textContent = "-";
+        document.getElementById('formulaMode').textContent = currentMode;
+        document.getElementById('formulaGrade').textContent = "-";
+        document.getElementById('formulaRate').textContent = "-";
+        document.getElementById('formulaPensionCalc').textContent = "-";
+        document.getElementById('formulaPensionResult').textContent = "-";
+        document.getElementById('formulaLumpCalc').textContent = "-";
+        document.getElementById('formulaLumpResult').textContent = "-";
+
+        checkDiscrepancy(null, null, null);
+        return;
+      }
+
+      // 화면 기준소득월액 갱신
+      document.getElementById('displayBaseIncome').textContent = appliedBaseIncome.toLocaleString('ko-KR');
+      document.getElementById('displayBaseIncomeUnit').textContent = "원";
+
+      // 등급 및 지급비율 [원문: 재해보상법 제29조①]
+      const grade = parseInt(document.getElementById('disabilityGrade').value, 10);
+      const rateBp = GRADE_RATES_BP[grade] || 0;
+      const ratePercentText = (rateBp / 100).toFixed(2);
+
+      // 급여액 산출 (정수 연산: 기준소득월액 1억 × 5200 × 60 ≈ 3.1e13 < 2^53 이므로 안전)
+      // 1. 장해연금(월) = 기준소득월액 × 비율, 원 미만 절사 [미확인 ⑤]
+      const monthlyPension = Math.floor(appliedBaseIncome * rateBp / 10000);
+      const annualPension = monthlyPension * 12;
+
+      // 2. 장해일시금 2대 산출 방식 비교 [원문: 제29조② 5년분 / 단수처리 미확인 ⑤]
+      const lumpSumMethod1 = monthlyPension * 60;
+      const lumpSumMethod2 = Math.floor(appliedBaseIncome * rateBp * 60 / 10000);
+
+      // 화면 반영
+      document.getElementById('resultPensionMonthly').textContent = monthlyPension.toLocaleString('ko-KR');
+      document.getElementById('resultPensionMonthlyUnit').textContent = "원";
+      document.getElementById('resultPensionAnnual').textContent = annualPension.toLocaleString('ko-KR');
+      document.getElementById('resultPensionAnnualUnit').textContent = "원";
+      document.getElementById('resultLumpSum').textContent = lumpSumMethod1.toLocaleString('ko-KR');
+      document.getElementById('resultLumpSumUnit').textContent = "원";
+
+      // 일시금 비교 박스 갱신
+      document.getElementById('lumpMethod1Display').textContent = `${lumpSumMethod1.toLocaleString('ko-KR')}원`;
+      document.getElementById('lumpMethod2Display').textContent = `${lumpSumMethod2.toLocaleString('ko-KR')}원`;
+      const diffLump = lumpSumMethod2 - lumpSumMethod1;
+      const diffBadge = document.getElementById('lumpSumDiffStatus');
+      if (diffLump === 0) {
+        diffBadge.textContent = "두 방식 금액 일치 (단수 편차 없음)";
+        diffBadge.className = "text-[11px] font-normal px-2 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-800";
+      } else {
+        diffBadge.textContent = `단수 차액 발생: 방식 2가 ${diffLump.toLocaleString('ko-KR')}원 더 많음`;
+        diffBadge.className = "text-[11px] font-normal px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 font-semibold";
+      }
+
+      // 산식 분해 내역 업데이트
+      document.getElementById('formulaBaseIncome').textContent = `${appliedBaseIncome.toLocaleString('ko-KR')}원`;
+      document.getElementById('formulaMode').textContent = currentMode === 'A' ? '모드 A(직접입력)' : (currentMode === 'B' ? '모드 B(기여금역산)' : '모드 C(과세추정)');
+      document.getElementById('formulaGrade').textContent = `제${grade}급`;
+      document.getElementById('formulaRate').textContent = ratePercentText;
+
+      document.getElementById('formulaPensionCalc').textContent = `${appliedBaseIncome.toLocaleString('ko-KR')}원 × ${ratePercentText}% (원 미만 절사)`;
+      document.getElementById('formulaPensionResult').textContent = `${monthlyPension.toLocaleString('ko-KR')}원`;
+
+      document.getElementById('formulaLumpCalc').textContent = `${monthlyPension.toLocaleString('ko-KR')}원 × 60개월`;
+      document.getElementById('formulaLumpResult').textContent = `${lumpSumMethod1.toLocaleString('ko-KR')}원`;
+
+      // 공단 결정액 검산 갱신
+      checkDiscrepancy(monthlyPension, lumpSumMethod1, lumpSumMethod2);
+    }
+
+    // 공단 결정액 검산 로직
+    function checkDiscrepancy(calculatedPension, calculatedLump1, calculatedLump2) {
+      const actualInputRaw = cleanNumberString(document.getElementById('actualDecisionAmount').value);
+      const decisionType = document.getElementById('actualDecisionType').value;
+      const box = document.getElementById('crossCheckResultBox');
+
+      if (actualInputRaw === '') {
+        box.classList.add('hidden');
+        return;
+      }
+
+      const actualInput = Number(actualInputRaw);
+      if (isNaN(actualInput) || actualInput <= 0) {
+        box.className = "p-3 rounded-lg border text-xs bg-red-50 border-red-200 text-red-800";
+        box.innerHTML = "⚠️ 공단 결정금액을 올바른 양의 정수로 입력해 주십시오.";
+        box.classList.remove('hidden');
+        return;
+      }
+
+      box.classList.remove('hidden');
+
+      if (calculatedPension === null || calculatedPension === undefined) {
+        box.className = "p-3 rounded-lg border text-xs bg-slate-100 border-slate-300 text-slate-700";
+        box.innerHTML = "기준소득월액과 장해등급이 정상 입력되어야 검산이 수행됩니다.";
+        return;
+      }
+
+      let targetCalculated = 0;
+      let targetLabel = '';
+      if (decisionType === 'pension') {
+        targetCalculated = calculatedPension;
+        targetLabel = '장해연금(월액)';
+      } else if (decisionType === 'lumpsum1') {
+        targetCalculated = calculatedLump1;
+        targetLabel = '장해일시금 (방식 1: 월액절사×60)';
+      } else {
+        targetCalculated = calculatedLump2;
+        targetLabel = '장해일시금 (방식 2: 총액절사)';
+      }
+
+      const diff = actualInput - targetCalculated;
+
+      if (diff === 0) {
+        box.className = "p-3.5 rounded-lg border text-xs bg-emerald-50 border-emerald-200 text-emerald-900";
+        box.innerHTML = `
+          <div class="font-bold flex items-center gap-1.5">
+            <span>✅ 일치:</span> 입력하신 공단 결정액과 본 계산기 산출 예상액(${targetCalculated.toLocaleString('ko-KR')}원)이 일치합니다.
+          </div>
+          <p class="mt-1 text-[11px] text-emerald-800">
+            ※ 본 계산기 산식 기준으로는 일치합니다. 법령상 정확성을 보증하는 것은 아닙니다.
+          </p>
+        `;
+      } else {
+        const sign = diff > 0 ? `+${diff.toLocaleString('ko-KR')}` : `${diff.toLocaleString('ko-KR')}`;
+        box.className = "p-3.5 rounded-lg border text-xs bg-amber-50 border-amber-300 text-amber-950";
+        box.innerHTML = `
+          <div class="font-bold flex items-center justify-between">
+            <span>⚠️ 차액 발생: ${sign}원</span>
+            <span class="text-[10px] text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">
+              공단 결정액: ${actualInput.toLocaleString('ko-KR')}원 vs 계산액(${targetLabel}): ${targetCalculated.toLocaleString('ko-KR')}원
+            </span>
+          </div>
+          <div class="mt-2 text-[11px] space-y-1 text-amber-900">
+            <p><strong>확인이 필요한 차액 발생 가능 요인:</strong></p>
+            <ul class="list-disc list-inside space-y-0.5 pl-1">
+              <li><strong>기준소득월액 출처 차이:</strong> 모드 B(기여금 역산)는 기여금 상한 160%(공무원연금법 제67조②) 때문에 고소득자의 경우 실제보다 낮게 산출될 수 있음. 통지서상 금액(모드 A)으로 다시 대조 권장.</li>
+              <li><strong>[미확인 ②] 기준소득월액 적용 시점:</strong> 퇴직 후 장해상태 발생 시 퇴직 당시 기준소득월액과 사유발생 연도 금액 중 어느 것을 적용했는지 확인 필요.</li>
+              <li><strong>[미확인 ⑤] 단수 처리 방식 차이:</strong> 원 단위 미만 절사 방식(월액 절사 후 60배 vs 총액 계산 후 절사) 또는 다른 단수처리 기준 적용 가능성.</li>
+              <li><strong>[원문: 공무원연금법 시행령 제5조②·③] 기준소득월액 특례:</strong> 1~4월 사유발생 특례, 승진·전직 등 봉급 증가분 가산 적용 여부 확인 필요.</li>
+              <li><strong>[원문 확인] 법정 공제 항목:</strong> 다른 법령에 의한 급여(국가유공자 예우법, 국가배상법 등) 공제 또는 제3자 가해 손해배상금 공제 여부.</li>
+            </ul>
+          </div>
+        `;
+      }
+    }
+
+    // 샘플 데이터 로드 헬퍼
+    function loadSample(type) {
+      if (type === 1) {
+        // 기본 예시
+        switchMode('A');
+        document.getElementById('inputBaseIncomeA').value = "5,000,000";
+        document.getElementById('disabilityGrade').value = "11";
+        document.getElementById('actualDecisionAmount').value = "975,000";
+        document.getElementById('actualDecisionType').value = "pension";
+      } else if (type === 2) {
+        // 단수 발생 예시
+        switchMode('A');
+        document.getElementById('inputBaseIncomeA').value = "3,333,333";
+        document.getElementById('disabilityGrade').value = "11";
+        document.getElementById('actualDecisionAmount').value = "";
+      } else if (type === 3) {
+        // 부동소수점 검증 예시: 1,640,000 × 29.25% = 479,700원 (이전 버전은 479,699원으로 오산출)
+        switchMode('A');
+        document.getElementById('inputBaseIncomeA').value = "1,640,000";
+        document.getElementById('disabilityGrade').value = "8";
+        document.getElementById('actualDecisionAmount').value = "479,700";
+        document.getElementById('actualDecisionType').value = "pension";
+      }
+      recalculate();
+    }
+
+    // 전체 리셋
+    function resetAllInputs() {
+      document.getElementById('inputBaseIncomeA').value = "";
+      document.getElementById('inputContribution').value = "";
+      document.getElementById('taxableIncome').value = "";
+      document.getElementById('own8Pay').value = "";
+      document.getElementById('avg8Pay').value = "";
+      document.getElementById('salaryIncreaseRate').value = "0";
+      document.getElementById('prevAvg8Pay').value = "";
+      document.getElementById('stepIncreaseRate').value = "0";
+      document.getElementById('eventMonth').value = "5";
+      document.getElementById('disabilityGrade').value = "11";
+      document.getElementById('actualDecisionAmount').value = "";
+      switchMode('A');
+      recalculate();
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      switchMode('A');
+      recalculate();
+    });
+  </script>
+</body>
+</html>

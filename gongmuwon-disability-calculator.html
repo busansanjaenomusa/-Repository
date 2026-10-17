@@ -75,10 +75,10 @@
           모드 A. 직접 입력 <span class="hidden sm:inline text-xs text-indigo-500 font-normal">[원문/통지서]</span>
         </button>
         <button id="tabModeB" onclick="switchMode('B')" class="py-3 px-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors">
-          모드 B. 기여금 역산 <span class="hidden sm:inline text-xs text-slate-400 font-normal">[외부확인 근사값]</span>
+          모드 B. 기여금 역산 <span class="hidden sm:inline text-xs text-slate-400 font-normal">[근사값]</span>
         </button>
         <button id="tabModeC" onclick="switchMode('C')" class="py-3 px-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors">
-          모드 C. 과세소득 추정 <span class="hidden sm:inline text-xs text-slate-400 font-normal">[지시문 산식]</span>
+          모드 C. 과세소득 추정 <span class="hidden sm:inline text-xs text-slate-400 font-normal">[시행령 제5조]</span>
         </button>
       </div>
 
@@ -116,7 +116,7 @@
             <label for="inputContribution" class="text-sm font-semibold text-slate-800">
               월 연금 기여금 (원) <span class="text-red-500">*</span>
             </label>
-            <span class="text-xs text-slate-500">근거: <strong class="text-amber-700">[외부확인: 인사혁신처 기여금 9%]</strong></span>
+            <span class="text-xs text-slate-500">근거: <strong class="text-amber-700">[원문: 공무원연금법 제67조② 기여금 9%]</strong></span>
           </div>
           <div class="relative">
             <input type="text" id="inputContribution" placeholder="예: 450,000"
@@ -135,8 +135,12 @@
         <!-- 모드 C: 과세소득 추정 -->
         <div id="formModeC" class="space-y-4 hidden">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-500">산정 규칙: <strong class="text-slate-700">[지시문 제공 산식, 법령 원문 조문 미확인]</strong></span>
+            <span class="text-xs text-slate-500">산정 규칙: <strong class="text-slate-700">[원문: 공무원연금법 시행령 제5조①1호, 제4조②]</strong></span>
             <span class="text-xs text-slate-500">성격: <strong class="text-blue-700">참고용 추정</strong></span>
+          </div>
+          <div class="text-[11px] space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-slate-600">
+            <p><strong>산식:</strong> (과세소득 − 본인 8개 보수 + 직종·직급별 8개 보수 평균액) ÷ 12 × (1 + 공무원보수인상률)</p>
+            <p>⚠️ 전년도 1.1.~12.31. 계속 근무하지 않았거나 시간제근무기간이 있는 경우(시행령 제5조①2호 → 제6조·제7조), 승진·전직·보직변경으로 봉급월액이 증가한 경우(제5조③ 증가분 가산)는 <strong>본 계산기에 반영되지 않습니다</strong>.</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -158,7 +162,7 @@
             </div>
             <div>
               <label for="avg8Pay" class="block text-xs font-semibold text-slate-700 mb-1">
-                ③ 직종·직급별 8개 보수 평균액 (연간) (원) <span class="text-slate-400 font-normal">[미확인 ⑥]</span>
+                ③ 직종·직급별 8개 보수 평균액 (연간) (원) <span class="text-slate-400 font-normal">[실제값 미확인 ⑥]</span>
               </label>
               <input type="text" id="avg8Pay" placeholder="예: 10,000,000"
                 class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
@@ -166,7 +170,7 @@
             </div>
             <div>
               <label for="salaryIncreaseRate" class="block text-xs font-semibold text-slate-700 mb-1">
-                ④ 당해연도 공무원보수인상률 (%) <span class="text-slate-400 font-normal">[미확인 ⑥]</span>
+                ④ 당해연도 공무원보수인상률 (%) <span class="text-slate-400 font-normal">[매년 1.25.까지 관보 고시 — 시행령 제5조⑤]</span>
               </label>
               <input type="number" id="salaryIncreaseRate" placeholder="예: 2.5" step="0.1" value="0"
                 class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
@@ -176,7 +180,7 @@
 
           <div class="pt-2 border-t border-slate-100">
             <label for="eventMonth" class="block text-xs font-semibold text-slate-700 mb-1">
-              장해 급여 사유발생월 (퇴직월 또는 장해확정월)
+              장해급여 사유발생월 <span class="text-slate-400 font-normal">(퇴직 후 장해의 사유발생월 판단은 [미확인 ②])</span>
             </label>
             <select id="eventMonth" onchange="recalculate()" class="w-full sm:w-1/2 p-2.5 border border-slate-300 rounded-lg text-sm bg-white">
               <option value="5" selected>5월 ~ 12월 (통상 산정기간)</option>
@@ -186,8 +190,24 @@
               <option value="4">4월</option>
             </select>
             <!-- 1~4월 특례 경고문 -->
-            <div id="specialMonthWarning" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
-              ⚠️ <strong>1~4월 사유발생 [미확인 ④]:</strong> 당해연도 기준소득월액 고시 전 사유가 발생한 경우 별도 보정식이 적용되나, 구체적인 계산식이 확인되지 않았습니다. 실제 공단 결정액과 편차가 발생할 수 있습니다.
+            <div id="specialMonthWarning" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-2">
+              <p>⚠️ <strong>1~4월 사유발생 특례 [원문: 공무원연금법 시행령 제5조②]:</strong> 해당 연도 직종·직급별 8개 보수 평균액이 결정되기 전이므로, 위 ③ 평균액 대신 <strong>전년도 기준소득월액의 기초가 된 8개 보수 평균액</strong>에 <strong>전년도 호봉승급률</strong>을 적용합니다.</p>
+              <p class="font-mono text-[11px]">(과세소득 − 본인 8개 보수) ÷ 12 × (1 + 보수인상률) + 전년도 기초 8개 보수 평균액 ÷ 12 × (1 + 전년도 호봉승급률)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label for="prevAvg8Pay" class="block text-[11px] font-semibold mb-1">⑤ 전년도 기준소득월액 기초 8개 보수 평균액 (연간) (원) <span class="text-red-500">*</span></label>
+                  <input type="text" id="prevAvg8Pay" placeholder="예: 9,600,000"
+                    class="w-full p-2 border border-amber-300 rounded-lg text-sm bg-white"
+                    oninput="handleAmountInput(this); recalculate();">
+                </div>
+                <div>
+                  <label for="stepIncreaseRate" class="block text-[11px] font-semibold mb-1">⑥ 직종·직급별 전년도 호봉승급률 (%)</label>
+                  <input type="number" id="stepIncreaseRate" placeholder="예: 3.0" step="0.1" value="0"
+                    class="w-full p-2 border border-amber-300 rounded-lg text-sm bg-white"
+                    oninput="recalculate()">
+                </div>
+              </div>
+              <p class="text-[10px] text-amber-800">※ 8개 보수 평균액은 비과세소득을 제외한 금액으로 입력하십시오. 평균액·승급률 실제값은 계산기에 내장하지 않았습니다 [실제값 미확인 ⑥].</p>
             </div>
           </div>
         </div>
@@ -368,7 +388,7 @@
         </div>
         <div class="p-2.5 bg-white rounded border border-slate-200 space-y-1.5">
           <div><strong>1. 적용 기준소득월액:</strong> <span id="formulaBaseIncome">-</span> (적용 모드: <span id="formulaMode">-</span>)</div>
-          <div><strong>2. 등급 및 법정 지급비율:</strong> <span id="formulaGrade">-</span> (<span id="formulaRate">-</span>%) [원문: GEPS 안내]</div>
+          <div><strong>2. 등급 및 법정 지급비율:</strong> <span id="formulaGrade">-</span> (<span id="formulaRate">-</span>%) [원문: 재해보상법 제29조①]</div>
           <div><strong>3. 월 장해연금 산식:</strong> <span id="formulaPensionCalc">-</span> = <strong class="text-indigo-600" id="formulaPensionResult">-</strong></div>
           <div><strong>4. 장해일시금 산식 (방식 1 기준):</strong> <span id="formulaLumpCalc">-</span> = <strong class="text-amber-600" id="formulaLumpResult">-</strong></div>
         </div>
@@ -419,9 +439,9 @@
         <div>• <strong>[원문: 재해보상법 제10조]</strong> 장해급여는 사유발생일이 속하는 달의 기준소득월액을 기초로 함(①). 160%·50% 보상기준 금액(②)은 제3~5호 급여에만 적용되어 장해급여에는 적용되지 않음.</div>
         <div>• <strong>[원문: 재해보상법 제29조]</strong> 등급별 지급비율(①) 및 장해일시금 = 장해연금 5년분(②).</div>
         <div>• <strong>[확인 필요 ②]</strong> 퇴직 후 장해상태 발생 시 기준소득월액 적용 시점(퇴직월 vs 사유발생월) 구체적 적용 해석 미확인.</div>
-        <div>• <strong>[확인 필요 ④]</strong> 1~4월 사유발생 시 공무원연금법 시행령상 특례 보정식의 장해급여 적용 구체값 미확인.</div>
+        <div>• <strong>[원문: 공무원연금법 시행령 제5조]</strong> 기준소득월액 산식(①1호)과 1~4월 사유발생 특례(②)는 모드 C에 반영. 중도 임용·시간제근무(①2호)와 승진 등 봉급 증가분(③)은 미반영.</div>
         <div>• <strong>[확인 필요 ⑤]</strong> 산출금액의 원 단위 미만 단수처리(절사/반올림 기준 및 일시금 산출 시 중간절사 vs 최종절사) 기준 미확인.</div>
-        <div>• <strong>[확인 필요 ⑥]</strong> 직종·직급별 8개 보수 평균액 및 연도별 공무원보수인상률 공식 고시값 미확인(사용자 입력 필요).</div>
+        <div>• <strong>[확인 필요 ⑥]</strong> 직종·직급별 8개 보수 평균액, 공무원보수인상률(매년 1.25.까지 관보 고시), 호봉승급률의 실제값은 계산기에 내장하지 않음(사용자 입력 필요).</div>
         <div>• <strong>[미확인 ⑦]</strong> 시행령 별표 3 장해등급표 및 시행규칙 별표 2 세부 판정기준 본문 미확인.</div>
       </div>
       <div class="pt-3 border-t border-slate-200 text-slate-500 font-medium">
@@ -528,7 +548,7 @@
       } else if (mode === 'C') {
         tabC.className = "py-3 px-2 border-b-2 border-indigo-600 text-indigo-700 bg-indigo-50/40 font-semibold transition-colors";
         formC.classList.remove('hidden');
-        badgeBox.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">모드 C: 지시문 산식 추정 [참고용]</span>';
+        badgeBox.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">모드 C: 시행령 제5조 산식 추정 [참고용]</span>';
         modeNameDisplay.textContent = "모드 C (과세소득 공식 추정)";
       }
 
@@ -593,48 +613,61 @@
         const rawTax = cleanNumberString(document.getElementById('taxableIncome').value);
         const rawOwn = cleanNumberString(document.getElementById('own8Pay').value);
         const rawAvg = cleanNumberString(document.getElementById('avg8Pay').value);
-        
-        if (rawTax !== '' || rawOwn !== '' || rawAvg !== '') {
+        const rawPrevAvg = cleanNumberString(document.getElementById('prevAvg8Pay').value);
+
+        // 1~4월 사유발생 특례 [원문: 공무원연금법 시행령 제5조②]
+        const eventMonth = parseInt(document.getElementById('eventMonth').value, 10);
+        const isEarlyMonth = eventMonth >= 1 && eventMonth <= 4;
+        document.getElementById('specialMonthWarning').classList.toggle('hidden', !isEarlyMonth);
+
+        if (rawTax !== '' || rawOwn !== '' || rawAvg !== '' || (isEarlyMonth && rawPrevAvg !== '')) {
           isInputProvided = true;
           if (rawTax === '') {
             hasValidationError = true;
             validationMessage = '⚠️ 과세소득 연간 합계 금액을 입력해 주십시오.';
+          } else if (isEarlyMonth && rawPrevAvg === '') {
+            hasValidationError = true;
+            validationMessage = '⚠️ 1~4월 사유발생: 전년도 기준소득월액 기초 8개 보수 평균액(⑤)을 입력해 주십시오.';
           } else {
             const taxable = Number(rawTax);
             const own8 = rawOwn !== '' ? Number(rawOwn) : 0;
             const avg8 = rawAvg !== '' ? Number(rawAvg) : 0;
-            // 인상률(%)을 만분율 정수로 변환 (예: 2.5% → 250)
+            const prevAvg8 = rawPrevAvg !== '' ? Number(rawPrevAvg) : 0;
+            // 인상률·승급률(%)을 만분율 정수로 변환 (예: 2.5% → 250)
             const increaseBp = Math.round((Number(document.getElementById('salaryIncreaseRate').value) || 0) * 100);
+            const stepBp = Math.round((Number(document.getElementById('stepIncreaseRate').value) || 0) * 100);
 
-            if (isNaN(taxable) || isNaN(own8) || isNaN(avg8)) {
+            if ([taxable, own8, avg8, prevAvg8].some(isNaN)) {
               hasValidationError = true;
               validationMessage = '⚠️ 과세소득 및 보수 금액 항목에 올바른 숫자를 입력해 주십시오.';
-            } else if (taxable < 0 || own8 < 0 || avg8 < 0) {
+            } else if (taxable < 0 || own8 < 0 || avg8 < 0 || prevAvg8 < 0) {
               hasValidationError = true;
               validationMessage = '⚠️ 소득 및 보수 금액 항목에 음수를 입력할 수 없습니다.';
-            } else if (increaseBp < 0) {
+            } else if (increaseBp < 0 || stepBp < 0) {
               hasValidationError = true;
-              validationMessage = '⚠️ 공무원보수인상률은 음수로 입력할 수 없습니다.';
+              validationMessage = '⚠️ 보수인상률·호봉승급률은 음수로 입력할 수 없습니다.';
+            } else if (Math.floor(own8) > Math.floor(taxable)) {
+              hasValidationError = true;
+              validationMessage = '⚠️ 본인 8개 보수가 과세소득 합계보다 클 수 없습니다.';
             } else {
-              const netAnnual = Math.floor(taxable) - Math.floor(own8) + Math.floor(avg8);
-              if (netAnnual > 0) {
-                // ÷12 × (1 + 인상률)을 정수 연산으로 처리 후 원 미만 절사 [미확인 ⑤]
-                rawBaseIncome = Math.floor(netAnnual * (10000 + increaseBp) / 120000);
+              const ownBase = Math.floor(taxable) - Math.floor(own8);
+              // 정수 연산(÷12 × (1+률) = × (10000+bp) ÷ 120000) 후 최종 원 미만 절사 [미확인 ⑤]
+              let numerator;
+              if (isEarlyMonth) {
+                // 제5조②: [제1항제1호 금액 − 해당연도 평균액분] + 전년도 기초 평균액 ÷ 12 × (1 + 전년도 호봉승급률)
+                numerator = ownBase * (10000 + increaseBp) + Math.floor(prevAvg8) * (10000 + stepBp);
+              } else {
+                // 제5조①1호: (과세소득 − 본인 8개 보수 + 직급별 평균액) ÷ 12 × (1 + 보수인상률)
+                numerator = (ownBase + Math.floor(avg8)) * (10000 + increaseBp);
+              }
+              if (numerator > 0) {
+                rawBaseIncome = Math.floor(numerator / 120000);
               } else {
                 hasValidationError = true;
-                validationMessage = '⚠️ (과세소득 - 본인8개보수 + 직급별8개보수) 연간액이 0 이하입니다.';
+                validationMessage = '⚠️ 산정된 연간 소득액이 0 이하입니다. 입력값을 확인해 주십시오.';
               }
             }
           }
-        }
-
-        // 1~4월 특례 경고 토글 [미확인 ④]
-        const eventMonth = parseInt(document.getElementById('eventMonth').value, 10);
-        const specialWarning = document.getElementById('specialMonthWarning');
-        if (eventMonth >= 1 && eventMonth <= 4) {
-          specialWarning.classList.remove('hidden');
-        } else {
-          specialWarning.classList.add('hidden');
         }
       }
 
@@ -801,7 +834,7 @@
               <li><strong>기준소득월액 출처 차이:</strong> 모드 B(기여금 역산)는 기여금 상한 160%(공무원연금법 제67조②) 때문에 고소득자의 경우 실제보다 낮게 산출될 수 있음. 통지서상 금액(모드 A)으로 다시 대조 권장.</li>
               <li><strong>[미확인 ②] 기준소득월액 적용 시점:</strong> 퇴직 후 장해상태 발생 시 퇴직 당시 기준소득월액과 사유발생 연도 금액 중 어느 것을 적용했는지 확인 필요.</li>
               <li><strong>[미확인 ⑤] 단수 처리 방식 차이:</strong> 원 단위 미만 절사 방식(월액 절사 후 60배 vs 총액 계산 후 절사) 또는 다른 단수처리 기준 적용 가능성.</li>
-              <li><strong>[미확인 ④] 1~4월 사유발생 특례:</strong> 연초 사유발생 시 별도 보정식 적용 여부.</li>
+              <li><strong>[원문: 공무원연금법 시행령 제5조②·③] 기준소득월액 특례:</strong> 1~4월 사유발생 특례, 승진·전직 등 봉급 증가분 가산 적용 여부 확인 필요.</li>
               <li><strong>[원문 확인] 법정 공제 항목:</strong> 다른 법령에 의한 급여(국가유공자 예우법, 국가배상법 등) 공제 또는 제3자 가해 손해배상금 공제 여부.</li>
             </ul>
           </div>
@@ -843,6 +876,8 @@
       document.getElementById('own8Pay').value = "";
       document.getElementById('avg8Pay').value = "";
       document.getElementById('salaryIncreaseRate').value = "0";
+      document.getElementById('prevAvg8Pay').value = "";
+      document.getElementById('stepIncreaseRate').value = "0";
       document.getElementById('eventMonth').value = "5";
       document.getElementById('disabilityGrade').value = "11";
       document.getElementById('actualDecisionAmount').value = "";

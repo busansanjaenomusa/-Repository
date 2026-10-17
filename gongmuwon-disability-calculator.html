@@ -430,6 +430,39 @@
       <div id="crossCheckResultBox" class="hidden p-3.5 rounded-lg border text-xs"></div>
     </section>
 
+    <!-- 상담 연락처 (누르면 바로 전화·카카오톡 연결) -->
+    <section id="contact" class="bg-white rounded-xl border-2 border-emerald-300 p-4 sm:p-6 shadow-xs space-y-4" aria-label="상담 연락처">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div>
+          <p class="text-lg sm:text-xl font-black text-slate-900">대신노무법인 송정</p>
+          <p class="text-sm font-bold text-emerald-800">공무원 재해보상 의뢰·상담 · 아래 버튼을 누르면 바로 연결됩니다</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <a href="tel:0518327227" aria-label="주중 업무시간 의뢰상담 전화 051-832-7227" class="min-h-[76px] p-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-2xl transition flex items-center gap-4 shadow-lg shadow-emerald-600/30">
+          <svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span class="flex flex-col">
+            <span class="text-sm font-bold text-emerald-50">주중 업무시간 의뢰·상담</span>
+            <span class="text-2xl sm:text-3xl font-black tracking-wide">051-832-7227</span>
+          </span>
+        </a>
+        <a href="tel:01093108998" aria-label="업무시간 외 상담 전화 010-9310-8998" class="min-h-[76px] p-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white rounded-2xl transition flex items-center gap-4 shadow-lg">
+          <svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          <span class="flex flex-col">
+            <span class="text-sm font-bold text-slate-200">업무시간 외 (주말·야간) 상담</span>
+            <span class="text-2xl sm:text-3xl font-black tracking-wide">010-9310-8998</span>
+          </span>
+        </a>
+        <a href="https://open.kakao.com/o/gL5e0stf" target="_blank" rel="noopener" aria-label="카카오톡 오픈채팅으로 상담하기" class="md:col-span-2 min-h-[68px] p-4 bg-yellow-300 hover:bg-yellow-200 active:bg-yellow-400 text-slate-900 rounded-2xl transition flex items-center justify-center gap-3 border-2 border-yellow-400">
+          <svg class="w-8 h-8 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.48 3 2 6.58 2 11c0 2.85 1.86 5.35 4.66 6.77l-.95 3.48c-.08.3.26.54.52.37l4.13-2.74c.54.07 1.08.12 1.64.12 5.52 0 10-3.58 10-8S17.52 3 12 3z"/></svg>
+          <span class="text-lg sm:text-2xl font-black">카카오톡 오픈채팅으로 상담하기</span>
+        </a>
+      </div>
+    </section>
+
     <!-- 하단: 미확인 사항 주석 및 면책 공고 -->
     <footer class="bg-slate-100 rounded-xl p-4 sm:p-5 border border-slate-200 space-y-3 text-xs text-slate-600 leading-relaxed">
       <div class="font-bold text-slate-800 flex items-center gap-2">

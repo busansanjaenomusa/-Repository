@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>알바 급여계산기 · 주휴·연장·야간·휴일수당</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="알바 급여계산기 · 달력에 체크만 하면 끝">
+<meta property="og:description" content="알바 월급, 제대로 받고 있나요? 일한 날만 체크하면 기본급에 주휴·연장·야간·휴일수당까지 계산해 드려요.">
+<meta property="og:url" content="https://busansanjaenomusa-juhyu.netlify.app/">
+<meta property="og:image" content="https://busansanjaenomusa-juhyu.netlify.app/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="알바 급여계산기. 달력에 근무시간만 체크하면 기본급과 주휴수당(주 15시간 이상)을 주별로 자동 계산합니다. 2026년 최저임금 10,320원, 공휴일·노동절 유급휴일, 연장·야간·휴일근로 가산수당까지 반영.">
+<meta name="keywords" content="알바 급여계산기, 알바 월급 계산, 주휴수당 계산기, 알바 주휴수당, 야간수당, 휴일수당, 공휴일 유급휴일, 주휴수당 계산, 주휴수당 조건, 주 15시간, 단시간 근로자, 연장근로수당, 최저임금 2026">
+<meta name="robots" content="index,follow">
+<meta name="naver-site-verification" content="aa59bdcf1c7d8c74ae02b8d7d52fc1c16f046de0" />
+<link rel="canonical" href="https://busansanjaenomusa-juhyu.netlify.app/">
+<meta property="og:site_name" content="알바 급여계산기">
+<meta property="og:locale" content="ko_KR">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"알바 급여계산기","url":"https://busansanjaenomusa-juhyu.netlify.app/","applicationCategory":"FinanceApplication","operatingSystem":"All","inLanguage":"ko","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"description":"달력에 일한 날만 체크하면 기본급, 주휴수당, 연장·야간·휴일근로 가산수당, 공휴일 유급휴일수당까지 계산하는 무료 알바 급여계산기","provider":{"@type":"Organization","name":"부산산재노무사","telephone":"+82-51-832-7227"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"주휴수당은 어떤 조건에서 받을 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"1주에 약속한 근무시간(소정근로시간)이 15시간 이상이고, 그 주에 약속한 날을 빠짐없이 출근하면 받을 수 있습니다. 직원 수와 상관없이 5명 미만 사업장도 지급해야 합니다."}},
+{"@type":"Question","name":"주휴수당은 어떻게 계산하나요?","acceptedAnswer":{"@type":"Answer","text":"주휴수당 = (1주 약속한 근무시간 ÷ 40) × 8시간 × 시급입니다. 1주 40시간 이상이면 8시간분이 최대입니다. 예를 들어 시급 10,320원, 주 20시간이면 41,280원입니다."}},
+{"@type":"Question","name":"약속보다 더 일한 시간도 주휴수당에 들어가나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 약속한 시간을 넘긴 시간은 연장근로이며, 직원 5명 이상 사업장이라면 시급의 50%를 더한 연장근로 가산수당을 주휴수당과 별도로 청구할 수 있습니다."}}]}
+</script>
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--ink:#1f2933;--sub:#667085;--line:#e4e7ec;--pri:#2E4FD0;--pri-bg:#eef2ff;--warn:#b54708;--warn-bg:#fffaeb;--ok:#067647;--ok-bg:#ecfdf3;--bad:#c01048;--bad-bg:#fff1f3;--hol:#d92d20;--hol-bg:#fef3f2;--ot:#7a5af8;--ot-bg:#f4f3ff;--nt:#0e7090;--nt-bg:#ecfdff}
+@media (prefers-color-scheme:dark){:root{--bg:#101418;--card:#1a2027;--ink:#e8ecf1;--sub:#9aa5b1;--line:#2c353f;--pri:#8aa4ff;--pri-bg:#18213d;--warn:#fdb022;--warn-bg:#2a2112;--ok:#47cd89;--ok-bg:#0f2a1d;--bad:#fd6f8e;--bad-bg:#2e1219;--hol:#ff7a6e;--hol-bg:#2e1513;--ot:#a48afb;--ot-bg:#211b3d;--nt:#67e3f9;--nt-bg:#0c2a33}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 60px}
+/* 노션식 머리말 */
+.cover{height:190px;margin:0 -16px;background:linear-gradient(120deg,#2E4FD0 0%,#5b7cf0 45%,#9db4ff 75%,#ffd8a8 100%);position:relative;overflow:hidden}
+.cover:before,.cover:after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.14)}
+.cover:before{width:260px;height:260px;right:-60px;top:-90px}
+.cover:after{width:180px;height:180px;left:38%;bottom:-110px}
+@media(min-width:792px){.cover{margin:0;border-radius:0 0 18px 18px}}
+.page-icon{font-size:78px;line-height:1;margin:-46px 0 0 4px;position:relative;filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
+h1{font-size:40px;font-weight:800;letter-spacing:-1.2px;line-height:1.2;margin:14px 0 10px}
+h1 .hl{background:linear-gradient(transparent 62%,#ffe08a 62%);padding:0 2px}
+@media (prefers-color-scheme:dark){h1 .hl{background:linear-gradient(transparent 62%,rgba(255,200,60,.35) 62%)}}
+@media(max-width:480px){h1{font-size:32px}.page-icon{font-size:66px;margin-top:-40px}.cover{height:150px}}
+.props{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:14px;margin:0 0 14px;padding:0 2px}
+.props dt{color:var(--sub);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.props dd{margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.tg{display:inline-block;font-size:13px;font-weight:600;padding:1px 9px;border-radius:5px}
+.tg.b{background:#e3e9ff;color:#2E4FD0}.tg.y{background:#fff1c2;color:#8a5a00}.tg.g{background:#dcfae6;color:#067647}.tg.r{background:#ffe4e8;color:#c01048}
+@media (prefers-color-scheme:dark){.tg.b{background:#1e2a55;color:#a9bcff}.tg.y{background:#3a2e10;color:#fcd34d}.tg.g{background:#0f2a1d;color:#6ee7a8}.tg.r{background:#3a1520;color:#fda4b8}}
+.callout{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 20px;font-size:15px}
+.callout .ci{font-size:22px;line-height:1.3}
+.lead{color:var(--sub);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 14px rgba(16,24,40,.04)}
+.card h2{font-size:18px;margin:0 0 4px;letter-spacing:-.3px}
+@media(max-width:480px){.card{padding:18px 14px}}
+.hint{color:var(--sub);font-size:13.5px;margin:0 0 14px}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+input,select{width:100%;padding:11px 12px;font-size:16px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+input:focus,select:focus{outline:2px solid var(--pri);border-color:transparent}
+.small{font-size:12.5px;color:var(--sub);margin-top:3px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;color:var(--ink);background:var(--bg)}
+.go{background:var(--pri);color:#fff}
+.ghost{background:var(--pri-bg);color:var(--pri)}
+.q{font-size:18px;font-weight:800;margin:0 0 6px}
+.qa{background:var(--pri-bg);border-radius:12px;padding:14px 16px;font-size:14.5px;margin:14px 0 0}
+.qa b{color:var(--pri)}
+.week7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.week7 div{text-align:center}
+.week7 span{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:3px}
+.week7 input{text-align:center;padding:10px 2px}
+.week7 .sun span{color:var(--hol)}
+.sumline{margin-top:10px;font-size:14.5px}
+.sumline b{color:var(--pri)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;padding:10px 6px;font-size:14px;border:1px solid var(--line);background:var(--bg)}
+.seg button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+/* 달력 */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.calhead h3{margin:0;font-size:20px}
+.calhead button{padding:8px 14px;font-size:18px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:12.5px;font-weight:700;color:var(--sub);padding:4px 0}
+.dow.sun{color:var(--hol)}
+.day{min-height:74px;border:1px solid var(--line);border-radius:9px;padding:4px 4px 5px;background:var(--card);cursor:pointer;display:flex;flex-direction:column;gap:2px;text-align:left;font-weight:400;overflow:hidden}
+.day:hover{border-color:var(--pri)}
+.day.other{opacity:.42}
+.day.today{box-shadow:inset 0 0 0 2px var(--pri)}
+.day .n{font-size:14px;font-weight:700;line-height:1.2}
+.day.sun .n,.day.hol .n{color:var(--hol)}
+.day .hn{font-size:10px;color:var(--hol);line-height:1.15;word-break:keep-all}
+.day .plan{font-size:10.5px;color:var(--sub);margin-top:auto}
+.badge{font-size:11.5px;font-weight:800;border-radius:6px;padding:1px 4px;margin-top:auto;text-align:center;white-space:nowrap}
+.b-work{background:var(--pri-bg);color:var(--pri)}
+.b-over{background:var(--ot-bg);color:var(--ot)}
+.b-abs{background:var(--bad-bg);color:var(--bad)}
+.b-off{background:var(--bg);color:var(--sub)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--sub);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tools button{flex:1;font-size:14px;padding:10px}
+@media(max-width:480px){.day{min-height:62px;padding:3px 2px}.day .hn{font-size:9px}.badge{font-size:10.5px;padding:1px 2px}.day .plan{font-size:9.5px}}
+/* 결과 */
+.hero{text-align:center;padding:22px 16px 20px;border-radius:16px;margin-bottom:12px;color:#fff;background:linear-gradient(125deg,#2E4FD0 0%,#4a6cf0 55%,#7b93ff 100%);box-shadow:0 8px 24px rgba(46,79,208,.25)}
+.hero .l{font-size:14.5px;font-weight:700;opacity:.9}
+.hero .n{font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1.25}
+.hero .t{font-size:13px;opacity:.85}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.tile{border-radius:14px;padding:14px 14px 12px;background:var(--bg);border:1px solid var(--line);min-width:0}
+.tile .l{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+.tile .l i{width:8px;height:8px;border-radius:50%;flex:none}
+.tile .n{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.35}
+.tile .t{font-size:12px;color:var(--sub);line-height:1.45;word-break:keep-all}
+.tile.bs{background:var(--card)}.tile.bs .l i{background:var(--ink)}
+.tile.jh{background:var(--pri-bg);border-color:transparent}
+.tile.jh .n,.tile.jh .l{color:var(--pri)}.tile.jh .l i{background:var(--pri)}
+.tile.ot .n{color:var(--ot)}.tile.ot .l i{background:var(--ot)}
+.tile.nt .n{color:var(--nt)}.tile.nt .l i{background:var(--nt)}
+.tile.hd .n{color:var(--hol)}.tile.hd .l i{background:var(--hol)}
+.tile.zero{opacity:.55}
+@media(max-width:400px){.tile .n{font-size:20px}.hero .n{font-size:34px}}
+/* 빠른 입력·근무 시간대 */
+.qfill{margin-top:12px;background:var(--bg);border-radius:12px;padding:10px 12px}
+.qfill .ql{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+.qrow{display:flex;gap:6px;flex-wrap:wrap}
+.qrow input{flex:1 1 120px;min-width:0;padding:9px 10px;background:var(--card)}
+.qrow button{flex:1 1 56px;padding:9px 6px;font-size:14px;background:var(--card);border:1px solid var(--line)}
+.qrow button.clr{color:var(--sub);font-weight:600}
+@media(max-width:480px){.qrow input{flex-basis:100%}}
+.shift{margin-top:16px}
+.shift .opt{font-size:11.5px;font-weight:700;color:var(--sub);background:var(--bg);border-radius:5px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.row-t{display:flex;align-items:center;gap:8px}
+.row-t span{color:var(--sub);font-weight:700}
+/* 하단 합계 바 */
+.sbar{position:fixed;left:50%;bottom:12px;transform:translate(-50%,140%);width:min(728px,calc(100vw - 24px));display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 16px;box-shadow:0 10px 30px rgba(16,24,40,.18);transition:transform .25s;z-index:8}
+.sbar.show{transform:translate(-50%,0)}
+.sbar span{font-size:12.5px;color:var(--sub);display:block;line-height:1.2}
+.sbar b{font-size:20px;color:var(--pri);letter-spacing:-.4px}
+.sbar button{padding:11px 16px;font-size:14.5px;white-space:nowrap}
+.nextday{width:100%;margin-top:8px;padding:11px}
+.wk .line.sub{font-size:13.5px;color:var(--sub);padding:0 0 3px 10px}
+.jdrow{margin-top:14px}
+.nrow{margin-top:10px}
+.msg{padding:12px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:14.5px;margin-bottom:10px}
+.wk{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.wk .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.wk .rng{font-weight:800}
+.chip{font-size:13px;font-weight:800;border-radius:20px;padding:3px 10px}
+.c-ok{background:var(--ok-bg);color:var(--ok)}
+.c-no{background:var(--bad-bg);color:var(--bad)}
+.c-chk{background:var(--warn-bg);color:var(--warn)}
+.wk .facts{font-size:13.5px;color:var(--sub);margin:6px 0}
+.wk .line{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:3px 0}
+.wk .line b{white-space:nowrap}
+.wk .why{font-size:13px;color:var(--sub);background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:6px}
+.wk label.paid{display:flex;align-items:center;gap:6px;font-weight:500;font-size:13.5px;margin:8px 0 0;color:var(--sub)}
+.wk label.paid input{width:auto}
+.wk.is-paid{opacity:.55}
+.formula{font-size:14px;color:var(--sub);background:var(--bg);border-radius:8px;padding:10px 12px;margin:10px 0}
+details{border-top:1px solid var(--line);padding:12px 0}
+details:first-of-type{border-top:0}
+summary{font-weight:700;cursor:pointer}
+details p,details li{font-size:14.5px;color:var(--sub)}
+.note{font-size:12.5px;color:var(--sub);margin-top:14px}
+.actions{display:flex;gap:10px;margin-top:14px}
+.actions button{flex:1}
+.contact{display:flex;gap:10px;margin:0 0 20px;flex-wrap:wrap}
+.contact a{flex:1;min-width:150px;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font-weight:700;border-radius:10px;padding:13px 14px;font-size:15px}
+.contact .tel{background:var(--pri-bg);color:var(--pri)}
+.contact .kakao{background:#FEE500;color:#191919}
+.contact.bottom{margin:24px 0 0}
+@media(max-width:480px){.contact a{flex-basis:100%}}
+.share-cta{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px dashed var(--pri);border-radius:12px;padding:14px 16px;margin:-8px 0 20px;color:var(--ink)}
+.share-cta .ic{font-size:26px;line-height:1}
+.share-cta b{display:block;font-size:15.5px;color:var(--pri)}
+.share-cta span{font-size:13px;color:var(--sub);font-weight:500}
+.share-cta.bottom{margin:12px 0 0}
+.sbtns{display:grid;gap:8px;margin-top:14px}
+.sbtns button{display:flex;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--line);text-align:left}
+.sbtns .ka{background:#FEE500;color:#191919;border-color:#FEE500}
+.spre{font-family:inherit;outline:none;white-space:pre-wrap;line-height:1.55;font-size:13px;color:var(--sub);background:var(--bg);border-radius:10px;padding:10px 12px;max-height:180px;overflow:auto;margin:0}
+.sopt{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;font-weight:500;color:var(--sub);margin:12px 0 0}
+.sopt input{width:auto;margin-top:4px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;padding:11px 18px;border-radius:24px;font-size:14.5px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{text-align:center;color:var(--sub);font-size:13px;margin-top:30px;padding-bottom:60px}
+/* 입력창 */
+dialog{border:0;border-radius:18px;padding:0;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{padding:20px}
+.dlg h3{margin:0;font-size:19px}
+.dlg .sub{font-size:13.5px;color:var(--sub);margin:2px 0 14px}
+.dlg .sub .h{color:var(--hol);font-weight:700}
+.quick{display:grid;gap:8px}
+.quick button{text-align:left;padding:12px 14px;border:1px solid var(--line)}
+.quick button small{display:block;font-weight:500;color:var(--sub);font-size:12.5px}
+.quick button.sel{border-color:var(--pri);box-shadow:inset 0 0 0 1px var(--pri)}
+.hrs{display:flex;gap:8px;align-items:center;margin-top:14px}
+.hrs button{padding:10px 14px;font-size:18px}
+.hrs input{text-align:center;font-size:20px;font-weight:800}
+.times{display:grid;grid-template-columns:1fr 1fr 76px;gap:8px;margin-top:10px}
+.quick:empty{display:none}
+.times label{font-size:12.5px;color:var(--sub);font-weight:600}
+.times input{padding:8px 6px;font-size:15px}
+.dlg .acts{display:flex;gap:8px;margin-top:16px}
+.dlg .acts button{flex:1}
+@media print{body{background:#fff;color:#000}.noprint,.actions,.tools{display:none!important}.card{border:1px solid #bbb;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="cover" aria-hidden="true"></div>
+  <div class="page-icon" aria-hidden="true">💰</div>
+  <h1><span class="hl">알바 급여</span>계산기</h1>
+  <dl class="props">
+    <dt>👤 대상</dt><dd><span class="tg b">알바생</span><span class="tg b">단시간 근로자</span></dd>
+    <dt>✅ 주휴 조건</dt><dd><span class="tg g">주 15시간 이상 약속</span><span class="tg g">약속한 날 개근</span></dd>
+    <dt>📅 반영</dt><dd><span class="tg y">2025~2027 공휴일</span><span class="tg y">2026 최저임금 10,320원</span><span class="tg y">공휴일·야간·휴일근로</span></dd>
+  </dl>
+  <div class="callout"><span class="ci">💡</span><div>다이어리나 달력을 보면서 일한 날을 체크하면, <b>기본급과 주휴수당</b>은 물론 <b>연장·야간·휴일수당</b>까지 받아야 할 돈을 자동으로 계산해 드려요.</div></div>
+  <div class="contact noprint">
+    <a class="tel" href="tel:0518327227">📞 사건문의 051-832-7227</a>
+    <a class="kakao" href="https://open.kakao.com/o/sDnRsbtf" target="_blank" rel="noopener">💬 사건문의 카톡 오픈채팅</a>
+  </div>
+  <button type="button" class="share-cta noprint" data-share="app"><span class="ic">🎁</span><span><b>이 계산기, 친구에게도 알려주세요</b><span>월급 제대로 받고 있는지 알바 친구에게 링크로 보내기</span></span></button>
+
+  <!-- ① 역질문 -->
+  <div class="card noprint">
+    <h2>① 먼저 하나 여쭤볼게요</h2>
+    <p class="q">Q. 사장님과 처음에 <u>요일마다 몇 시간</u> 일하기로 했나요?</p>
+    <p class="hint">근로계약서에 적힌 시간, 또는 말로 약속한 시간을 넣어주세요. 실제로 일한 시간이 아니라 <b>약속한 시간</b>이에요. 쉬기로 한 요일은 비워두세요.</p>
+    <div class="week7" id="sched"></div>
+    <div class="qfill">
+      <span class="ql">⚡ 빠른 입력</span>
+      <div class="qrow">
+        <input type="number" id="qH" min="0" max="24" step="0.5" inputmode="decimal" placeholder="하루 몇 시간?" aria-label="하루 근무시간">
+        <button type="button" data-qf="wd">월~금</button><button type="button" data-qf="we">토·일</button><button type="button" data-qf="all">매일</button><button type="button" data-qf="clr" class="clr">비우기</button>
+      </div>
+    </div>
+    <div class="sumline" id="schedSum"></div>
+    <div class="shift">
+      <label>🕘 보통 몇 시부터 몇 시까지 일하나요? <span class="opt">선택</span></label>
+      <div class="row-t"><input type="time" id="shS" aria-label="보통 출근 시간"><span>~</span><input type="time" id="shE" aria-label="보통 퇴근 시간"></div>
+      <div class="small">넣어두면 달력에서 '약속대로 일했어요'로 체크한 날의 <b>야간 시간(밤 10시~아침 6시)</b>이 자동으로 계산돼요. 낮에만 일하면 비워둬도 돼요.</div>
+    </div>
+    <div class="qa">
+      <b>왜 이걸 먼저 물어보나요?</b><br>
+      주휴수당은 <b>약속한 근무시간(소정근로시간)</b>을 기준으로 계산해요. 약속보다 더 일한 시간은 주휴수당에 들어가지 않아요.<br>
+      그 시간은 <b>연장근로</b>라서, 못 받았다면 <b>연장근로 가산수당(50%)</b>을 주휴수당과 <u>따로</u> 청구할 수 있어요. 아래 결과에서 두 금액을 나눠서 보여드릴게요.
+    </div>
+    <div class="row2">
+      <div><label for="wage">시급 (원)</label><input type="number" id="wage" inputmode="numeric" min="0" step="10">
+        <div class="small" id="wageHint"></div></div>
+      <div><label>일하는 곳 직원 수 (사장님 빼고, 알바 포함)</label>
+        <div class="seg" id="size">
+          <button data-v="5up">5명 이상</button><button data-v="5down">5명 미만</button><button data-v="unknown">잘 모름</button>
+        </div>
+        <div class="small">주휴수당은 직원 수와 상관없이 받을 수 있어요. 공휴일 유급휴일과 연장·야간·휴일근로 가산수당은 5명 이상인 곳에만 적용돼요(노동절 5월 1일은 모든 곳).</div></div>
+    </div>
+    <div class="jdrow">
+      <label for="jday">주휴일은 무슨 요일인가요?</label>
+      <select id="jday"></select>
+      <div class="qa">
+        <b>주휴일이 뭔가요?</b><br>
+        일주일 동안 약속한 날을 다 나오면 <b>쉬면서도 하루치 돈(주휴수당)을 받는 날</b>이에요. 꼭 일요일일 필요는 없어요.<br>
+        · 근로계약서에 <b>'주휴일'</b>이나 <b>'휴일'</b>로 적힌 요일을 고르세요.<br>
+        · 계약서가 없으면 <b>가게 정기 휴무일</b>을 고르면 돼요. 예) 월요일에 쉬는 식당 → 월요일<br>
+        · 쉬는 요일이 둘 이상이면 그중 하나만 골라요. 잘 모르면 일요일(일요일에 일하면 다른 쉬는 요일)로 두세요.<br>
+        · 약속한 근무 요일은 고를 수 없어요. 주휴일에 일했다면 5명 이상인 곳은 <b>휴일근로 가산수당(50%)</b>도 받아요.
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 달력 -->
+  <div class="card">
+    <h2 class="noprint">② 달력에 일한 시간을 적어주세요</h2>
+    <p class="hint noprint">날짜를 누르고 <b>실제로 일한 시간</b>을 적어주세요. 빨간 날은 공휴일이에요.</p>
+    <div class="calhead"><button class="noprint" id="prev" aria-label="이전 달">‹</button><h3 id="ym"></h3><button class="noprint" id="next" aria-label="다음 달">›</button></div>
+    <div class="cal" id="cal"></div>
+    <div class="legend">
+      <span><i style="background:var(--pri)"></i>일한 시간</span>
+      <span><i style="background:var(--ot)"></i>약속보다 더 일함</span>
+      <span><i style="background:var(--bad)"></i>결근</span>
+      <span><i style="background:var(--sub)"></i>쉬는 날</span>
+      <span><i style="background:var(--hol)"></i>공휴일</span>
+      <span>🌙 야간근로</span>
+    </div>
+    <div class="tools">
+      <button class="ghost" id="fill">이 달 약속한 요일 한 번에 채우기</button>
+      <button id="clearMonth">이 달 기록 지우기</button>
+    </div>
+  </div>
+
+  <!-- ③ 결과 -->
+  <div class="card" id="result">
+    <h2>③ 계산 결과</h2>
+    <p class="hint">입력한 모든 주를 합한 금액이에요. 이미 받은 주는 아래에서 체크하면 합계에서 빠져요.</p>
+    <div id="warns"></div>
+    <div class="hero">
+      <div class="l">모두 합쳐 받아야 할 돈</div>
+      <div class="n" id="tAll">0원</div>
+      <div class="t" id="tAllSub">기본급 + 수당을 더한 금액이에요</div>
+    </div>
+    <div class="tiles">
+      <div class="tile bs"><div class="l"><i></i>기본급 (일한 시간 × 시급)</div><div class="n" id="tBase">0원</div><div class="t" id="tBaseSub"></div></div>
+      <div class="tile jh"><div class="l"><i></i>주휴수당</div><div class="n" id="tJh">0원</div><div class="t" id="tJhSub"></div></div>
+      <div class="tile ot"><div class="l"><i></i>연장근로 가산수당</div><div class="n" id="tOt">0원</div><div class="t" id="tOtSub"></div></div>
+      <div class="tile nt"><div class="l"><i></i>야간근로 가산수당</div><div class="n" id="tNt">0원</div><div class="t" id="tNtSub"></div></div>
+      <div class="tile hd"><div class="l"><i></i>공휴일 유급수당</div><div class="n" id="tHol">0원</div><div class="t" id="tHolSub"></div></div>
+      <div class="tile hd"><div class="l"><i></i>휴일근로 가산수당</div><div class="n" id="tHp">0원</div><div class="t" id="tHpSub"></div></div>
+    </div>
+    <h3 style="font-size:16px;margin:18px 0 8px" id="wkTitle">주별 내역</h3>
+    <div id="weeks"></div>
+    <div class="actions">
+      <button class="go" id="copy" data-share="result">내 결과 공유하기</button>
+      <button class="ghost" id="print">인쇄 / PDF</button>
+    </div>
+  </div>
+
+  <!-- ④ 설명 -->
+  <div class="card noprint">
+    <h2>알아두면 좋은 것</h2>
+    <details><summary>주휴수당을 받을 수 있는 조건</summary>
+      <ul>
+        <li>1주에 약속한 근무시간이 <b>15시간 이상</b>이어야 해요.</li>
+        <li>그 주에 약속한 날을 <b>빠짐없이 출근(개근)</b>해야 해요. 지각·조퇴는 결근이 아니에요.</li>
+        <li>직원 수와 상관없이, 5명 미만인 가게도 줘야 해요.</li>
+        <li>정규직, 알바, 계약직 모두 똑같이 적용돼요.</li>
+      </ul></details>
+    <details><summary>계산 방법</summary>
+      <div class="formula">주휴수당 = (1주 약속한 근무시간 ÷ 40) × 8시간 × 시급<br>※ 1주 40시간 이상이면 8시간분이 최대예요.</div>
+      <p>예) 시급 10,320원, 주 20시간 약속 → (20 ÷ 40) × 8 × 10,320 = <b>41,280원</b></p></details>
+    <details><summary>약속보다 더 일했다면? (연장근로 가산수당)</summary>
+      <p>하루 약속 시간이나 1주 약속 시간보다 더 일한 시간은 주휴수당이 아니라 <b>연장근로</b>예요. 직원 5명 이상인 곳이라면 더 일한 시간마다 시급의 <b>50%를 더</b> 받아야 해요. 알바처럼 주 40시간 미만으로 약속한 경우에도, 약속을 넘긴 시간부터 가산수당이 붙어요.</p>
+      <p>직원 5명 미만인 곳은 가산수당(50%) 의무는 없어요. 그래도 더 일한 시간만큼의 시급(100%)은 당연히 받아야 해요.</p></details>
+    <details><summary>밤에 일했다면? (야간근로 가산수당)</summary>
+      <p><b>밤 10시부터 다음 날 아침 6시 사이</b>에 일한 시간은 야간근로예요. 직원 5명 이상인 곳이라면 그 시간마다 시급의 <b>50%를 더</b> 받아요. 주 15시간 미만 알바도 똑같이 받아요.</p>
+      <p>야간근로 가산은 연장·휴일근로 가산과 <b>따로 겹쳐서</b> 붙어요. 예) 공휴일 밤 11시에 일하면 휴일근로 가산 50% + 야간 가산 50%</p>
+      <p>달력에서 날짜를 누르고 출근·퇴근 시간을 넣으면 야간 시간이 자동으로 계산돼요. 직원 5명 미만인 곳은 가산 의무가 없어요.</p></details>
+    <details><summary>공휴일·노동절에는 어떻게 받나요?</summary>
+      <ul>
+        <li><b>일하기로 약속한 요일이 공휴일이면</b>, 직원 5명 이상인 곳은 그날 쉬어도 <b>약속한 시간만큼 시급</b>을 받아요(유급휴일).</li>
+        <li>그 공휴일에 일했다면 유급휴일수당에 더해, 일한 시간의 시급(100%)과 <b>휴일근로 가산수당</b>(8시간까지 50%, 8시간 넘는 시간은 100%)까지 받아요. 8시간 일했다면 모두 합쳐 시급의 약 2.5배예요.</li>
+        <li>원래 쉬는 요일이 공휴일과 겹치면 유급으로 줄 의무는 없어요. 다만 그날 일했다면 휴일근로 가산수당은 받아요.</li>
+        <li>주 15시간 미만 약속이거나 직원 5명 미만인 곳은 공휴일 유급휴일·휴일근로 가산수당이 적용되지 않아요.</li>
+        <li><b>노동절(5월 1일)</b>은 별도 법률로 정한 유급휴일이라 <b>직원 수, 근무시간과 상관없이</b> 모두 유급이에요. 주 15시간 미만 알바도 마찬가지예요. 다만 5명 미만인 곳은 일해도 가산수당(50%)은 없어요.</li>
+        <li>주휴일(보통 일요일)에 일했다면, 5명 이상인 곳은 휴일근로 가산수당을 받아요.</li>
+        <li>회사가 근로자대표와 서면으로 합의해 공휴일을 다른 근무일로 바꿨다면(휴일대체), 그 공휴일에 일해도 가산수당이 없어요.</li>
+      </ul></details>
+    <details><summary>주의할 점</summary>
+      <ul>
+        <li>그만두는 주도 <b>그 주(휴일 포함 7일) 동안 재직</b>하고 약속한 날을 다 나왔다면 주휴수당이 생겨요. 다음 주에 일할 필요는 없어요. 예) 월~금 일하고 일요일까지 재직(다음 주 월요일 퇴사) → 받음 / 금요일자로 퇴사 → 못 받음</li>
+        <li>약속은 주 15시간 미만인데 실제로 매주 15시간 넘게 일해 왔다면, 사실상 약속한 시간이 늘어난 것으로 볼 수 있어요. 노무사 상담을 받아보세요.</li>
+        <li>못 받은 임금은 <b>3년 안에</b> 청구할 수 있어요. 고용노동부 상담센터는 국번 없이 <b>1350</b>이에요.</li>
+        <li>이 계산은 입력한 내용을 바탕으로 한 예상 금액이에요. 실제 청구 전에는 근로계약서와 급여명세서를 함께 확인하세요.</li>
+      </ul></details>
+    <p class="note">근거: 근로기준법 제55조(휴일)·제56조(연장·휴일근로)·제18조 제3항, 같은 법 시행령 제30조, 노동절 제정에 관한 법률, 기간제 및 단시간근로자 보호 등에 관한 법률 제6조, 고용노동부 행정해석(임금근로시간과-653, 근로기준정책과-4361). 입력 내용은 이 기기 브라우저에만 저장돼요.</p>
+  </div>
+
+<div class="contact noprint bottom">
+    <a class="tel" href="tel:0518327227">📞 사건문의 051-832-7227</a>
+    <a class="kakao" href="https://open.kakao.com/o/sDnRsbtf" target="_blank" rel="noopener">💬 사건문의 카톡 오픈채팅</a>
+  </div>
+  <button type="button" class="share-cta noprint bottom" data-share="app"><span class="ic">🎁</span><span><b>이 계산기, 친구에게도 알려주세요</b><span>월급 제대로 받고 있는지 알바 친구에게 링크로 보내기</span></span></button>
+
+  <footer>부산산재노무사 신명석</footer>
+</div>
+
+<!-- 날짜 입력창 -->
+<dialog id="dlg">
+  <form method="dialog" class="dlg" id="dlgForm">
+    <h3 id="dTitle"></h3>
+    <div class="sub" id="dSub"></div>
+    <div class="quick" id="quick"></div>
+    <div class="hrs"><button type="button" id="minus">−</button><input type="number" id="dH" min="0" max="24" step="0.5" inputmode="decimal" aria-label="일한 시간"><button type="button" id="plus">+</button></div>
+    <div class="small" style="text-align:center">실제로 일한 시간 (쉬는 시간 빼고)</div>
+    <div class="times">
+      <div><label for="dS">출근</label><input type="time" id="dS"></div>
+      <div><label for="dE">퇴근</label><input type="time" id="dE"></div>
+      <div><label for="dB">휴게(분)</label><input type="number" id="dB" min="0" step="10" inputmode="numeric"></div>
+    </div>
+    <div class="nrow"><label for="dN">🌙 그중 밤 10시~아침 6시에 일한 시간</label><input type="number" id="dN" min="0" max="8" step="0.5" inputmode="decimal" placeholder="0"></div>
+    <div class="small">출근·퇴근 시간을 넣으면 자동으로 채워져요. 이 시간대에 쉬는 시간이 있었다면 그만큼 빼서 고쳐주세요.</div>
+    <div class="acts">
+      <button type="button" id="dDel">지우기</button>
+      <button type="button" id="dCancel">취소</button>
+      <button type="button" class="go" id="dSave">저장</button>
+    </div>
+    <button type="button" class="ghost nextday" id="dNext">저장하고 다음 날 입력 ›</button>
+  </form>
+</dialog>
+
+<dialog id="shareDlg">
+  <div class="dlg">
+    <h3 id="shTitle"></h3>
+    <div class="sub" id="shSub"></div>
+    <pre class="spre" id="shText"></pre>
+    <label class="sopt" id="shOptWrap"><input type="checkbox" id="shWithData" checked> 내 달력 기록도 함께 보내기 <br>(받는 사람이 링크를 열면 같은 달력과 결과를 볼 수 있어요)</label>
+    <div class="sbtns">
+      <button type="button" class="ka" id="shNative">💬 카카오톡 · 메시지 앱으로 보내기</button>
+      <button type="button" id="shSms">✉️ 문자로 보내기</button>
+      <button type="button" id="shCopy">🔗 링크 복사하기</button>
+    </div>
+    <div class="acts"><button type="button" id="shClose">닫기</button></div>
+  </div>
+</dialog>
+<div class="sbar noprint" id="sbar"><div><span>모두 합쳐</span><b id="sbarN">0원</b></div><button type="button" class="go" id="sbarGo">결과 보기 ↓</button></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DOW=['월','화','수','목','금','토','일'];
+const MINWAGE={2025:10030,2026:10320,2027:10700};
+// 관공서 공휴일(대체공휴일 포함). 2026.4.30 개정으로 국경일 전부(제헌절 포함)·노동절 공휴일
+const HOL={
+'2025-01-01':'신정','2025-01-27':'임시공휴일','2025-01-28':'설날 연휴','2025-01-29':'설날','2025-01-30':'설날 연휴','2025-03-01':'삼일절','2025-03-03':'대체공휴일','2025-05-01':'근로자의 날','2025-05-05':'어린이날·부처님오신날','2025-05-06':'대체공휴일','2025-06-03':'대통령선거','2025-06-06':'현충일','2025-08-15':'광복절','2025-10-03':'개천절','2025-10-05':'추석 연휴','2025-10-06':'추석','2025-10-07':'추석 연휴','2025-10-08':'대체공휴일','2025-10-09':'한글날','2025-12-25':'성탄절',
+'2026-01-01':'신정','2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴','2026-03-01':'삼일절','2026-03-02':'대체공휴일','2026-05-01':'노동절','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일','2026-06-03':'지방선거','2026-06-06':'현충일','2026-07-17':'제헌절','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'성탄절',
+'2027-01-01':'신정','2027-02-06':'설날 연휴','2027-02-07':'설날','2027-02-08':'설날 연휴','2027-02-09':'대체공휴일','2027-03-01':'삼일절','2027-05-01':'노동절','2027-05-03':'대체공휴일','2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일','2027-07-17':'제헌절','2027-07-19':'대체공휴일','2027-08-15':'광복절','2027-08-16':'대체공휴일','2027-09-14':'추석 연휴','2027-09-15':'추석','2027-09-16':'추석 연휴','2027-10-03':'개천절','2027-10-04':'대체공휴일','2027-10-09':'한글날','2027-10-11':'대체공휴일','2027-12-25':'성탄절','2027-12-27':'대체공휴일'};
+
+// 노동절(5.1)은 노동절 제정에 관한 법률상 유급휴일 → 직원 수·주 15시간 여부와 무관
+const isLabor=key=>key.slice(5)==='05-01';
+const KEY='juhyu-calc-v1';
+let S={sched:[0,0,0,0,0,0,0],wage:10320,size:'unknown',days:{},paid:{},hpaid:{},jday:null,shift:{s:'',e:''}};
+try{const o=JSON.parse(localStorage.getItem(KEY));if(o)S=Object.assign(S,o);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+
+const pad=n=>String(n).padStart(2,'0');
+const k=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const di=d=>(d.getDay()+6)%7; // 월=0 … 일=6
+const addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const monOf=d=>addD(d,-di(d));
+const won=n=>Math.round(n).toLocaleString()+'원';
+const hr=n=>(Math.round(n*100)/100).toLocaleString()+'시간';
+const md=d=>`${d.getMonth()+1}.${d.getDate()}(${DOW[di(d)]})`;
+const today=new Date();
+let view=new Date(today.getFullYear(),today.getMonth(),1);
+
+/* ① 약속한 근무시간 */
+$('sched').innerHTML=DOW.map((w,i)=>`<div class="${i===6?'sun':''}"><span>${w}</span><input type="number" min="0" max="24" step="0.5" inputmode="decimal" data-i="${i}" value="${S.sched[i]||''}" placeholder="-"></div>`).join('');
+$('sched').addEventListener('input',e=>{const i=+e.target.dataset.i;S.sched[i]=Math.max(0,parseFloat(e.target.value)||0);save();renderAll();});
+$('wage').value=S.wage||'';
+$('wage').addEventListener('input',e=>{S.wage=parseFloat(e.target.value)||0;save();renderAll();});
+document.querySelectorAll('#size button').forEach(b=>b.addEventListener('click',()=>{S.size=b.dataset.v;save();renderAll();}));
+$('jday').addEventListener('change',e=>{S.jday=+e.target.value;save();renderAll();});
+// 빠른 입력: 하루 시간을 여러 요일에 한 번에
+const syncSched=()=>document.querySelectorAll('#sched input').forEach((el,i)=>el.value=S.sched[i]||'');
+document.querySelectorAll('[data-qf]').forEach(b=>b.addEventListener('click',()=>{
+  const f=b.dataset.qf,h=Math.max(0,Math.min(24,parseFloat($('qH').value)||0));
+  if(f!=='clr'&&!h){$('qH').focus();toast('먼저 하루 몇 시간인지 적어주세요');return;}
+  const idx=f==='wd'?[0,1,2,3,4]:f==='we'?[5,6]:[0,1,2,3,4,5,6];
+  idx.forEach(i=>S.sched[i]=f==='clr'?0:h);
+  syncSched();save();renderAll();
+}));
+// 보통 근무 시간대 → '약속대로 일했어요'인 날의 야간 시간 자동 계산
+$('shS').value=S.shift.s||'';$('shE').value=S.shift.e||'';
+['shS','shE'].forEach(x=>$(x).addEventListener('change',()=>{
+  S.shift={s:$('shS').value,e:$('shE').value};
+  // 시간대를 바꾸면 약속대로 채운 날(시간 기록 없음)의 야간 시간도 다시 계산
+  Object.entries(S.days).forEach(([key,e])=>{if(e.h>0&&!e.s&&e.h===S.sched[di(parse(key))]){const n=Math.min(shiftNight(),e.h);if(n)e.n=n;else delete e.n;}});
+  save();renderAll();
+}));
+const toMin=t=>{const [a,b]=t.split(':').map(Number);return a*60+b;};
+// 출근 st분부터 m분 동안 중 밤 10시~아침 6시와 겹치는 분
+const nightMin=(st,m)=>[[0,360],[1320,1800],[2760,3240]].reduce((t,[x,y])=>t+Math.max(0,Math.min(y,st+m)-Math.max(x,st)),0);
+const span=(s,e)=>{let m=toMin(e)-toMin(s);if(m<=0)m+=1440;return m;};
+const shiftNight=()=>{const {s,e}=S.shift||{};return s&&e?Math.round(nightMin(toMin(s),span(s,e))/30)/2:0;};
+const weekSched=()=>S.sched.reduce((a,b)=>a+b,0);
+// 소정근로시간: 하루 8시간까지만 인정(넘는 약속은 법정 연장근로)
+const sojung=()=>S.sched.reduce((a,b)=>a+Math.min(b,8),0);
+// 주휴일: 고른 요일(약속 없는 날) → 없으면 일요일부터 거꾸로 첫 쉬는 요일
+const jhDay=()=>{const v=S.jday;if(v!=null&&v>=0&&!S.sched[v])return v;for(let i=6;i>=0;i--)if(!S.sched[i])return i;return -1;};
+// 약속한 날이 공휴일일 때 유급휴일인지
+const holPaid=key=>isLabor(key)||(S.size!=='5down'&&sojung()>=15);
+
+function renderTop(){
+  const w=sojung(),raw=weekSched(),days=S.sched.filter(x=>x>0).length;
+  $('schedSum').innerHTML=(raw>w?`<span style="color:var(--warn)">하루 8시간이 넘는 약속은 8시간까지만 약속한 근무시간(소정근로시간)으로 보고, 넘는 시간은 연장근로로 계산해요.</span><br>`:'')
+    +(w?`1주 약속한 근무시간 <b>${hr(w)}</b> (주 ${days}일) → ${w>=15?`주휴수당 대상이에요. 1주 주휴수당 <b>${won(Math.min(w,40)/40*8*(S.wage||0))}</b>`:'<span style="color:var(--bad)">15시간 미만이라 주휴수당 대상이 아니에요.</span>'}`:'요일별 시간을 넣으면 1주 합계가 계산돼요.');
+  $('wageHint').textContent=`최저임금: 2025년 10,030원 · 2026년 10,320원 · 2027년 10,700원`;
+  document.querySelectorAll('#size button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.size));
+  const jd=jhDay();
+  $('jday').innerHTML=(jd<0?'<option value="-1" selected>쉬는 요일 없음 (①에 쉬는 요일을 비워두세요)</option>':'')
+    +DOW.map((w,i)=>`<option value="${i}" ${i===jd?'selected':''} ${S.sched[i]?'disabled':''}>${w}요일${S.sched[i]?' (약속한 근무일)':''}</option>`).join('');
+}
+
+/* ② 달력 */
+function cellBadge(key,i){
+  const e=S.days[key];
+  if(!e){
+    if(!(S.sched[i]>0)) return '';
+    if(HOL[key]) return holPaid(key)?`<span class="plan">유급 ${Math.min(S.sched[i],8)}h</span>`:'';
+    return `<span class="plan">약속 ${S.sched[i]}h</span>`;
+  }
+  if(e.absent) return '<span class="badge b-abs">결근</span>';
+  if(e.off) return '<span class="badge b-off">쉼</span>';
+  const over=e.h>S.sched[i];
+  return `<span class="badge ${over?'b-over':'b-work'}">${e.h}h${e.n?'🌙':''}</span>`;
+}
+function renderCal(){
+  $('ym').textContent=`${view.getFullYear()}년 ${view.getMonth()+1}월`;
+  const start=monOf(view);
+  const last=new Date(view.getFullYear(),view.getMonth()+1,0);
+  const end=addD(monOf(last),6);
+  let h=DOW.map((w,i)=>`<div class="dow ${i===6?'sun':''}">${w}</div>`).join('');
+  for(let d=start;d<=end;d=addD(d,1)){
+    const key=k(d),i=di(d),hol=HOL[key];
+    const cls=['day',d.getMonth()!==view.getMonth()?'other':'',i===6?'sun':'',hol?'hol':'',key===k(today)?'today':''].join(' ');
+    h+=`<button type="button" class="${cls}" data-k="${key}"><span class="n">${d.getDate()}</span>${hol?`<span class="hn">${hol}</span>`:''}${cellBadge(key,i)}</button>`;
+  }
+  $('cal').innerHTML=h;
+}
+$('cal').addEventListener('click',e=>{const b=e.target.closest('.day');if(b)openDay(b.dataset.k);});
+$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);renderAll();};
+$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);renderAll();};
+$('fill').onclick=()=>{
+  if(!weekSched()){alert('먼저 ①에 요일별 약속한 근무시간을 넣어주세요.');return;}
+  const last=new Date(view.getFullYear(),view.getMonth()+1,0);let skip=0;
+  for(let d=new Date(view);d<=last;d=addD(d,1)){
+    const key=k(d),i=di(d);
+    if(S.sched[i]>0&&!S.days[key]){if(HOL[key]){skip++;continue;}const o={h:S.sched[i]},n=Math.min(shiftNight(),o.h);if(n)o.n=n;S.days[key]=o;}
+  }
+  save();renderAll();
+  if(skip) alert(`공휴일 ${skip}일은 비워뒀어요. 쉬었다면 그대로 두면 되고(유급휴일 대상이면 자동 계산), 일했다면 직접 눌러서 적어주세요.`);
+};
+$('clearMonth').onclick=()=>{
+  if(!confirm(`${view.getMonth()+1}월 기록을 모두 지울까요?`))return;
+  const p=`${view.getFullYear()}-${pad(view.getMonth()+1)}-`;
+  Object.keys(S.days).forEach(x=>{if(x.startsWith(p))delete S.days[x];});save();renderAll();
+};
+
+/* 날짜 입력창 */
+let cur=null,pick=null;
+function openDay(key){
+  cur=key;const d=parse(key),i=di(d),e=S.days[key]||{},hol=HOL[key],p=S.sched[i];
+  $('dTitle').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${DOW[i]})`;
+  $('dSub').innerHTML=(hol?`<span class="h">${hol}</span> · `:'')+(p?`약속한 근무 ${p}시간`:'약속한 근무일이 아니에요. 이날 일했다면 시간만 적어주세요.');
+  const opts=[];
+  if(p) opts.push(['plan',`약속대로 일했어요 (${p}시간)`,'']);
+  if(hol&&p) opts.push(['off','공휴일이라 쉬었어요',holPaid(key)?`유급휴일이라 ${Math.min(p,8)}시간분 시급을 받아요`:'']);
+  else if(p){
+    opts.push(['absent','결근했어요','약속한 날인데 안 나갔어요']);
+    opts.push(['off','쉬는 날이었어요','사장님이 쉬라고 했거나 가게가 쉬었어요']);
+  }
+  $('quick').innerHTML=opts.map(o=>`<button type="button" data-q="${o[0]}">${o[1]}${o[2]?`<small>${o[2]}</small>`:''}</button>`).join('');
+  pick=e.absent?'absent':e.off?'off':null;
+  $('dH').value=e.h!=null?e.h:'';$('dS').value=e.s||'';$('dE').value=e.e||'';$('dB').value=e.b!=null?e.b:'';$('dN').value=e.n||'';
+  markQuick();$('dlg').showModal();
+}
+function markQuick(){document.querySelectorAll('#quick button').forEach(b=>b.classList.toggle('sel',b.dataset.q===pick||(b.dataset.q==='plan'&&!pick&&+$('dH').value===S.sched[di(parse(cur))]&&$('dH').value!=='')));}
+$('quick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const q=b.dataset.q;
+  if(q==='plan'){pick=null;const p=S.sched[di(parse(cur))];$('dH').value=p;
+    if(!$('dS').value&&!$('dE').value){const n=Math.min(shiftNight(),p);$('dN').value=n||'';}
+    commit();}
+  else{pick=q;$('dH').value='';commit();}});
+$('dH').addEventListener('input',()=>{pick=null;markQuick();});
+const step=n=>{pick=null;$('dH').value=Math.max(0,Math.min(24,(parseFloat($('dH').value)||0)+n));markQuick();};
+$('minus').onclick=()=>step(-0.5);$('plus').onclick=()=>step(0.5);
+function fromTimes(){
+  const s=$('dS').value,e=$('dE').value;if(!s||!e)return;
+  let m=span(s,e);const nm=nightMin(toMin(s),m);
+  m-=parseFloat($('dB').value)||0;
+  pick=null;$('dH').value=Math.max(0,Math.round(m/30)/2);
+  $('dN').value=nm?Math.min(Math.round(nm/30)/2,+$('dH').value):'';markQuick();
+}
+['dS','dE','dB'].forEach(x=>$(x).addEventListener('change',fromTimes));
+function commit(){
+  if(pick==='absent')S.days[cur]={absent:true};
+  else if(pick==='off')S.days[cur]={off:true};
+  else{const h=parseFloat($('dH').value);if(isNaN(h)){delete S.days[cur];}else{const o={h};if($('dS').value)o.s=$('dS').value;if($('dE').value)o.e=$('dE').value;if($('dB').value)o.b=+$('dB').value;const n=parseFloat($('dN').value);if(n>0)o.n=Math.min(n,h);S.days[cur]=o;}}
+  save();$('dlg').close();renderAll();
+}
+$('dSave').onclick=commit;
+$('dNext').onclick=()=>{
+  const nx=addD(parse(cur),1);commit();
+  if(nx.getMonth()!==view.getMonth()||nx.getFullYear()!==view.getFullYear()){view=new Date(nx.getFullYear(),nx.getMonth(),1);renderCal();}
+  openDay(k(nx));
+};
+// 입력칸에서 Enter = 저장
+$('dlgForm').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();commit();}});
+$('dlgForm').addEventListener('submit',e=>e.preventDefault());
+$('dDel').onclick=()=>{delete S.days[cur];save();$('dlg').close();renderAll();};
+$('dCancel').onclick=()=>$('dlg').close();
+
+/* ③ 주별 계산 */
+function calcWeek(mon){
+  const sch=sojung(),wage=S.wage||0,big=S.size!=='5down',full=sch>=15,jd=jhDay();
+  let work=0,otWork=0,dayOver=0,absent=0,missing=0,entries=0,nightH=0;
+  const hols=[]; // 공휴일 유급·휴일근로 내역
+  for(let i=0;i<7;i++){
+    const d=addD(mon,i),key=k(d),e=S.days[key],p=S.sched[i],hol=HOL[key];
+    if(e)entries++;
+    const h=e&&e.h>0?e.h:0;
+    // 휴일근로 가산: 5명 이상 + (노동절 | 주 15시간 이상인 공휴일·주휴일)
+    const premDay=big&&(hol&&(isLabor(key)||full)||(i===jd&&full));
+    const payH=hol&&p>0&&holPaid(key)?Math.min(p,8):0; // 유급휴일수당: 그날 약속한 시간(최대 8시간)
+    // 하루 연장 기준: 주 40시간 근로자는 8시간, 단시간근로자는 그날 약속 시간(최대 8시간)
+    if(h){work+=h;nightH+=Math.min(e.n||0,h);if(!premDay){otWork+=h;dayOver+=Math.max(0,h-(sch>=40?8:Math.min(p,8)));}}
+    if(payH||(premDay&&h)){
+      const ph=premDay?h:0,ov=Math.max(0,ph-8);
+      hols.push({d,name:hol||'주휴일',payH,workH:ph,pay:Math.round(payH*wage),prem:Math.round((ph*0.5+ov*0.5)*wage)});
+    }
+    if(p>0&&!hol){
+      if(e&&e.absent)absent++;
+      else if(!e)missing++;
+    }
+  }
+  const holPay=hols.reduce((a,x)=>a+x.pay,0),holPrem=hols.reduce((a,x)=>a+x.prem,0);
+  const night=big?Math.round(nightH*wage*0.5):0; // 야간 가산: 5명 이상, 연장·휴일 가산과 별도
+  const hd=holPay+holPrem+night;
+  const weekOver=Math.max(0,otWork-Math.min(sch,40));
+  const over=Math.max(dayOver,weekOver);
+  let status,why,jhH=0;
+  if(!sch){status='chk';why='①에 약속한 근무시간을 넣어야 계산할 수 있어요.';}
+  else if(sch<15){status='no';why=`약속한 근무시간이 1주 ${hr(sch)}으로 15시간 미만이라 주휴수당 대상이 아니에요.`+(work>=15?` 다만 이번 주에 실제로 ${hr(work)} 일했어요. 매주 이렇게 일했다면 상담을 받아보세요.`:'');}
+  else if(absent){status='no';why=`약속한 날 중 ${absent}일 결근해서 이번 주는 주휴수당이 생기지 않아요.`;}
+  else if(missing){status='chk';why=`약속한 근무일 중 ${missing}일이 비어 있어요. 일했는지, 쉬었는지 달력에 적어주세요.`+(mon.getMonth()!==addD(mon,6).getMonth()?' 달이 바뀌는 주라면 ‹ › 로 달력을 넘겨서 적어주세요.':'');}
+  else{status='ok';jhH=Math.min(sch,40)/40*8;why=`약속한 날을 모두 나왔고 1주 ${hr(sch)} 약속이라 주휴수당 대상이에요.`;}
+  const unpaidHol=[0,1,2,3,4,5,6].some(i=>{const key=k(addD(mon,i));return S.sched[i]>0&&HOL[key]&&!holPaid(key);});
+  if(unpaidHol)why+=big?' 약속한 날 중 공휴일이 있지만 주 15시간 미만 약속이라 공휴일 유급휴일은 적용되지 않아요.':' 약속한 날 중 공휴일이 있지만 직원 5명 미만인 곳은 공휴일 유급휴일 의무가 없어요.';
+  return {mon,sch,work,over,dayOver,weekOver,absent,missing,entries,status,why,jhH,jh:Math.round(jhH*wage),prem:Math.round(over*wage*0.5),base:Math.round(over*wage),basePay:Math.round(work*wage),hols,holPay,holPrem,nightH,night,hd};
+}
+function allWeeks(){
+  const set=new Set(Object.keys(S.days).map(x=>k(monOf(parse(x)))));
+  return [...set].sort().map(x=>calcWeek(parse(x)));
+}
+function renderResult(){
+  const ws=allWeeks(),wage=S.wage||0,size=S.size;
+  const warns=[];
+  if(!weekSched())warns.push('①에 사장님과 약속한 요일별 근무시간을 먼저 넣어주세요.');
+  if(!wage)warns.push('시급을 넣어주세요.');
+  const years=[...new Set(ws.map(w=>w.mon.getFullYear()))];
+  years.forEach(y=>{if(MINWAGE[y]&&wage&&wage<MINWAGE[y])warns.push(`시급 ${wage.toLocaleString()}원은 ${y}년 최저임금(${MINWAGE[y].toLocaleString()}원)보다 적어요. 최저임금 차액도 따로 청구할 수 있어요.`);});
+  $('warns').innerHTML=warns.map(w=>`<div class="msg">⚠ ${w}</div>`).join('');
+
+  const okW=ws.filter(w=>w.status==='ok'&&!S.paid[k(w.mon)]);
+  const jh=okW.reduce((a,w)=>a+w.jh,0);
+  const otH=ws.reduce((a,w)=>a+w.over,0),prem=ws.reduce((a,w)=>a+w.prem,0),base=ws.reduce((a,w)=>a+w.base,0);
+  $('tJh').textContent=won(jh);
+  $('tJhSub').textContent=ws.length?`대상 ${okW.length}주 / 입력한 ${ws.length}주`:'달력에 일한 날을 적어주세요';
+  const workH=ws.reduce((a,w)=>a+w.work,0),basePay=ws.reduce((a,w)=>a+w.basePay,0);
+  $('tBase').textContent=won(basePay);
+  $('tBaseSub').textContent=workH?`실제 일한 ${hr(workH)} × 시급 ${wage.toLocaleString()}원`:'달력에 일한 시간을 적어주세요';
+  if(size==='5down'){$('tOt').textContent='가산 의무 없음';$('tOtSub').textContent=otH?`약속보다 ${hr(otH)} 더 일함 (그 시간의 시급은 기본급에 들어 있어요)`:'약속보다 더 일한 시간 없음';}
+  else{$('tOt').textContent=won(prem);$('tOtSub').textContent=otH?`약속보다 ${hr(otH)} 더 일함 × 시급 × 50%`+(size==='unknown'?' (5명 이상일 때)':''):'약속보다 더 일한 시간 없음';}
+  // 휴일·야간 수당: '이미 받았어요' 체크한 주는 합계에서 뺌
+  const exW=ws.filter(w=>!S.hpaid[k(w.mon)]),sum=f=>exW.reduce((a,w)=>a+w[f],0),hAll=ws.flatMap(w=>w.hols);
+  const tag=size==='unknown'?' (5명 이상일 때)':'';
+  const payD=hAll.filter(x=>x.payH).length,hpH=hAll.reduce((a,x)=>a+x.workH,0),ntH=ws.reduce((a,w)=>a+w.nightH,0);
+  $('tHol').textContent=won(sum('holPay'));
+  $('tHolSub').textContent=payD?`약속한 날이 공휴일 ${payD}일 × 그날 약속 시간 × 시급`+(size==='unknown'?' (노동절 외에는 5명 이상일 때)':''):'약속한 날 중 유급 공휴일 없음';
+  $('tHp').textContent=won(sum('holPrem'));
+  $('tHpSub').textContent=hpH?`휴일에 ${hr(hpH)} 일함 × 시급 × 50%(8시간 넘으면 100%)${tag}`:'휴일에 일한 시간 없음';
+  if(size==='5down'){$('tNt').textContent='가산 의무 없음';$('tNtSub').textContent=ntH?`밤 10시~아침 6시에 ${hr(ntH)} 일함 (5명 미만은 가산 의무 없음)`:'밤 10시~아침 6시에 일한 시간 없음';}
+  else{$('tNt').textContent=won(sum('night'));$('tNtSub').textContent=ntH?`밤 10시~아침 6시에 ${hr(ntH)} 일함 × 시급 × 50%${tag}`:'밤 10시~아침 6시에 일한 시간 없음';}
+  // 합계: 주휴 + 연장 가산(5명 미만 제외) + 야간 + 공휴일 유급 + 휴일 가산
+  const extra=jh+(size==='5down'?0:prem)+sum('night')+sum('holPay')+sum('holPrem'),all=basePay+extra;
+  $('tAll').textContent=won(all);
+  $('tAllSub').textContent=ws.length?`기본급 ${won(basePay)} + 수당 ${won(extra)}`+(size==='unknown'?' · 직원 5명 이상 기준':''):'달력에 일한 날을 적으면 계산돼요';
+  document.querySelectorAll('.tile').forEach(t=>{const n=t.querySelector('.n').textContent;t.classList.toggle('zero',n==='0원'||n==='가산 의무 없음');});
+  $('sbarN').textContent=won(all);hasData=ws.length>0;updBar();
+
+  $('weeks').innerHTML=ws.length?ws.slice().reverse().map(w=>{
+    const wk=k(w.mon),paid=!!S.paid[wk];
+    const chip=w.status==='ok'?'<span class="chip c-ok">주휴 O</span>':w.status==='no'?'<span class="chip c-no">주휴 X</span>':'<span class="chip c-chk">확인 필요</span>';
+    const otLine=w.over?`<div class="line"><span>약속보다 더 일한 시간 ${hr(w.over)}</span><b style="color:var(--ot)">${size==='5down'?'가산 의무 없음':'가산 '+won(w.prem)}</b></div>`:'';
+    return `<div class="wk ${paid?'is-paid':''}"><div class="top"><span class="rng">${md(w.mon)} ~ ${md(addD(w.mon,6))}</span>${chip}</div>
+      <div class="facts">약속 ${hr(w.sch)} · 실제 ${hr(w.work)}</div>
+      ${w.work?`<div class="line"><span>기본급 (${hr(w.work)} × ${wage.toLocaleString()}원)</span><b>${won(w.basePay)}</b></div>`:''}
+      ${w.status==='ok'?`<div class="line"><span>주휴수당 (${hr(w.jhH)} × ${wage.toLocaleString()}원)</span><b style="color:var(--pri)">${won(w.jh)}</b></div>`:''}
+      ${otLine}
+      ${w.hols.map(x=>`${x.payH?`<div class="line"><span>${md(x.d)} ${x.name} 유급휴일 (${hr(x.payH)})</span><b style="color:var(--hol)">${won(x.pay)}</b></div>`:''}${x.workH?`<div class="line"><span>${md(x.d)} ${x.name} 휴일근로 ${hr(x.workH)} 가산</span><b style="color:var(--hol)">${won(x.prem)}</b></div><div class="line sub"><span>${x.workH>8?'8시간까지 50%, 넘는 시간 100%':'일한 시간 × 시급 × 50%'}</span></div>`:''}`).join('')}
+      ${w.nightH?`<div class="line"><span>🌙 야간근로 ${hr(w.nightH)}</span><b style="color:var(--nt)">${size==='5down'?'가산 의무 없음':'가산 '+won(w.night)}</b></div>`:''}
+      <div class="why">${w.why}</div>
+      ${w.status==='ok'?`<label class="paid"><input type="checkbox" data-w="${wk}" ${paid?'checked':''}> 이 주 주휴수당은 이미 받았어요</label>`:''}
+      ${w.hd?`<label class="paid"><input type="checkbox" data-h="${wk}" ${S.hpaid[wk]?'checked':''}> 이 주 휴일·야간 수당은 이미 받았어요</label>`:''}
+    </div>`;}).join(''):'<p class="hint">아직 입력한 날이 없어요.</p>';
+}
+$('weeks').addEventListener('change',e=>{
+  const {w,h}=e.target.dataset,m=w?S.paid:h?S.hpaid:null;if(!m)return;
+  if(e.target.checked)m[w||h]=true;else delete m[w||h];save();renderResult();
+});
+
+function resultText(){
+  const ws=allWeeks(),wage=S.wage||0;
+  const L=[`[알바 급여 계산 결과]`,`시급 ${wage.toLocaleString()}원 / 1주 약속 근무 ${hr(sojung())}`,''];
+  ws.forEach(w=>{
+    const r=`${md(w.mon)}~${md(addD(w.mon,6))}`;
+    if(w.status==='ok')L.push(`- ${r}: 주휴수당 ${won(w.jh)}${S.paid[k(w.mon)]?' (받음)':' (미지급)'}`);
+    else L.push(`- ${r}: 주휴수당 없음 (${w.status==='no'?'요건 미충족':'확인 필요'})`);
+  });
+  L.push('',`★ 모두 합쳐 받아야 할 돈: ${$('tAll').textContent} (${$('tAllSub').textContent})`,`▶ 기본급(일한 시간 × 시급): ${$('tBase').textContent}`,`▶ 받아야 할 주휴수당 합계: ${$('tJh').textContent}`);
+  const otH=ws.reduce((a,w)=>a+w.over,0);
+  if(otH)L.push(`▶ 약속보다 더 일한 시간 ${hr(otH)} → 연장근로 가산수당 ${$('tOt').textContent}`);
+  const hl=ws.flatMap(w=>w.hols);
+  if(hl.length){
+    if(hl.some(x=>x.payH))L.push(`▶ 공휴일 유급휴일수당 ${$('tHol').textContent}`);
+    if(hl.some(x=>x.workH))L.push(`▶ 휴일근로 가산수당 ${$('tHp').textContent}`);
+    hl.forEach(x=>L.push(`  - ${md(x.d)} ${x.name}: `+[x.payH?`유급휴일 ${won(x.pay)}`:'',x.workH?`휴일근로 ${hr(x.workH)} 가산 ${won(x.prem)}`:''].filter(Boolean).join(', ')));
+  }
+  const ntH=ws.reduce((a,w)=>a+w.nightH,0);
+  if(ntH)L.push(`▶ 밤 10시~아침 6시 ${hr(ntH)} → 야간근로 가산수당 ${$('tNt').textContent}`);
+  return L.join('\n');
+}
+const APP_TEXT='알바 월급 제대로 받고 있어? 🤔\n달력에 일한 날만 체크하면 기본급에 주휴수당, 연장·야간·휴일수당, 공휴일·노동절 수당까지 계산해 줘!';
+const baseUrl=()=>location.href.split('#')[0];
+const b64e=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const b64d=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
+function packState(){
+  const d=Object.entries(S.days).map(([key,e])=>e.n?[key,e.h,e.n]:[key,e.absent?'a':e.off?'o':e.h]);
+  return {v:1,s:S.sched,w:S.wage,z:S.size,d,p:Object.keys(S.paid),hp:Object.keys(S.hpaid),j:S.jday,sh:S.shift};
+}
+let shMode='app';
+const shUrl=()=>shMode==='result'&&$('shWithData').checked&&Object.keys(S.days).length?baseUrl()+'#r='+b64e(packState()):baseUrl();
+const shBody=()=>shMode==='result'?resultText()+'\n\n▶ 알바 급여계산기':APP_TEXT;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);}
+function copyText(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>prompt('아래 내용을 길게 눌러 복사하세요',t));}
+function openShare(mode){
+  shMode=mode;
+  $('shTitle').textContent=mode==='result'?'내 결과 공유하기':'친구에게 계산기 알려주기';
+  $('shSub').textContent=mode==='result'?'노무사, 사장님, 가족에게 결과를 보낼 수 있어요.':'아래 메시지와 링크가 함께 보내져요.';
+  $('shOptWrap').style.display=mode==='result'?'flex':'none';
+  $('shText').textContent=shBody();
+  $('shNative').style.display=navigator.share?'flex':'none';
+  $('shareDlg').showModal();
+}
+document.querySelectorAll('[data-share]').forEach(b=>b.addEventListener('click',()=>openShare(b.dataset.share)));
+$('shNative').onclick=()=>navigator.share({title:'알바 급여계산기',text:shBody(),url:shUrl()}).catch(()=>{});
+$('shSms').onclick=()=>{location.href='sms:?&body='+encodeURIComponent(shBody()+'\n'+shUrl());};
+$('shCopy').onclick=()=>copyText(shBody()+'\n'+shUrl(),'메시지와 링크를 복사했어요. 카톡이나 문자에 붙여넣으세요.');
+$('shClose').onclick=()=>$('shareDlg').close();
+
+// 공유받은 결과 링크 열기
+(function(){
+  const m=location.hash.match(/^#r=(.+)$/);if(!m)return;
+  try{
+    const o=b64d(m[1]);
+    if(Object.keys(S.days).length&&!confirm('공유받은 계산 결과를 열까요?\n이 기기에 적어둔 기록은 공유받은 내용으로 바뀌어요.'))return;
+    S.sched=o.s;S.wage=o.w;S.size=o.z;S.jday=o.j??null;S.shift=o.sh||{s:'',e:''};S.days={};S.paid={};S.hpaid={};
+    $('shS').value=S.shift.s||'';$('shE').value=S.shift.e||'';
+    o.d.forEach(([key,v,n])=>{S.days[key]=v==='a'?{absent:true}:v==='o'?{off:true}:n?{h:v,n}:{h:v};});
+    (o.p||[]).forEach(x=>S.paid[x]=true);
+    (o.hp||[]).forEach(x=>S.hpaid[x]=true);
+    save();
+    const lastKey=o.d.map(x=>x[0]).sort().pop();
+    if(lastKey){const ld=parse(lastKey);view=new Date(ld.getFullYear(),ld.getMonth(),1);}
+    document.querySelectorAll('#sched input').forEach((el,i)=>el.value=S.sched[i]||'');
+    $('wage').value=S.wage||'';
+    setTimeout(()=>{toast('공유받은 계산 결과를 불러왔어요');$('result').scrollIntoView({behavior:'smooth'});},300);
+  }catch(e){toast('링크가 잘못되어 결과를 불러오지 못했어요');}
+  history.replaceState(null,'',baseUrl());
+})();
+$('print').onclick=()=>window.print();
+
+// 하단 합계 바: 입력이 있고 결과 카드가 화면에 안 보일 때만
+let hasData=false,resVisible=false;
+function updBar(){$('sbar').classList.toggle('show',hasData&&!resVisible);}
+if('IntersectionObserver' in window)new IntersectionObserver(es=>{resVisible=es[0].isIntersecting;updBar();},{threshold:.05}).observe($('result'));
+$('sbarGo').onclick=()=>$('result').scrollIntoView({behavior:'smooth'});
+
+function renderAll(){renderTop();renderCal();renderResult();}
+renderAll();
+</script>
+</body>
+</html>

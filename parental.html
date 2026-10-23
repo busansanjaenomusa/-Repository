@@ -468,8 +468,20 @@
     .wrap { max-width: none; padding: 0; }
     .layout { display: block; }
     .aside { display: block; position: static; max-height: none; overflow: visible; }
-    .card { break-inside: avoid; border-color: #ccc; }
+    .card { break-inside: avoid; border-color: #ccc; padding: 10px 12px; margin-bottom: 8px; }
+    .card h2 { margin-bottom: 8px; }
+    .kd, .stat { padding: 8px 10px; }
+    .steps { display: none; }
+    /* 상담 자료용: 입력 카드는 숨기고 결과·근거만 */
+    .layout { display: flex; flex-direction: column; }
+    .aside { order: 0; }
+    .main { order: 1; }
+    .main > .card:not(.print-keep) { display: none; }
+    .print-keep .field, .print-keep .toggle, .print-keep .hint { display: none !important; }
+    .print-only { display: block !important; }
+    .tl-bar, .dot, .dday, .badge, .kd.hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+  .print-only { display: none; font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
 
   @media (max-width: 380px) {
     .summary, .keydates { grid-template-columns: 1fr; }
@@ -482,6 +494,7 @@
   <header class="top">
     <div>
       <h1>모성보호 플래너</h1>
+      <div class="print-only" id="printDate"></div>
       <p>출산예정일을 입력하면 출산전후휴가, 배우자 출산전후휴가, 이어지는 육아휴직 일정과 신청 기한을 계산합니다.<br>
         <span class="asof">법령 기준일 2026.10.23. · 입력값은 이 브라우저에만 저장됩니다.</span></p>
     </div>
@@ -623,8 +636,9 @@
   </section>
 
   <!-- 4. 예상 육아휴직 급여 -->
-  <section class="card" aria-labelledby="h-pay">
+  <section class="card print-keep" aria-labelledby="h-pay">
     <h2 id="h-pay"><span class="step">4</span>예상 고용보험 급여</h2>
+    <div class="print-only" id="payBasis"></div>
     <label class="field">
       <span>월 통상임금 (원)</span>
       <input type="text" id="wage" class="won" inputmode="numeric" placeholder="예: 3,000,000" autocomplete="off">
@@ -655,7 +669,19 @@
     <div id="payOut"></div>
   </section>
 
-  <section class="card">
+  <!-- 유산·사산휴가 -->
+  <section class="card" aria-labelledby="h-loss">
+    <details id="lossBox">
+      <summary id="h-loss">유산·사산휴가 계산</summary>
+      <div class="row2" style="margin-top:8px">
+        <label class="field" style="margin:0"><span>유산·사산한 날</span><input type="date" id="lossDate"></label>
+        <label class="field" style="margin:0"><span>임신 기간 (주)</span><input type="number" id="lossWeeks" inputmode="numeric" min="1" max="45" placeholder="예: 18"></label>
+      </div>
+      <div id="lossOut" style="margin-top:10px"></div>
+    </details>
+  </section>
+
+  <section class="card print-keep">
     <details id="lawBox">
       <summary>계산 기준과 법적 근거</summary>
       <dl class="law">
@@ -718,6 +744,9 @@
           <span class="src">고용보험법 시행령 제95조, 제95조의3(국가법령정보센터 2026.9.17. 기준 데이터), 고용24 '육아휴직급여' 안내·자주묻는질문</span></dd>
         <dd>수급하려면 육아휴직 개시일 기준 피보험 단위기간 180일 이상, 같은 자녀로 육아휴직 30일 이상 사용(단기 육아휴직은 7일 이상) 등의 요건이 있고, 휴직 시작 1개월 후부터 종료 후 12개월 안에 신청해야 합니다. 두 번째 육아휴직자 한시 특례(시행령 제95조의2)와 휴직 중 받은 금품에 따른 감액(제98조)은 반영하지 않았습니다.
           <span class="src">고용24 '육아휴직급여', 고용노동부 질의회시(2026.7.30.)</span></dd>
+        <dt>유산·사산휴가</dt>
+        <dd>임신 중 유산·사산한 근로자가 청구하면 임신 기간에 따라 유산·사산한 날부터 15주 이내 10일, 16~21주 30일, 22~27주 60일, 28주 이상 90일까지 휴가를 주어야 합니다. 휴가 청구 사유, 유산·사산 발생일, 임신 기간을 적은 신청서에 의료기관 진단서를 첨부해 냅니다. 인공 임신중절(「모자보건법」 제14조 제1항에 따른 경우는 제외)에 따른 유산은 대상이 아닙니다. 최초 60일은 유급입니다.
+          <span class="src">근로기준법 제74조 제3항·제4항, 같은 법 시행령 제43조 제2항·제3항(2025.2.18. 개정)</span></dd>
         <dt>출산전후휴가 급여</dt>
         <dd>통상임금 100%를 지급하며 상한은 30일 기준 220만원(90일 660만원, 미숙아 100일 7,333,330원, 다태아 120일 880만원)입니다. 우선지원 대상기업은 전체 기간을, 대규모기업은 최초 60일(다태아 75일)을 넘는 기간(30일, 미숙아 40일, 다태아 45일)을 정부가 지급하고, 최초 60일은 사업주가 통상임금(우선지원 대상기업은 정부 지원액과의 차액)을 지급합니다. 배우자 출산전후휴가 급여 상한은 20일 기준 1,684,210원입니다. 이 도구는 월 통상임금을 30으로 나눈 일액으로 계산합니다(추정).
           <span class="src">고용보험법 제76조, 같은 법 시행령 제101조, 고용노동부고시 제2026-67호(2026.9.18. 시행, 2026.12.31.까지 유효), 고용노동부 일생활균형 '출산전후휴가 및 급여'</span></dd>
@@ -763,6 +792,7 @@
   var WEEK = ['일', '월', '화', '수', '목', '금', '토'];
   var SEG_COLORS = ['var(--leave)', 'var(--leave-alt)', '#8b5cf6', '#f59e0b'];
   var STORE_KEY = 'parental-planner-v2';
+  var ASOF = new Date(2026, 9, 23, 12);   // 법령 기준일
 
   // ---------- 날짜 유틸 (로컬 정오 기준으로 시간대 오차 방지) ----------
   function mk(y, m, d) { return new Date(y, m, d, 12); }
@@ -770,7 +800,10 @@
     if (!s) return null;
     var p = s.split('-').map(Number);
     if (p.length !== 3 || p.some(isNaN)) return null;
-    return mk(p[0], p[1] - 1, p[2]);
+    var d = mk(p[0], p[1] - 1, p[2]);
+    // 2027-13-45처럼 넘쳐서 다른 날로 바뀌는 값은 거부
+    if (d.getFullYear() !== p[0] || d.getMonth() !== p[1] - 1 || d.getDate() !== p[2]) return null;
+    return d;
   }
   function iso(d) {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -835,6 +868,7 @@
       sme: true,
       single: false,
       six: { on: false, months: 6 },
+      loss: { date: '', weeks: '' },
       mode: 'once',
       segments: [{ auto: true, start: '', months: 12, days: 0 }],
       preg: { on: false, start: '', months: 0, days: 30 },
@@ -871,6 +905,7 @@
   if (!Array.isArray(state.shorts)) state.shorts = [];
   if (!state.six || typeof state.six !== 'object') state.six = d0.six;
   if (typeof state.sme !== 'boolean') state.sme = true;
+  if (!state.loss || typeof state.loss !== 'object') state.loss = d0.loss;
   if (!state.spouse || !Array.isArray(state.spouse.segs) || !state.spouse.segs.length) state.spouse = d0.spouse;
 
   if (!state.due) {
@@ -1032,7 +1067,7 @@
       return;
     }
     el.matSummary.innerHTML =
-      stat(pre === r.maxPre ? '시작 추천일' : '시작일', fmt(mat.start)) +
+      stat(mat.earlyBirth ? '시작일 (출산일)' : pre === r.maxPre ? '시작 추천일' : '시작일', fmt(mat.start)) +
       stat('종료일', fmt(mat.end)) +
       stat('출산 전', mat.preUsed + '일') +
       stat('출산일 + 출산 후', '1일 + ' + mat.post + '일') +
@@ -1051,6 +1086,9 @@
     }
     if (state.preterm && !state.multi) {
       checks += badge('info', '미숙아 100일을 적용하려면 휴가 종료예정일 7일 전까지 미숙아 출산 증명서류를 사업주에게 내야 합니다.');
+    }
+    if (mat.due < ASOF) {
+      checks += badge('info', '법령 기준일(' + fmt(ASOF) + ')보다 앞선 날짜입니다. 이 도구는 현행 법령으로 계산하므로, 당시 시행되던 기준(예: 2025.2.23. 이전 배우자 출산휴가 10일)과 다를 수 있습니다.');
     }
     if (!mat.isActual) {
       checks += badge('warn', '출산예정일보다 늦게 출산하면 출산 후 일수가 줄어듭니다. 출산 후 실제 출산일을 입력해 다시 확인하세요.');
@@ -1389,7 +1427,8 @@
       '<div class="kd"><div class="k">유급 기간 끝</div><div class="v">' + fmt(mat.paidEnd) + '</div><div class="s">최초 ' + mat.rules.paid + '일</div></div>';
     if (segs.length) {
       html += '<div class="kd"><div class="k">육아휴직</div><div class="v">' + fmt(segs[0].start) + '</div><div class="s">' +
-        (segs.length > 1 ? segs.length + '개 구간 · ' : '') + '사용 ' + fmtM(leave.usedM) + ' / ' + leave.limitMonths + '개월</div></div>';
+        (segs.length > 1 ? segs.length + '개 구간 · ' : '') + '사용 ' + fmtM(leave.usedM) + ' / ' + leave.limitMonths + '개월' +
+        (leave.remainM < -1e-6 ? ' <b style="color:var(--bad)">· 한도 초과</b>' : '') + '</div></div>';
     }
     if (sp && sp.segs.some(function (s) { return s.end; })) {
       html += '<div class="kd"><div class="k">배우자 휴가 사용 기한</div><div class="v">' + fmt(sp.to) + '</div><div class="s">근로일 ' + sp.used + '일 / ' + SPOUSE_DAYS + '일 계획</div></div>';
@@ -1492,10 +1531,30 @@
     return { rows: rows, total: total, months: k };
   }
 
+  // ---------- 유산·사산휴가 (근로기준법 시행령 제43조 제3항) ----------
+  function lossDays(w) { return w <= 15 ? 10 : w <= 21 ? 30 : w <= 27 ? 60 : 90; }
+  function renderLoss() {
+    var box = $('lossOut');
+    $('lossDate').value = state.loss.date || '';
+    $('lossWeeks').value = state.loss.weeks || '';
+    var d = parse(state.loss.date), w = parseInt(state.loss.weeks, 10);
+    if (!d || !(w > 0)) { box.innerHTML = badge('info', '유산·사산한 날과 임신 기간(주)을 넣으면 휴가 기간을 계산합니다.'); return; }
+    var n = lossDays(w), end = addDays(d, n - 1);
+    var paid = Math.min(n, 60);
+    box.innerHTML = '<div class="summary">' +
+      stat('휴가 기간', fmt(d) + ' ~ ' + fmt(end), true) +
+      stat('일수', n + '일 (임신 ' + w + '주)') +
+      stat('유급', '최초 ' + paid + '일') +
+      '</div>' +
+      badge('info', '유산·사산한 날을 1일째로 세었습니다(첫날을 넣는지 여부는 확인하지 못해 짧은 쪽으로 계산). 휴가 청구 사유, 발생일, 임신 기간을 적은 신청서에 의료기관 진단서를 붙여 사업주에게 냅니다(시행령 제43조 제2항).');
+  }
+
   // 출산전후휴가 급여: 고용노동부고시 제2026-67호(2026.9.18.~12.31.) 상한, 30일 기준 220만원
   var MAT_CAP30 = 2200000;
   function renderMatPay(mat) {
     var box = $('matPayOut');
+    $('payBasis').textContent = state.wage ? '월 통상임금 ' + won(state.wage) + ' · ' + (state.sme ? '우선지원 대상기업' : '대규모기업') +
+      (state.single ? ' · 한부모' : '') + (state.six.on ? ' · 6+6(배우자 ' + state.six.months + '개월)' : '') + ' 기준' : '';
     if (!state.wage || !mat) { box.innerHTML = state.wage ? '' : badge('info', '월 통상임금을 입력하면 출산전후휴가 급여도 추정합니다.'); return; }
     var r = mat.rules;
     var base = state.multi ? 120 : (state.preterm ? 100 : 90);     // 연장된 날은 급여 대상 아님
@@ -1618,6 +1677,7 @@
     renderKeyDates(mat, leave, sp);
     renderTodo(mat, leave, sp);
     renderPay(mat, leave);
+    renderLoss();
     save();
   }
 
@@ -1630,6 +1690,8 @@
     render();
   });
   $('single').addEventListener('change', function (e) { state.single = e.target.checked; render(); });
+  $('lossDate').addEventListener('change', function (e) { state.loss.date = e.target.value; render(); });
+  $('lossWeeks').addEventListener('change', function (e) { state.loss.weeks = e.target.value; render(); });
   $('sme').addEventListener('change', function (e) { state.sme = e.target.checked; render(); });
   $('sixOn').addEventListener('change', function (e) { state.six.on = e.target.checked; render(); });
   $('sixMonths').addEventListener('change', function (e) { state.six.months = readInt(e.target.value, 6) || 1; render(); });
@@ -1662,7 +1724,10 @@
     render();
   });
   // 인쇄할 때는 법적 근거를 펼침
-  window.addEventListener('beforeprint', function () { $('lawBox').open = true; });
+  window.addEventListener('beforeprint', function () {
+    $('lawBox').open = true;
+    $('printDate').textContent = '작성일 ' + fmt(today()) + ' · 출산예정일 ' + (parse(state.due) ? fmt(parse(state.due)) : '-');
+  });
   el.actual.addEventListener('change', function () { state.actual = el.actual.value; render(); });
   el.hasActual.addEventListener('change', function () { state.hasActual = el.hasActual.checked; render(); });
   el.preterm.addEventListener('change', function () { state.preterm = el.preterm.checked; render(); });

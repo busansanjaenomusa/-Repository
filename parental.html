@@ -105,7 +105,7 @@
   .field > span { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; }
   .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
 
-  input[type="date"], input[type="number"] {
+  input[type="date"], input[type="number"], input[type="text"] {
     width: 100%;
     min-height: 48px;
     padding: 10px 12px;
@@ -371,7 +371,7 @@
   /* 상단 */
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .asof { display: inline-block; margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
-  .actions { display: flex; gap: 6px; flex: none; margin-top: 6px; }
+  .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; flex: none; margin-top: 6px; max-width: 320px; }
   .btn-sm {
     min-height: 40px; padding: 0 12px;
     border: 1px solid var(--line); border-radius: 10px;
@@ -381,7 +381,7 @@
   .btn-sm:hover { background: var(--track); }
   @media (max-width: 560px) {
     .top { flex-direction: column; gap: 0; }
-    .actions { margin: 0 0 14px; }
+    .actions { margin: 0 0 14px; justify-content: flex-start; max-width: none; }
   }
 
   /* 배치: 모바일은 요약 → 입력 → 할 일 → 일정, 넓은 화면은 2단 */
@@ -440,7 +440,18 @@
   .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 4px; vertical-align: 1px; }
   .tag.chk { background: var(--warn-soft); color: var(--warn); }
 
+  .toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg);
+    padding: 10px 16px; border-radius: 12px; font-size: 0.88rem; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 10;
+    max-width: calc(100% - 32px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   @media print {
+    .toast { display: none; }
     body { background: #fff; color: #000; font-size: 12px; }
     .actions, .btn.ghost, .icon-btn, .stepper button { display: none !important; }
     .wrap { max-width: none; padding: 0; }
@@ -464,6 +475,8 @@
         <span class="asof">법령 기준일 2026.10.23. · 입력값은 이 브라우저에만 저장됩니다.</span></p>
     </div>
     <div class="actions">
+      <button type="button" class="btn-sm" id="shareBtn" title="지금 입력한 내용이 담긴 링크를 복사합니다">링크 복사</button>
+      <button type="button" class="btn-sm" id="icsBtn" title="휴가·휴직 기간과 신청 기한을 캘린더 파일로 내려받습니다">캘린더</button>
       <button type="button" class="btn-sm" id="printBtn">인쇄·PDF</button>
       <button type="button" class="btn-sm" id="resetBtn">초기화</button>
     </div>
@@ -518,6 +531,7 @@
 
     <div class="summary" id="matSummary"></div>
     <div id="matChecks"></div>
+    <div id="pregCut"></div>
   </section>
 
   <!-- 2. 배우자 출산전후휴가 -->
@@ -531,6 +545,11 @@
     </label>
 
     <div id="spouseBox" class="hidden">
+      <label class="field">
+        <span>쉬는 날 추가 (공휴일·사업장 휴일, 선택)</span>
+        <input type="text" id="holidays" inputmode="numeric" placeholder="예: 2027-03-01, 2027-05-05" autocomplete="off">
+        <div class="hint">토·일 외에 근로일에서 뺄 날을 쉼표로 적으면 끝나는 날을 다시 계산합니다.</div>
+      </label>
       <div id="spouseSegs"></div>
       <button type="button" class="btn ghost" id="addSpouse">+ 나누어 쓰기</button>
       <div style="margin-top:14px">
@@ -602,6 +621,9 @@
         <dt>역일(달력 날짜)로 계산</dt>
         <dd>휴가 기간에 법정휴일·약정휴일이 끼어 있어도 달력상 90일을 주면 됩니다.
           <span class="src">고용노동부 행정해석 여성고용팀-333(2006.1.24.)</span></dd>
+        <dt>임신기 근로시간 단축</dt>
+        <dd>임신 후 12주 이내 또는 32주 이후(유산·조산 등 위험이 있으면 임신 전 기간)에 1일 2시간 단축을 신청하면 허용해야 하며, 1일 근로시간 8시간 미만이면 1일 6시간이 되도록 허용할 수 있습니다. 단축을 이유로 임금을 삭감할 수 없습니다. 이 도구의 주수는 출산예정일을 40주 0일로 본 추정치이고, '12주 이내'는 12주 6일까지로 표시했습니다. <span class="tag chk">확인 필요</span>
+          <span class="src">근로기준법 제74조 제7항·제8항</span></dd>
         <dt>미숙아</dt>
         <dd>임신 37주 미만 출생아 또는 출생 체중 2,500g 미만 영유아로서, 특별한 의료적 관리를 위해 출생 후 24시간 이내 신생아중환자실에 입원한 경우. 100일 휴가를 받으려면 (사용 중인) 휴가 종료예정일 7일 전까지 증명서류를 사업주에게 제출.
           <span class="src">근로기준법 시행규칙 제12조의2</span></dd>
@@ -671,6 +693,8 @@
   </div><!-- /.layout -->
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
 (function () {
   'use strict';
@@ -718,7 +742,16 @@
     return addDays(end, days);
   }
   // 토·일을 뺀 n번째 근로일 (start가 근로일이면 1일째로 셈)
-  function isWorkday(d) { var w = d.getDay(); return w !== 0 && w !== 6; }
+  var holidaySet = {};
+  function parseHolidays(txt) {
+    var set = {};
+    String(txt || '').split(/[\s,]+/).forEach(function (t) {
+      var d = parse(t.replace(/[./]/g, '-'));
+      if (d) set[iso(d)] = true;
+    });
+    return set;
+  }
+  function isWorkday(d) { var w = d.getDay(); return w !== 0 && w !== 6 && !holidaySet[iso(d)]; }
   function addWorkdays(start, n) {
     var d = start, c = 0;
     for (var guard = 0; guard < 400; guard++) {
@@ -740,6 +773,7 @@
       actual: '',
       extend: false,
       hire: '',
+      holidays: '',
       mode: 'once',
       segments: [{ auto: true, start: '', months: 12, days: 0 }],
       preg: { on: false, start: '', months: 0, days: 30 },
@@ -755,6 +789,19 @@
       Object.keys(state).forEach(function (k) { if (k in saved) state[k] = saved[k]; });
     }
   } catch (e) { /* 저장소 사용 불가 시 기본값 */ }
+
+  // 공유 링크(#s=...)로 열었으면 그 내용을 우선 적용
+  try {
+    var m = /^#s=(.+)$/.exec(location.hash);
+    if (m) {
+      var shared = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+      if (shared && typeof shared === 'object') {
+        var base = defaults();
+        Object.keys(base).forEach(function (k) { state[k] = k in shared ? shared[k] : base[k]; });
+      }
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  } catch (e) { /* 잘못된 링크는 무시 */ }
 
   // 저장된 값의 모양이 어긋나면 기본값으로 되돌림
   var d0 = defaults();
@@ -988,7 +1035,8 @@
         prev = x.s;
       });
     html += badge('info', '사용 가능 기간: ' + fmt(sp.from) + ' ~ ' + fmt(sp.to) + (mat.isActual ? '' : ' (출산예정일 기준, 실제 출산일에 따라 끝나는 날이 바뀝니다)') +
-      '. 근로일은 토·일만 빼고 셌으니 공휴일·사업장 휴일이 끼면 끝나는 날이 늦어집니다.');
+      '. 근로일은 토·일' + (Object.keys(holidaySet).length ? '과 입력한 쉬는 날 ' + Object.keys(holidaySet).length + '일을' : '만') +
+      ' 빼고 셌습니다' + (Object.keys(holidaySet).length ? '.' : '. 공휴일·사업장 휴일이 끼면 위 "쉬는 날 추가"에 넣으세요.'));
     el.spouseChecks.innerHTML = html;
   }
 
@@ -1278,9 +1326,25 @@
     el.keyDates.innerHTML = html;
   }
 
-  function renderTodo(mat, leave, sp) {
-    if (!mat) { el.todo.innerHTML = ''; return; }
+  // 임신 주수는 출산예정일을 40주 0일로 보고 역산한 추정치
+  function pregWeek(due, w) { return addDays(due, (w - 40) * 7); }
+  function renderPregCut(mat) {
+    var box = $('pregCut');
+    if (!mat) { box.innerHTML = ''; return; }
+    var early = addDays(pregWeek(mat.due, 13), -1);   // 12주 6일
+    var late = pregWeek(mat.due, 32);
+    box.innerHTML = '<h3>임신기 근로시간 단축</h3>' +
+      '<div class="summary">' +
+        stat('임신 12주 이내 (추정)', '~ ' + fmt(early)) +
+        stat('임신 32주 이후 (추정)', fmt(late) + ' ~') +
+      '</div>' +
+      badge('info', '이 기간에 1일 2시간 근로시간 단축을 신청하면 사용자는 허용해야 하고, 이를 이유로 임금을 깎을 수 없습니다(1일 8시간 미만 근로자는 1일 6시간이 되도록). 유산·조산 등 위험이 있으면 임신 전 기간에 쓸 수 있습니다(근로기준법 제74조 제7항·제8항). 주수는 출산예정일을 40주 0일로 본 추정치이므로 실제로는 진단서상 주수를 따르세요.');
+  }
+
+  function todoItems(mat, leave, sp) {
     var items = [];
+    var cutLate = pregWeek(mat.due, 32);
+    if (cutLate < mat.start) items.push({ d: cutLate, t: '임신기 근로시간 단축 사용 가능 (32주)', s: '1일 2시간, 임금 삭감 없음 (근로기준법 제74조 제7항) · 추정 주수' });
     var within18 = leave.segs.some(function (s) { return s.start && s.end && s.start <= endOfMonths(mat.birth, 18); });
     items.push({ d: mat.start, t: '출산전후휴가 시작', s: '사업주에게 청구' + (within18 ? '. 출생 후 18개월 안에 시작하는 육아휴직을 함께 신청할 수 있습니다' : '') });
     if (state.preterm && !state.multi) items.push({ d: addDays(mat.end, -7), t: '미숙아 증빙서류 제출 기한', s: '출산전후휴가 종료예정일 7일 전 (시행규칙 제12조의2)' });
@@ -1296,15 +1360,58 @@
       items.push({ d: sp.to, t: '배우자 출산전후휴가 사용 기한', s: '출산일부터 120일' + (mat.isActual ? '' : ' (예정일 기준)') });
     }
     items.sort(function (a, b) { return a.d - b.d; });
-    el.todo.innerHTML = items.map(function (x) {
+    return items;
+  }
+
+  function renderTodo(mat, leave, sp) {
+    if (!mat) { el.todo.innerHTML = ''; return; }
+    el.todo.innerHTML = todoItems(mat, leave, sp).map(function (x) {
       var dd = dday(x.d);
       return '<li' + (dd.c === 'past' ? ' class="past-item"' : '') + '><span class="dday ' + dd.c + '">' + dd.t + '</span>' +
         '<div><b>' + x.t + '</b><span>' + fmt(x.d) + ' · ' + x.s + '</span></div></li>';
     }).join('');
   }
 
+  // ---------- 캘린더(.ics) ----------
+  function icsDate(d) { return iso(d).replace(/-/g, ''); }
+  function icsText(t) { return String(t).replace(/[\\;,]/g, function (c) { return '\\' + c; }); }
+  function buildIcs() {
+    var mat = calcMaternity();
+    if (!mat) return null;
+    var sp = calcSpouse(mat), leave = calcLeave(mat);
+    var ev = [];
+    var span = function (s, e, title) { ev.push({ s: s, e: addDays(e, 1), t: title }); };
+    span(mat.start, mat.end, '출산전후휴가 (' + mat.total + '일)');
+    if (leave.preg && leave.preg.end) span(leave.preg.start, leave.preg.end, '임신 중 육아휴직');
+    leave.segs.forEach(function (s, i) { if (s.start && s.end) span(s.start, s.end, segLabel(i)); });
+    leave.shorts.forEach(function (s, i) { if (s.start) span(s.start, s.end, '단기 육아휴직 ' + (i + 1)); });
+    if (sp) sp.segs.forEach(function (s, i) { if (s.end) span(s.start, s.end, '배우자 출산전후휴가' + (sp.segs.length > 1 ? ' ' + (i + 1) : '')); });
+    todoItems(mat, leave, sp).forEach(function (x) { ev.push({ s: x.d, e: addDays(x.d, 1), t: x.t, desc: x.s }); });
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//parental-planner//KO', 'CALSCALE:GREGORIAN'];
+    ev.forEach(function (x, i) {
+      lines.push('BEGIN:VEVENT', 'UID:pp-' + icsDate(x.s) + '-' + i + '@parental-planner', 'DTSTAMP:' + stamp,
+        'DTSTART;VALUE=DATE:' + icsDate(x.s), 'DTEND;VALUE=DATE:' + icsDate(x.e), 'SUMMARY:' + icsText(x.t));
+      if (x.desc) lines.push('DESCRIPTION:' + icsText(x.desc));
+      lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
   function render() {
     // 입력 동기화
+    holidaySet = parseHolidays(state.holidays);
+    $('holidays').value = state.holidays || '';
     el.hire.value = state.hire || '';
     el.due.value = state.due;
     el.hasActual.checked = state.hasActual;
@@ -1324,6 +1431,7 @@
     var sp = calcSpouse(mat);
     var leave = calcLeave(mat);
     renderMaternity(mat);
+    renderPregCut(mat);
     renderSpouse(mat, sp);
     renderPreg(mat, leave);
     renderSegments(leave);
@@ -1339,6 +1447,27 @@
   el.due.addEventListener('change', function () { state.due = el.due.value; render(); });
   el.hire.addEventListener('change', function () { state.hire = el.hire.value; render(); });
   $('printBtn').addEventListener('click', function () { window.print(); });
+  $('holidays').addEventListener('change', function (e) { state.holidays = e.target.value; render(); });
+  $('shareBtn').addEventListener('click', function () {
+    var url = location.href.split('#')[0] + '#s=' + btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    var done = function () { toast('링크를 복사했습니다. 받는 사람은 같은 일정으로 열립니다.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, function () { window.prompt('아래 링크를 복사하세요.', url); });
+    } else {
+      window.prompt('아래 링크를 복사하세요.', url);
+    }
+  });
+  $('icsBtn').addEventListener('click', function () {
+    var ics = buildIcs();
+    if (!ics) { toast('출산예정일을 먼저 입력하세요.'); return; }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+    a.download = '모성보호-일정.ics';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    toast('캘린더 파일을 내려받았습니다. 휴대폰·구글 캘린더에서 열면 일정이 추가됩니다.');
+  });
   $('resetBtn').addEventListener('click', function () {
     if (!confirm('입력한 내용을 모두 지우고 처음 상태로 되돌릴까요?')) return;
     state = defaults();

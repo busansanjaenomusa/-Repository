@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포괄임금 월급 진단 계산기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .glass-card { background: #fff; border: 1px solid rgba(226,232,240,0.9); }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        input::placeholder { color: #94a3b8; font-weight: 500; }
+        button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+        .seg-on { background-color: #2563eb; color: #fff; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2); }
+        .seg-off { color: #475569; background: transparent; }
+        .seg-off:hover { background-color: rgba(226,232,240,0.7); }
+        .pulse-badge { animation: pulse-ring 2s cubic-bezier(0.215,0.61,0.355,1) infinite; }
+        @keyframes pulse-ring { 0%,100% { transform: scale(0.98); } 50% { transform: scale(1.02); } }
+        @media (prefers-reduced-motion: reduce) { .pulse-badge { animation: none; } * { transition: none !important; } }
+        #verdictBanner { scroll-margin-top: 5rem; }
+        /* 화면 높이가 낮은 노트북: 결론 배너까지 고정하면 화면을 너무 가리므로 총 차액 바만 고정 */
+        @media (min-width: 1024px) and (max-height: 799px) {
+            #stickyWrap { position: static !important; display: contents; }
+            #totalBar { position: sticky; top: 4rem; z-index: 20; margin-top: 0.75rem; }
+        }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        @media print {
+            header, #presetBar, #inputCol, #mobileBar, .no-print { display: none !important; }
+            #resultCol { grid-column: span 12 / span 12 !important; position: static !important; max-height: none !important; overflow: visible !important; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 lg:pb-0">
+
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="bg-blue-600 text-white p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0"><i class="fa-solid fa-scale-balanced text-lg"></i></div>
+                <div class="min-w-0">
+                    <h1 class="text-base sm:text-xl font-bold tracking-tight truncate">포괄임금 월급 진단 계산기</h1>
+                    <p class="text-xs text-slate-400 truncate">최저임금 미달 · 고정수당 과소 책정 · 약정 초과 수당을 한 번에 확인</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="resetForm()" class="min-h-[40px] text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 rounded-lg border border-slate-700 transition flex items-center gap-1.5" aria-label="입력 초기화"><i class="fa-solid fa-rotate-left"></i><span class="hidden sm:inline">초기화</span></button>
+                <button onclick="openLegalModal()" aria-label="계산 기준과 한계 보기" class="min-h-[40px] text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 rounded-lg border border-slate-700 transition flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-amber-400"></i><span class="hidden sm:inline">계산 기준</span></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+
+        <div id="presetBar" class="mb-5 bg-white p-3 sm:p-3.5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div class="flex items-center gap-2 text-sm font-semibold text-slate-700"><i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i><span>예시로 먼저 써 보기</span></div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="applyPreset('case1')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-2 rounded-lg font-medium transition">🚨 월 250만원 · 주 12h 연장 포함</button>
+                <button onclick="applyPreset('case4')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-2 rounded-lg font-medium transition">🧾 기본급 200만 + 고정연장 60만</button>
+                <button onclick="applyPreset('case2')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg font-medium transition">⏰ 월 300만원 · 약정보다 더 일함</button>
+                <button onclick="applyPreset('case3')" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-lg font-medium transition">✅ 월 320만원 · 정상</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+            <!-- INPUTS -->
+            <div id="inputCol" class="lg:col-span-5 space-y-5">
+
+                <section class="glass-card rounded-2xl p-5 sm:p-6 shadow-sm" aria-labelledby="h1s">
+                    <div class="flex items-center justify-between gap-2 mb-4">
+                        <h2 id="h1s" class="text-base font-bold text-slate-800 flex items-center gap-2"><span class="bg-blue-600 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">1</span>연도 · 사업장 규모</h2>
+                        <span id="minWageBadge" class="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label for="yearSelect" class="block text-xs font-semibold text-slate-600 mb-1.5">기준 연도</label>
+                            <select id="yearSelect" onchange="onYearChange()" class="w-full min-h-[44px] bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 font-medium">
+                                <option value="2026" selected>2026년 (10,320원)</option>
+                                <option value="2025">2025년 (10,030원)</option>
+                                <option value="2024">2024년 (9,860원)</option>
+                                <option value="custom">직접 입력</option>
+                            </select>
+                        </div>
+                        <div id="customMinWageBox" class="hidden">
+                            <label for="customMinWage" class="block text-xs font-semibold text-slate-600 mb-1.5">최저시급 (원)</label>
+                            <input type="text" inputmode="numeric" autocomplete="off" id="customMinWage" value="10,320" oninput="onMoney(this)" class="w-full min-h-[44px] bg-white border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 font-semibold text-right">
+                        </div>
+                        <div id="companySizeBox">
+                            <span id="sizeLabel" class="block text-xs font-semibold text-slate-600 mb-1.5">상시 근로자 수</span>
+                            <div role="group" aria-labelledby="sizeLabel" class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                <button type="button" id="sizeOver" onclick="setSize(true)" class="seg min-h-[36px] text-sm rounded-lg transition">5인 이상</button>
+                                <button type="button" id="sizeUnder" onclick="setSize(false)" class="seg min-h-[36px] text-sm rounded-lg transition">5인 미만</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="companySizeHelp" class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed"></p>
+                </section>
+
+                <section class="glass-card rounded-2xl p-5 sm:p-6 shadow-sm" aria-labelledby="h2s">
+                    <h2 id="h2s" class="text-base font-bold text-slate-800 flex items-center gap-2 mb-4"><span class="bg-blue-600 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">2</span>월급 · 계약서 유형</h2>
+
+                    <div class="mb-5">
+                        <div class="flex justify-between items-end gap-2 mb-1.5">
+                            <label for="monthlySalary" class="text-xs font-semibold text-slate-700">세전 월 지급 총액 (기본급 + 고정수당)</label>
+                            <span id="salaryKoreanText" class="text-xs font-bold text-blue-600 shrink-0"></span>
+                        </div>
+                        <div class="relative">
+                            <input type="text" inputmode="numeric" autocomplete="off" placeholder="예: 2,500,000" id="monthlySalary" oninput="onMoney(this)" class="w-full min-h-[52px] bg-slate-50 border border-slate-300 text-slate-900 text-lg font-bold rounded-xl p-3 pr-12 text-right transition">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">원</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button type="button" onclick="adjustSalary(-100000)" class="text-xs min-h-[36px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-lg transition">−10만</button>
+                            <button type="button" onclick="adjustSalary(100000)" class="text-xs min-h-[36px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-lg transition">+10만</button>
+                            <button type="button" onclick="adjustSalary(500000)" class="text-xs min-h-[36px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 rounded-lg transition">+50만</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span id="modeLabel" class="block text-xs font-semibold text-slate-700 mb-2">근로계약서에 어떻게 적혀 있나요?</span>
+                        <div role="group" aria-labelledby="modeLabel" class="grid grid-cols-1 gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                            <button type="button" id="modeTotal" onclick="setMode('total')" class="seg text-sm py-2.5 px-3 rounded-lg transition text-left">
+                                <div class="font-bold">① 총액 + 약정 연장시간만 적힘</div>
+                                <div class="text-xs opacity-90 mt-0.5 font-normal">"월 250만원 (연장 주 12시간 포함)"</div>
+                            </button>
+                            <button type="button" id="modeSplit" onclick="setMode('split')" class="seg text-sm py-2.5 px-3 rounded-lg transition text-left">
+                                <div class="font-bold">② 기본급·고정수당 금액이 따로 적힘</div>
+                                <div class="text-xs opacity-90 mt-0.5 font-normal">"기본급 200만 + 고정연장수당 60만"</div>
+                            </button>
+                            <button type="button" id="modeLump" onclick="setMode('lump')" class="seg text-sm py-2.5 px-3 rounded-lg transition text-left">
+                                <div class="font-bold">③ 시간 약정 없는 정액급</div>
+                                <div class="text-xs opacity-90 mt-0.5 font-normal">"모든 수당 포함 월 OO만원" (몇 시간분인지 없음)</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="modeExplanation" class="text-xs bg-blue-50/80 text-blue-900 p-3 rounded-xl border border-blue-200/80 leading-relaxed mb-3"></div>
+
+                    <details class="mb-4 bg-white border border-slate-200 rounded-xl text-xs text-slate-600">
+                        <summary class="px-3 py-2.5 font-semibold text-slate-700 flex items-center justify-between">어느 유형인지 모르겠어요 <i class="fa-solid fa-chevron-down chev transition text-slate-400"></i></summary>
+                        <ul class="px-3 pb-3 space-y-1.5 list-disc pl-7 leading-relaxed">
+                            <li>급여명세서에 <strong>기본급</strong>과 <strong>연장근로수당·고정OT·시간외수당</strong>이 금액으로 따로 있으면 → ②</li>
+                            <li>계약서에 "월 OO원, 연장근로 주 X시간 포함"처럼 <strong>합계와 시간만</strong> 있으면 → ①</li>
+                            <li>"제 수당 포함", "포괄임금"이라고만 쓰고 <strong>시간 언급이 전혀 없으면</strong> → ③</li>
+                        </ul>
+                    </details>
+
+                    <div id="fixedPayBox" class="hidden mb-4">
+                        <label for="fixedPay" class="block text-xs font-semibold text-slate-700 mb-1.5">계약서에 적힌 고정 연장·야간수당 금액</label>
+                        <div class="relative">
+                            <input type="text" inputmode="numeric" autocomplete="off" placeholder="예: 600,000" id="fixedPay" oninput="onMoney(this)" class="w-full min-h-[44px] bg-blue-50/50 border border-blue-300 text-blue-950 font-bold text-sm rounded-xl p-2.5 pr-10 text-right">
+                            <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-500">원</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">기본급 = 위 총액 − 이 금액 (식대 등 통상수당은 기본급에 포함된 것으로 봅니다)</p>
+                    </div>
+
+                    <details class="bg-white border border-slate-200 rounded-xl text-xs text-slate-600">
+                        <summary class="px-3 py-2.5 font-semibold text-slate-700 flex items-center justify-between">시급 계산에서 뺄 금액이 있다면 (선택) <i class="fa-solid fa-chevron-down chev transition text-slate-400"></i></summary>
+                        <div class="px-3 pb-3">
+                            <div class="relative">
+                                <input type="text" inputmode="numeric" autocomplete="off" placeholder="0" id="excludedAllowance" oninput="onMoney(this)" aria-label="시급 계산에서 뺄 금액" class="w-full min-h-[44px] bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl p-2.5 pr-10 text-right">
+                                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">원</span>
+                            </div>
+                            <p class="mt-1.5 leading-relaxed">매월 고정되지 않은 수당, 연차수당처럼 소정근로의 대가가 아닌 금액만 넣으세요. 식대·교통비는 2024년부터 최저임금에 전액 산입되므로 비워 두세요.</p>
+                        </div>
+                    </details>
+                </section>
+
+                <section class="glass-card rounded-2xl p-5 sm:p-6 shadow-sm" aria-labelledby="h3s">
+                    <h2 id="h3s" class="text-base font-bold text-slate-800 flex items-center gap-2 mb-4"><span class="bg-blue-600 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">3</span>근무시간 · 연장·야간</h2>
+
+                    <div class="mb-5 pb-4 border-b border-slate-200">
+                        <div class="flex justify-between items-center gap-2 mb-1.5">
+                            <label for="weeklyBaseHours" class="text-xs font-semibold text-slate-700">1주 소정근로시간</label>
+                            <span id="monthlyBaseHoursBadge" class="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded"></span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" id="wh40" onclick="setWeeklyHours(40)" class="seg min-h-[44px] text-xs rounded-xl border border-slate-200 transition">주 40h<br><span class="opacity-80 font-normal">5일 × 8h</span></button>
+                            <button type="button" id="wh35" onclick="setWeeklyHours(35)" class="seg min-h-[44px] text-xs rounded-xl border border-slate-200 transition">주 35h<br><span class="opacity-80 font-normal">5일 × 7h</span></button>
+                            <div class="relative">
+                                <input type="number" inputmode="decimal" id="weeklyBaseHours" value="40" min="1" max="40" oninput="update()" class="w-full h-full min-h-[44px] bg-slate-50 border border-slate-300 rounded-xl text-center text-sm font-bold pr-6" aria-label="직접 입력 (시간)">
+                                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">h</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span id="unitLabel" class="text-xs font-semibold text-slate-600">연장·야간 시간 입력 단위</span>
+                        <div role="group" aria-labelledby="unitLabel" class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
+                            <button type="button" id="unitWeek" onclick="setUnit('week')" class="seg min-h-[32px] text-xs px-3 rounded-md">주 단위</button>
+                            <button type="button" id="unitMonth" onclick="setUnit('month')" class="seg min-h-[32px] text-xs px-3 rounded-md">월 단위</button>
+                        </div>
+                    </div>
+
+                    <div id="agreedBox" class="mb-5 pb-4 border-b border-slate-200 transition">
+                        <div class="text-xs font-bold text-blue-900 flex items-center gap-1.5 mb-2"><i class="fa-solid fa-file-contract text-blue-600"></i>계약서에 포함된 '약정' 연장·야간 시간</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label id="agreedOTLabel" for="agreedOTInput" class="block text-xs text-slate-600 mb-1"></label>
+                                <div class="relative"><input type="number" inputmode="decimal" min="0" step="0.5" id="agreedOTInput" placeholder="0" value="" oninput="update()" class="w-full min-h-[44px] bg-blue-50/50 border border-blue-300 text-blue-950 font-bold text-sm rounded-xl p-2.5 pr-9 text-right disabled:opacity-50 disabled:cursor-not-allowed"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">h</span></div>
+                            </div>
+                            <div>
+                                <label id="agreedNightLabel" for="agreedNightInput" class="block text-xs text-slate-600 mb-1"></label>
+                                <div class="relative"><input type="number" inputmode="decimal" min="0" step="0.5" id="agreedNightInput" placeholder="0" value="" oninput="update()" class="w-full min-h-[44px] bg-slate-50 border border-slate-300 text-slate-800 font-bold text-sm rounded-xl p-2.5 pr-9 text-right disabled:opacity-50 disabled:cursor-not-allowed"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">h</span></div>
+                            </div>
+                        </div>
+                        <p id="agreedOTConvertedText" class="text-xs text-blue-700 font-medium mt-1.5"></p>
+                    </div>
+
+                    <div>
+                        <div class="text-xs font-bold text-rose-900 flex items-center gap-1.5 mb-2"><i class="fa-solid fa-clock-rotate-left text-rose-600"></i>이번 달 '실제로 일한' 연장·야간 시간</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label id="actualOTLabel" for="actualOTInput" class="block text-xs text-slate-600 mb-1"></label>
+                                <div class="relative"><input type="number" inputmode="decimal" min="0" step="0.5" id="actualOTInput" placeholder="0" value="" oninput="update()" class="w-full min-h-[44px] bg-rose-50/40 border border-rose-300 text-rose-950 font-bold text-sm rounded-xl p-2.5 pr-9 text-right"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">h</span></div>
+                            </div>
+                            <div>
+                                <label id="actualNightLabel" for="actualNightInput" class="block text-xs text-slate-600 mb-1"></label>
+                                <div class="relative"><input type="number" inputmode="decimal" min="0" step="0.5" id="actualNightInput" placeholder="0" value="" oninput="update()" class="w-full min-h-[44px] bg-slate-50 border border-slate-300 text-slate-800 font-bold text-sm rounded-xl p-2.5 pr-9 text-right"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">h</span></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">야간근로는 22~06시에 일한 시간 중 <strong>가산분(0.5배)</strong>만 계산합니다. 연장시간과 겹치는 야간시간도 여기에 넣으세요.</p>
+                    </div>
+
+                    <details class="mt-4 bg-white border border-slate-200 rounded-xl text-xs text-slate-600">
+                        <summary class="px-3 py-2.5 font-semibold text-slate-700 flex items-center justify-between">용어 설명 <i class="fa-solid fa-chevron-down chev transition text-slate-400"></i></summary>
+                        <dl class="px-3 pb-3 space-y-2 leading-relaxed">
+                            <div><dt class="font-semibold text-slate-700">소정근로시간</dt><dd>계약으로 정한 하루·한 주의 근무시간입니다. 법정 한도는 주 40시간입니다.</dd></div>
+                            <div><dt class="font-semibold text-slate-700">주휴시간 / 월 209시간</dt><dd>주 15시간 이상 일하면 하루치 유급휴일이 생깁니다. 주 40시간이면 (40+8)×4.345 ≒ 209시간이 월 기준 시간입니다.</dd></div>
+                            <div><dt class="font-semibold text-slate-700">통상시급</dt><dd>연장·야간 가산수당을 계산하는 기준이 되는 시간당 임금입니다.</dd></div>
+                            <div><dt class="font-semibold text-slate-700">포괄임금</dt><dd>연장·야간 수당을 미리 월급에 포함해서 주는 방식입니다. 포함된 시간보다 더 일하면 차액을 받아야 합니다.</dd></div>
+                        </dl>
+                    </details>
+                </section>
+            </div>
+
+            <!-- RESULTS -->
+            <div id="resultCol" class="lg:col-span-7 space-y-5" aria-live="polite">
+
+                <div id="warnBox" class="space-y-2"></div>
+
+                <div id="stickyWrap" class="lg:sticky lg:top-16 z-20 space-y-3 lg:bg-slate-50 lg:pt-2 lg:pb-2">
+                <div id="verdictBanner" class="rounded-2xl p-5 sm:p-6 shadow-md transition-all duration-300 border-2"></div>
+
+                <div id="totalBar" class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-300 bg-blue-950/80 px-2.5 py-1 rounded-md border border-blue-800">이번 달 더 받아야 할 총 차액</span>
+                        <h3 class="text-sm text-slate-300 mt-2"><span id="sumShortLabel">부족분</span> <strong id="sumShortfall" class="text-white"></strong> + 약정 초과 수당 <strong id="sumExtraOT" class="text-white"></strong></h3>
+                    </div>
+                    <div class="sm:text-right border-t sm:border-t-0 border-slate-800 pt-3 sm:pt-0">
+                        <div id="totalClaimAmount" class="text-3xl font-black text-amber-400"></div>
+                        <div id="yearlyClaimAmount" class="text-xs text-slate-400 mt-0.5"></div>
+                    </div>
+                </div>
+                </div>
+
+                <div id="gaugeCard" class="glass-card rounded-2xl p-4 sm:p-5 shadow-sm">
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-2"><span>내 통상시급 vs 최저시급</span><span id="gaugeText" class="font-bold"></span></div>
+                    <div class="relative h-3 rounded-full bg-slate-200">
+                        <div id="gaugeFill" class="absolute inset-y-0 left-0 rounded-full transition-all duration-300"></div>
+                        <div id="gaugeMark" class="absolute -top-1.5 -bottom-1.5 w-0.5 bg-slate-800 transition-all duration-300"></div>
+                    </div>
+                    <div class="relative h-5"><span id="gaugeMarkLabel" class="absolute text-xs text-slate-700 font-semibold whitespace-nowrap -translate-x-1/2 mt-1"></span></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                    <div class="glass-card rounded-2xl p-4 shadow-sm border-l-4 border-l-blue-600">
+                        <div class="text-xs font-semibold text-slate-600 mb-1">역산된 내 통상시급</div>
+                        <div id="resultHourlyWage" class="text-2xl font-extrabold text-slate-900 tracking-tight"></div>
+                        <div id="resultHourlyDiff" class="text-xs font-semibold mt-1.5"></div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-4 shadow-sm border-l-4 border-l-indigo-600">
+                        <div class="text-xs font-semibold text-slate-600 mb-1">법정 최소 월급 (약정 시간 기준)</div>
+                        <div id="resultLegalMinMonthly" class="text-2xl font-extrabold text-slate-900 tracking-tight"></div>
+                        <div id="resultMonthlyShortfall" class="text-xs font-semibold mt-1.5"></div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-4 shadow-sm border-l-4 border-l-rose-600">
+                        <div class="text-xs font-semibold text-slate-600 mb-1">약정 초과분 추가 수당</div>
+                        <div id="resultExtraOTPay" class="text-2xl font-extrabold text-rose-600 tracking-tight"></div>
+                        <div id="resultExtraOTDesc" class="text-xs text-slate-600 font-medium mt-1.5"></div>
+                    </div>
+                </div>
+
+                <details open class="glass-card rounded-2xl shadow-sm">
+                    <summary class="p-5 sm:p-6 flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-chart text-blue-600"></i>어떻게 계산되었나요?<i class="fa-solid fa-chevron-down chev transition text-slate-400 text-sm"></i></h3>
+                    </summary>
+                    <div class="px-5 sm:px-6 pb-5 sm:pb-6">
+                        <div class="flex gap-2 mb-4 no-print">
+                            <button onclick="copySummaryToClipboard()" class="text-xs min-h-[36px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 rounded-lg border border-slate-300 transition flex items-center gap-1.5"><i class="fa-regular fa-copy"></i>계산 내역 복사</button>
+                            <button onclick="window.print()" class="text-xs min-h-[36px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 rounded-lg border border-slate-300 transition flex items-center gap-1.5"><i class="fa-solid fa-print"></i>인쇄 / PDF</button>
+                        </div>
+                        <div class="mb-5">
+                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5"><span>시급을 나누는 시간(분모) 구성</span><span id="totalDivisorHoursText" class="text-blue-700 font-bold"></span></div>
+                            <div class="w-full h-7 bg-slate-100 rounded-xl overflow-hidden flex border border-slate-200 text-xs font-bold text-white">
+                                <div id="barBase" class="bg-blue-600 flex items-center justify-center transition-all duration-300 truncate px-1"></div>
+                                <div id="barOT" class="bg-indigo-500 flex items-center justify-center transition-all duration-300 truncate"></div>
+                                <div id="barNight" class="bg-purple-600 flex items-center justify-center transition-all duration-300 truncate"></div>
+                            </div>
+                            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-600">
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>소정근로+주휴 <strong id="legendBase" class="text-slate-800"></strong></span>
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>약정 연장 환산 <strong id="legendOT" class="text-slate-800"></strong></span>
+                                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-600 inline-block"></span>약정 야간 가산 <strong id="legendNight" class="text-slate-800"></strong></span>
+                            </div>
+                        </div>
+                        <div id="stepsBox" class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3 text-sm"></div>
+                    </div>
+                </details>
+
+                <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-5 shadow-sm">
+                    <h4 class="font-bold text-sm sm:text-base text-amber-900 mb-2 flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-500"></i>계약 유형별로 계산이 달라지는 이유</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-amber-950">
+                        <div class="bg-white/90 p-3 rounded-xl border border-amber-200/80">
+                            <div class="font-bold text-blue-900 mb-1">약정 연장시간이 있는 경우 (① ②)</div>
+                            <p class="text-xs text-slate-700 leading-relaxed">총액만 적힌 경우 <strong>월급 ÷ (소정 209h + 약정 연장×1.5 + 야간×0.5)</strong>로 통상시급을 역산해 최저시급과 비교합니다. 금액이 따로 적힌 경우에는 <strong>기본급 ÷ 209h</strong>가 최저시급 이상인지, 고정수당이 <strong>통상시급×가산율×약정시간</strong> 이상인지 각각 확인합니다.</p>
+                        </div>
+                        <div class="bg-white/90 p-3 rounded-xl border border-amber-200/80">
+                            <div class="font-bold text-rose-900 mb-1">시간 약정 없는 정액급 (③)</div>
+                            <p class="text-xs text-slate-700 leading-relaxed">연장수당이 얼마인지 특정할 수 없으면 월급 전체를 소정근로(209h)의 대가로 보고 나눕니다. 이때 <strong>실제 연장·야간 근로 전부</strong>가 별도 수당 청구 대상으로 계산됩니다. 근로시간 산정이 가능한 직종에서는 포괄임금 약정 자체의 효력이 다투어질 수 있습니다.</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-900/90 mt-3">※ 법적 판단은 계약서 문구와 근무 실태에 따라 달라집니다. 상단 '계산 기준'에서 근거와 한계를 확인하세요.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile sticky summary -->
+    <div id="mobileBar" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900 text-white border-t border-slate-700 px-4 py-3 flex items-center justify-between gap-3" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
+        <div class="min-w-0">
+            <div id="mobileStatus" class="text-sm font-semibold text-slate-100 truncate"></div>
+            <div class="text-xs text-slate-400">월 추가 청구 가능액</div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+            <div id="mobileTotal" class="text-xl font-black text-amber-400"></div>
+            <button onclick="document.getElementById('verdictBanner').scrollIntoView({behavior:'smooth', block:'start'})" class="text-sm min-h-[40px] bg-blue-600 hover:bg-blue-500 px-3 rounded-lg font-semibold">결과 보기</button>
+        </div>
+    </div>
+
+    <div id="toastBox" role="status" class="fixed bottom-24 lg:bottom-6 right-4 lg:right-6 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-sm font-medium opacity-0 pointer-events-none transition-all duration-300 z-50">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i><span id="toastMsg"></span>
+    </div>
+
+    <!-- Basis modal -->
+    <div id="legalModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="if(event.target===this)closeLegalModal()">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200 p-5 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-book-bookmark text-blue-600"></i>계산 기준과 한계</h3>
+                <button id="modalClose" onclick="closeLegalModal()" class="text-slate-500 hover:text-slate-700 p-2" aria-label="닫기"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="font-bold text-slate-900 mb-1">적용한 계산식</div>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li>월 소정근로시간: 주 40시간 = 209시간(주휴 포함). 그 외는 (주 소정시간 + 주 소정시간÷5) × 4.345주 (주 15시간 미만은 주휴 없음)</li>
+                        <li>연장근로 = 통상시급 × 1.5, 야간근로 가산 = 통상시급 × 0.5 (5인 미만 사업장은 가산 없음, 연장도 1.0배)</li>
+                        <li>2024·2025·2026년 최저시급: 9,860원 · 10,030원 · 10,320원</li>
+                        <li>식대·교통비 등 복리후생비는 2024년부터 최저임금에 전액 산입</li>
+                    </ul>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <div class="font-bold text-amber-900 mb-1">⚠️ 판례·행정해석 출처 안내</div>
+                    <p class="text-amber-900">이 도구는 판례 사건번호를 근거로 계산하지 않습니다. 포괄임금제의 효력, 정액급의 최저임금 판단 방법은 사안별로 다투어지므로 <strong>대법원 종합법률정보·국가법령정보센터에서 직접 확인</strong>하거나 공인노무사에게 문의하세요.</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="font-bold text-slate-900 mb-1">계산에 반영하지 못하는 것</div>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li>휴일근로(8시간 초과 시 2.0배), 연차수당, 상여금의 통상임금 산입, 월별 근무일수 차이</li>
+                        <li>감시·단속적 근로 등 근로시간 규정이 적용 제외되는 직종</li>
+                        <li>3년 소멸시효, 지연이자</li>
+                    </ul>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="font-bold text-slate-900 mb-1">개인정보</div>
+                    <p class="text-slate-700">입력값은 이 기기의 브라우저에만 저장되며 어디로도 전송되지 않습니다. '초기화'를 누르면 지워집니다.</p>
+                </div>
+            </div>
+            <div class="pt-1 flex justify-end"><button onclick="closeLegalModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 min-h-[44px] rounded-xl text-sm transition">확인했습니다</button></div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-5 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-slate-600">본 계산기는 근로기준법·최저임금법의 일반 원칙에 따른 참고용 도구입니다. 실제 진정·소송 시에는 근로계약서와 급여명세서를 지참해 공인노무사 또는 노동청에서 최종 확인을 받으세요.</div>
+    </footer>
+
+    <script>
+        const WEEKS = 365 / 12 / 7;
+        const MIN_WAGE = { '2026': 10320, '2025': 10030, '2024': 9860 };
+        const S = { year: '2026', isOver5: true, mode: 'total', unit: 'week' };
+        const FIELDS = ['customMinWage', 'monthlySalary', 'excludedAllowance', 'fixedPay', 'weeklyBaseHours', 'agreedOTInput', 'agreedNightInput', 'actualOTInput', 'actualNightInput'];
+        const STORE_KEY = 'inclusive-wage-checker:v2';
+        let last = null;
+
+        const $ = id => document.getElementById(id);
+        const num = id => { const v = parseFloat(String($(id).value).replace(/,/g, '')); return isFinite(v) && v > 0 ? v : 0; };
+        const fmt = n => Math.round(n).toLocaleString('ko-KR');
+        const fmt1 = n => (Math.round(n * 10) / 10).toFixed(1);
+        const fmt2 = n => (Math.round(n * 100) / 100).toFixed(2);
+        const setMoney = (id, v) => { $(id).value = v > 0 ? Math.round(v).toLocaleString('ko-KR') : ''; };
+
+        // ---------- calculation (pure) ----------
+        function compute(i) {
+            const mult = i.isOver5 ? 1.5 : 1;
+            const nightAdd = i.isOver5 ? 0.5 : 0;
+            const weeklyBase = Math.min(Math.max(i.weeklyBase, 1), 40);
+            const baseHours = weeklyBase === 40 ? 209
+                : Math.round((weeklyBase + (weeklyBase >= 15 ? weeklyBase / 5 : 0)) * WEEKS * 10) / 10;
+            const toM = h => i.unit === 'week' ? h * WEEKS : h;
+
+            const lump = i.mode === 'lump';
+            const agreedOT = lump ? 0 : toM(i.agreedOT);
+            const agreedNight = lump ? 0 : toM(i.agreedNight);
+            const actualOT = toM(i.actualOT);
+            const actualNight = toM(i.actualNight);
+
+            const salary = Math.max(0, i.salary - i.excluded);
+            const agreedOTPaid = agreedOT * mult;
+            const agreedNightPaid = agreedNight * nightAdd;
+            const agreedPaid = agreedOTPaid + agreedNightPaid;
+
+            let divisor, rate, basePay, fixedStated, minShortfall, fixedGap;
+            if (i.mode === 'split') {
+                fixedStated = Math.min(i.fixedPay, salary);
+                basePay = salary - fixedStated;
+                divisor = baseHours;
+                rate = basePay / baseHours;
+            } else {
+                divisor = baseHours + agreedPaid;
+                rate = salary / divisor;
+                basePay = rate * baseHours;
+                fixedStated = rate * agreedPaid;
+            }
+            const violation = rate < i.minWage;
+            const applied = Math.max(rate, i.minWage);
+            const legalBase = applied * baseHours;
+            const legalFixed = applied * agreedPaid;
+            const legalMin = legalBase + legalFixed;
+
+            if (i.mode === 'split') {
+                minShortfall = Math.max(0, i.minWage * baseHours - basePay);
+                fixedGap = Math.max(0, legalFixed - fixedStated);
+            } else {
+                minShortfall = Math.max(0, i.minWage * divisor - salary);
+                fixedGap = 0;
+            }
+            const shortfall = minShortfall + fixedGap;
+
+            const excessOT = Math.max(0, actualOT - agreedOT);
+            const excessNight = Math.max(0, actualNight - agreedNight);
+            const extraOT = applied * (excessOT * mult + excessNight * nightAdd);
+
+            return {
+                empty: salary <= 0,
+                mult, nightAdd, weeklyBase, baseHours, agreedOT, agreedNight, actualOT, actualNight,
+                salary, agreedOTPaid, agreedNightPaid, agreedPaid, divisor, rate, basePay, fixedStated,
+                violation, applied, legalBase, legalFixed, legalMin,
+                minShortfall, fixedGap, shortfall, excessOT, excessNight, extraOT,
+                total: shortfall + extraOT
+            };
+        }
+
+        function readInput() {
+            return {
+                minWage: S.year === 'custom' ? num('customMinWage') : MIN_WAGE[S.year],
+                isOver5: S.isOver5, mode: S.mode, unit: S.unit,
+                salary: num('monthlySalary'), excluded: num('excludedAllowance'), fixedPay: num('fixedPay'),
+                weeklyBase: num('weeklyBaseHours') || 40,
+                agreedOT: num('agreedOTInput'), agreedNight: num('agreedNightInput'),
+                actualOT: num('actualOTInput'), actualNight: num('actualNightInput')
+            };
+        }
+
+        // ---------- input handlers ----------
+        function onMoney(el) {
+            const pos = el.selectionStart == null ? el.value.length : el.selectionStart;
+            const before = el.value.slice(0, pos).replace(/\D/g, '').length;
+            const digits = el.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 12);
+            el.value = digits ? Number(digits).toLocaleString('ko-KR') : '';
+            let p = 0, c = 0;
+            while (p < el.value.length && c < before) { if (/\d/.test(el.value[p])) c++; p++; }
+            try { el.setSelectionRange(p, p); } catch (e) { /* unsupported input type */ }
+            update();
+        }
+        function onYearChange() { S.year = $('yearSelect').value; update(); }
+        function setSize(v) { S.isOver5 = v; update(); }
+        function setMode(m) { S.mode = m; update(); }
+        function setWeeklyHours(h) { $('weeklyBaseHours').value = h; update(); }
+        function adjustSalary(d) { setMoney('monthlySalary', Math.max(0, num('monthlySalary') + d)); update(); }
+        function setUnit(u) {
+            if (S.unit === u) return;
+            const k = u === 'month' ? WEEKS : 1 / WEEKS;
+            ['agreedOTInput', 'agreedNightInput', 'actualOTInput', 'actualNightInput'].forEach(id => {
+                const v = Math.round(num(id) * k * 10) / 10;
+                $(id).value = v > 0 ? v : '';
+            });
+            S.unit = u;
+            update();
+        }
+
+        const PRESETS = {
+            case1: { mode: 'total', unit: 'week', salary: 2500000, fixed: 0, aot: 12, ot: 15 },
+            case2: { mode: 'total', unit: 'month', salary: 3000000, fixed: 0, aot: 20, ot: 40 },
+            case3: { mode: 'total', unit: 'week', salary: 3200000, fixed: 0, aot: 10, ot: 8 },
+            case4: { mode: 'split', unit: 'week', salary: 2600000, fixed: 600000, aot: 10, ot: 10 }
+        };
+        function clearForm() {
+            S.year = '2026'; S.isOver5 = true; S.mode = 'total'; S.unit = 'week';
+            $('yearSelect').value = '2026';
+            FIELDS.forEach(id => { $(id).value = ''; });
+            $('weeklyBaseHours').value = 40; $('customMinWage').value = '10,320';
+        }
+        function applyPreset(k) {
+            const p = PRESETS[k];
+            clearForm();
+            S.mode = p.mode; S.unit = p.unit;
+            setMoney('monthlySalary', p.salary); setMoney('fixedPay', p.fixed);
+            $('agreedOTInput').value = p.aot; $('actualOTInput').value = p.ot;
+            update();
+            if (window.innerWidth < 1024) $('verdictBanner').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function resetForm() {
+            clearForm();
+            try { localStorage.removeItem(STORE_KEY); } catch (e) { /* storage unavailable */ }
+            update();
+            showToast('입력을 초기화했습니다');
+        }
+
+        // ---------- persistence (per-viewer convenience) ----------
+        function saveState() {
+            try {
+                const v = {}; FIELDS.forEach(id => { v[id] = $(id).value; });
+                localStorage.setItem(STORE_KEY, JSON.stringify({ S, v }));
+            } catch (e) { /* storage unavailable */ }
+        }
+        function loadState() {
+            try {
+                const d = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+                if (!d) return;
+                if (d.S) {
+                    if (d.S.year in MIN_WAGE || d.S.year === 'custom') S.year = d.S.year;
+                    if (typeof d.S.isOver5 === 'boolean') S.isOver5 = d.S.isOver5;
+                    if (['total', 'split', 'lump'].includes(d.S.mode)) S.mode = d.S.mode;
+                    if (['week', 'month'].includes(d.S.unit)) S.unit = d.S.unit;
+                }
+                if (d.v) FIELDS.forEach(id => { if (typeof d.v[id] === 'string') $(id).value = d.v[id]; });
+                $('yearSelect').value = S.year;
+            } catch (e) { /* ignore corrupt or unavailable storage */ }
+        }
+
+        // ---------- UI sync ----------
+        function setSeg(id, on) {
+            const el = $(id);
+            el.classList.toggle('seg-on', on); el.classList.toggle('seg-off', !on);
+            el.setAttribute('aria-pressed', String(on));
+        }
+
+        function syncUI() {
+            const w = S.unit === 'week';
+            setSeg('sizeOver', S.isOver5); setSeg('sizeUnder', !S.isOver5);
+            setSeg('modeTotal', S.mode === 'total'); setSeg('modeSplit', S.mode === 'split'); setSeg('modeLump', S.mode === 'lump');
+            setSeg('unitWeek', w); setSeg('unitMonth', !w);
+            const wb = num('weeklyBaseHours');
+            setSeg('wh40', wb === 40); setSeg('wh35', wb === 35);
+
+            $('companySizeHelp').innerHTML = S.isOver5
+                ? '<i class="fa-solid fa-circle-info text-blue-500 mr-1"></i><strong>5인 이상:</strong> 연장·휴일근로는 통상시급의 <strong>1.5배</strong>, 야간근로(22~06시)는 <strong>0.5배 가산</strong>됩니다.'
+                : '<i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i><strong>5인 미만:</strong> 가산수당 규정이 적용되지 않아 연장근로도 <strong>1.0배</strong>, 야간 가산 없음으로 계산합니다.';
+
+            const custom = S.year === 'custom';
+            $('customMinWageBox').classList.toggle('hidden', !custom);
+            $('companySizeBox').classList.toggle('col-span-2', custom);
+            $('fixedPayBox').classList.toggle('hidden', S.mode !== 'split');
+
+            const lump = S.mode === 'lump';
+            $('agreedBox').classList.toggle('opacity-50', lump);
+            $('agreedOTInput').disabled = lump; $('agreedNightInput').disabled = lump;
+
+            const u = w ? '1주' : '1개월 총합';
+            $('agreedOTLabel').innerText = `약정 연장근로 (${u})`;
+            $('agreedNightLabel').innerText = `약정 야간근로 (${u})`;
+            $('actualOTLabel').innerText = `실제 연장근로 (${w ? '1주 평균' : '1개월 총합'})`;
+            $('actualNightLabel').innerText = `실제 야간근로 (${w ? '1주 평균' : '1개월 총합'})`;
+
+            $('modeExplanation').innerHTML = {
+                total: '<div class="font-bold mb-0.5">총액 + 약정 연장시간형</div>기본급과 수당이 나뉘어 있지 않으니 <strong>월급 ÷ (소정 209h + 약정 연장×1.5 + 야간×0.5)</strong>로 통상시급을 역산해 최저시급과 비교합니다.',
+                split: '<div class="font-bold mb-0.5">기본급·고정수당 분리형</div><strong>기본급 ÷ 209h</strong>가 최저시급 이상인지, 고정수당이 <strong>통상시급 × 가산율 × 약정시간</strong>보다 적게 책정되진 않았는지 따로 확인합니다.',
+                lump: '<div class="font-bold mb-0.5 text-indigo-900">시간 약정 없는 정액급</div>연장 몇 시간분인지 특정되지 않으므로 <strong>월급 전체를 소정근로 209h의 대가</strong>로 보고 시급을 구하며, 실제 연장·야간 근로 <strong>전부</strong>를 추가 수당 대상으로 계산합니다.'
+            }[S.mode];
+        }
+
+        // ---------- render ----------
+        function update() {
+            syncUI();
+            const i = readInput();
+            const r = compute(i);
+            last = { i, r };
+
+            $('minWageBadge').innerText = `최저시급 ${fmt(i.minWage)}원`;
+            $('salaryKoreanText').innerText = i.salary > 0 ? koreanMoney(i.salary) : '';
+            $('monthlyBaseHoursBadge').innerText = `월 소정 ${r.baseHours}시간 (${r.weeklyBase >= 15 ? '주휴 포함' : '주휴 없음'})`;
+            $('agreedOTConvertedText').innerText = (S.mode === 'lump' || r.agreedOT + r.agreedNight === 0) ? '' :
+                `→ 월 연장 ${fmt1(r.agreedOT)}h (${r.mult}배 환산 ${fmt1(r.agreedOTPaid)}h)` +
+                (r.agreedNight > 0 ? ` + 야간 가산 ${fmt1(r.agreedNightPaid)}h` : '');
+
+            renderWarnings(i, r);
+            if (r.empty || i.minWage <= 0) renderEmpty(i); else renderAll(i, r);
+            saveState();
+        }
+
+        function renderAll(i, r) {
+            $('gaugeCard').classList.remove('hidden');
+            renderVerdict(i, r);
+            renderCards(i, r);
+            renderGauge(i, r);
+            renderSteps(i, r);
+        }
+
+        function renderWarnings(i, r) {
+            const w = [];
+            if (i.weeklyBase > 40) w.push('소정근로시간은 법정 주 40시간을 넘을 수 없어 40시간으로 계산했습니다.');
+            if (i.minWage <= 0) w.push('최저시급을 입력해 주세요.');
+            if (S.mode === 'split' && i.fixedPay > Math.max(0, i.salary - i.excluded) && i.salary > 0) w.push('고정수당이 월 총액보다 커서 총액까지만 반영했습니다.');
+            const maxOT = Math.max(r.agreedOT, r.actualOT) / WEEKS;
+            if (r.weeklyBase + maxOT > 52.0001) {
+                const who = r.agreedOT >= r.actualOT ? '약정' : '실제';
+                w.push(`${who} 연장근로가 주 ${fmt1(maxOT)}시간이라 소정근로와 합치면 주 ${fmt1(r.weeklyBase + maxOT)}시간입니다. 주 52시간 상한(연장 주 12시간)을 넘는 구조일 수 있습니다.`);
+            }
+            if (S.mode === 'total' && r.agreedOT + r.agreedNight === 0 && i.salary > 0) {
+                w.push('약정 연장·야간 시간이 0이면 일반 월급과 같게 계산됩니다. 포괄임금이라면 약정 시간을 입력하세요.');
+            }
+            $('warnBox').innerHTML = w.map(t => `<div class="flex gap-2 text-sm bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3.5 py-2.5"><i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i><span>${t}</span></div>`).join('');
+        }
+
+        function renderEmpty(i) {
+            const b = $('verdictBanner');
+            b.className = 'rounded-2xl p-5 sm:p-6 shadow-sm transition-all duration-300 border-2 bg-white border-dashed border-slate-300 text-slate-800';
+            b.innerHTML = `<div class="space-y-3">
+                <div class="inline-flex items-center gap-1.5 bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-pen"></i>입력 대기 중</div>
+                <h2 class="text-xl sm:text-2xl font-extrabold">월 지급 총액을 입력하면 바로 진단합니다</h2>
+                <ol class="text-sm text-slate-700 space-y-1 list-decimal pl-5">
+                    <li>근로계약서 또는 급여명세서의 <strong>월 지급 총액</strong>을 적습니다.</li>
+                    <li>계약서에 적힌 방식(① ② ③)을 고릅니다.</li>
+                    <li>약정된 연장 시간과 <strong>실제로 일한 시간</strong>을 적습니다.</li>
+                </ol>
+                <p class="text-xs text-slate-600">처음이라면 위쪽 '예시로 먼저 써 보기'를 눌러 결과 화면을 먼저 확인해 보세요.</p></div>`;
+            ['resultHourlyWage', 'resultLegalMinMonthly', 'resultExtraOTPay'].forEach(id => { $(id).innerText = '—'; $(id).className = 'text-2xl font-extrabold text-slate-400 tracking-tight'; });
+            $('totalClaimAmount').innerText = '—'; $('totalClaimAmount').className = 'text-3xl font-black text-slate-500';
+            $('gaugeCard').classList.add('hidden');
+            ['resultHourlyDiff', 'resultMonthlyShortfall', 'resultExtraOTDesc', 'yearlyClaimAmount', 'gaugeText', 'gaugeMarkLabel'].forEach(id => { $(id).innerText = ''; });
+            $('sumShortfall').innerText = '—'; $('sumExtraOT').innerText = '—';
+            $('gaugeFill').style.width = '0%'; $('gaugeMark').style.left = '50%';
+            ['barBase', 'barOT', 'barNight'].forEach(id => { $(id).style.width = '0%'; $(id).innerText = ''; });
+            $('totalDivisorHoursText').innerText = '—';
+            ['legendBase', 'legendOT', 'legendNight'].forEach(id => { $(id).innerText = '—'; });
+            $('stepsBox').innerHTML = '<p class="text-slate-600 text-sm">월 지급 총액을 입력하면 계산 과정이 여기에 표시됩니다.</p>';
+            $('mobileStatus').innerText = '월급을 입력하세요';
+            $('mobileTotal').innerText = '—';
+        }
+
+        function renderVerdict(i, r) {
+            const hourly = fmt(r.rate);
+            let cls, badge, title, body, status;
+            if (r.violation) {
+                status = '최저임금 미달 의심';
+                cls = 'bg-rose-50 border-rose-300 text-rose-950';
+                badge = '<span class="inline-flex items-center gap-1.5 bg-rose-600 text-white text-xs font-bold px-3 py-1 rounded-full pulse-badge"><i class="fa-solid fa-triangle-exclamation"></i>최저임금 미달 의심</span>';
+                title = `역산 시급이 <span class="underline decoration-rose-500 decoration-2">${hourly}원</span>으로 최저시급(${fmt(i.minWage)}원)에 못 미칩니다.`;
+                body = `시간당 약 <strong>${fmt(i.minWage - r.rate)}원</strong> 부족합니다. 최저임금에 미달하는 부분은 포괄임금 약정이어도 무효가 되어, 매월 <strong>${fmt(r.shortfall)}원</strong> 차액을 청구할 수 있는 구조입니다.`;
+            } else if (r.fixedGap > 0) {
+                status = '고정수당 과소 책정';
+                cls = 'bg-orange-50 border-orange-300 text-orange-950';
+                badge = '<span class="inline-flex items-center gap-1.5 bg-orange-700 text-white text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-scale-unbalanced"></i>고정수당 과소 책정</span>';
+                title = `기본급 시급은 <span class="text-emerald-800">${hourly}원</span>으로 적법하나, 고정수당이 약정 시간분보다 적습니다.`;
+                body = `약정 시간에 대한 법정 수당은 <strong>${fmt(r.legalFixed)}원</strong>인데 계약서에는 <strong>${fmt(r.fixedStated)}원</strong>만 적혀 있어 매월 <strong>${fmt(r.fixedGap)}원</strong> 부족합니다.`;
+            } else if (r.extraOT > 0) {
+                status = '약정 초과 수당 발생';
+                cls = 'bg-amber-50 border-amber-300 text-amber-950';
+                badge = '<span class="inline-flex items-center gap-1.5 bg-amber-700 text-white text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-bell"></i>약정 초과 근무 수당 미지급 의심</span>';
+                title = `역산 시급은 <span class="text-emerald-800">${hourly}원</span>으로 적법하나, 약정 시간을 넘겨 일했습니다.`;
+                body = S.mode === 'lump'
+                    ? `시간 약정이 없는 정액급이므로 실제 연장·야간 근로 전부를 별도 수당으로 청구할 수 있는 구조이며, 월 <strong>${fmt(r.extraOT)}원</strong>으로 계산됩니다.`
+                    : `포괄임금이라도 약정 시간을 넘은 근로는 별도로 지급해야 하며, 월 <strong>${fmt(r.extraOT)}원</strong>이 추가로 계산됩니다.`;
+            } else {
+                status = '입력 기준 문제 없음';
+                cls = 'bg-emerald-50 border-emerald-300 text-emerald-950';
+                badge = '<span class="inline-flex items-center gap-1.5 bg-emerald-700 text-white text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-circle-check"></i>입력 기준 문제 없음</span>';
+                title = `역산 통상시급 <span class="underline decoration-emerald-500 decoration-2">${hourly}원</span>으로 최저시급 이상입니다.`;
+                body = `최저시급보다 <strong>+${fmt(r.rate - i.minWage)}원</strong> 높고 실제 근무도 약정 범위 안입니다.`;
+            }
+            const b = $('verdictBanner');
+            b.className = `rounded-2xl p-5 sm:p-6 shadow-md transition-all duration-300 border-2 ${cls}`;
+            b.innerHTML = `<div class="space-y-1.5">${badge}<h2 class="text-xl sm:text-2xl font-extrabold pt-1 leading-snug">${title}</h2><p class="text-sm leading-relaxed">${body}</p></div>`;
+            $('mobileStatus').innerText = status;
+            $('mobileTotal').innerText = `${fmt(r.total)}원`;
+        }
+
+        function renderCards(i, r) {
+            const diff = Math.round(r.rate - i.minWage);
+            const wage = $('resultHourlyWage'), d = $('resultHourlyDiff');
+            wage.innerText = `${fmt(r.rate)}원`;
+            if (diff < 0) {
+                wage.className = 'text-2xl font-extrabold text-rose-600 tracking-tight';
+                d.className = 'text-xs font-bold text-rose-700 mt-1.5';
+                d.innerText = `최저시급 대비 ${fmt(-diff)}원 미달`;
+            } else {
+                wage.className = 'text-2xl font-extrabold text-emerald-600 tracking-tight';
+                d.className = 'text-xs font-bold text-emerald-700 mt-1.5';
+                d.innerText = `최저시급 대비 +${fmt(diff)}원`;
+            }
+            $('resultLegalMinMonthly').innerText = `${fmt(r.legalMin)}원`;
+            $('resultLegalMinMonthly').className = 'text-2xl font-extrabold text-slate-900 tracking-tight';
+            const s = $('resultMonthlyShortfall');
+            if (r.shortfall > 0) { s.className = 'text-xs font-bold text-rose-700 mt-1.5'; s.innerText = `현재 월급이 ${fmt(r.shortfall)}원 부족`; }
+            else { s.className = 'text-xs font-medium text-slate-600 mt-1.5'; s.innerText = '법정 최소기준 충족'; }
+            const ex = $('resultExtraOTPay');
+            ex.innerText = `+${fmt(r.extraOT)}원`;
+            ex.className = 'text-2xl font-extrabold tracking-tight ' + (r.extraOT > 0 ? 'text-rose-600' : 'text-slate-900');
+            const parts = [];
+            if (r.excessOT > 0) parts.push(`연장 ${fmt1(r.excessOT)}h`);
+            if (r.excessNight > 0 && r.nightAdd > 0) parts.push(`야간 ${fmt1(r.excessNight)}h`);
+            $('resultExtraOTDesc').innerText = parts.length ? `약정 초과 월 ${parts.join(' + ')}` : '약정 시간 초과분 없음';
+
+            $('sumShortLabel').innerText = r.fixedGap > 0 ? '최저임금·고정수당 부족분' : '최저임금 미달 차액';
+            $('sumShortfall').innerText = `${fmt(r.shortfall)}원`;
+            $('sumExtraOT').innerText = `${fmt(r.extraOT)}원`;
+            const t = $('totalClaimAmount');
+            t.innerText = `${fmt(r.total)}원`; t.className = 'text-3xl font-black ' + (r.total > 0 ? 'text-amber-400' : 'text-emerald-400');
+            $('yearlyClaimAmount').innerText = r.total > 0 ? `매월 같은 상황이 1년 이어지면 약 ${fmt(r.total * 12)}원` : '추가로 청구할 금액이 없습니다';
+        }
+
+        function renderGauge(i, r) {
+            const scale = Math.max(r.rate, i.minWage) * 1.2;
+            const pct = v => Math.min(100, Math.max(0, (v / scale) * 100));
+            const fill = $('gaugeFill');
+            fill.style.width = `${pct(r.rate)}%`;
+            fill.className = 'absolute inset-y-0 left-0 rounded-full transition-all duration-300 ' + (r.violation ? 'bg-rose-500' : 'bg-emerald-500');
+            const m = pct(i.minWage);
+            $('gaugeMark').style.left = `${m}%`;
+            const lab = $('gaugeMarkLabel');
+            lab.style.left = `${Math.min(88, Math.max(12, m))}%`;
+            lab.innerText = `최저시급 ${fmt(i.minWage)}원`;
+            $('gaugeText').innerText = `내 시급 ${fmt(r.rate)}원`;
+            $('gaugeText').className = 'font-bold ' + (r.violation ? 'text-rose-600' : 'text-emerald-600');
+        }
+
+        function renderSteps(i, r) {
+            const parts = S.mode === 'split' ? [r.baseHours, 0, 0] : [r.baseHours, r.agreedOTPaid, r.agreedNightPaid];
+            const sum = parts[0] + parts[1] + parts[2] || 1;
+            const set = (id, v, txt) => { $(id).style.width = `${(v / sum) * 100}%`; $(id).innerText = (v / sum) > 0.1 ? txt : ''; };
+            set('barBase', parts[0], `기본 ${r.baseHours}h`);
+            set('barOT', parts[1], `연장 ${fmt1(parts[1])}h`);
+            set('barNight', parts[2], `야간 ${fmt1(parts[2])}h`);
+            $('totalDivisorHoursText').innerText = `총 ${fmt2(r.divisor)}시간`;
+            $('legendBase').innerText = `${r.baseHours}h`;
+            $('legendOT').innerText = S.mode === 'split' ? '분모 미포함' : `${fmt2(parts[1])}h`;
+            $('legendNight').innerText = S.mode === 'split' ? '분모 미포함' : `${fmt2(parts[2])}h`;
+
+            const row = (label, desc, val, cls = 'text-slate-900') =>
+                `<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200/80 last:border-0 last:pb-0 gap-1">
+                    <div><span class="text-slate-700 font-medium">${label}</span><p class="text-xs text-slate-600 mt-0.5">${desc}</p></div>
+                    <span class="font-bold ${cls} sm:text-right shrink-0">${val}</span></div>`;
+
+            const rows = [];
+            if (S.mode === 'split') {
+                rows.push(row('① 기본급 / 고정수당 분리', `총액 ${fmt(r.salary)}원 = 기본급 + 고정수당`, `${fmt(r.basePay)}원 + ${fmt(r.fixedStated)}원`));
+                rows.push(row('② 나누는 시간', `기본급은 소정근로+주휴 ${r.baseHours}h로만 나눕니다.`, `${r.baseHours}시간`, 'text-blue-700'));
+            } else if (S.mode === 'lump') {
+                rows.push(row('① 시급 산정 기준 월급', '월 지급 총액 − 제외 금액', `${fmt(r.salary)}원`));
+                rows.push(row('② 나누는 시간', `시간 약정이 없어 소정근로+주휴 ${r.baseHours}h로만 나눕니다.`, `${r.baseHours}시간`, 'text-blue-700'));
+            } else {
+                rows.push(row('① 시급 산정 기준 월급', '월 지급 총액 − 제외 금액', `${fmt(r.salary)}원`));
+                rows.push(row('② 나누는 시간', `소정 ${r.baseHours}h + 연장 ${fmt2(r.agreedOT)}h×${r.mult}` + (r.agreedNight > 0 ? ` + 야간 ${fmt2(r.agreedNight)}h×${r.nightAdd}` : ''), `${fmt2(r.divisor)}시간`, 'text-blue-700'));
+            }
+            const ok = !r.violation;
+            rows.push(row('③ 통상시급 vs 최저시급', S.mode === 'split' ? '기본급 ÷ 소정시간' : '월급 ÷ 분모 시간', `${fmt(r.rate)}원 ${ok ? '≥' : '<'} ${fmt(i.minWage)}원`, ok ? 'text-emerald-700' : 'text-rose-700'));
+            rows.push(row('④ 적법하게 지급했다면', `적용 시급 ${fmt(r.applied)}원${r.violation ? ' (최저시급으로 보정)' : ''} 기준`,
+                `기본급 ${fmt(r.legalBase)}원` + (r.agreedPaid > 0 ? ` + 고정연장·야간 ${fmt(r.legalFixed)}원` : '')));
+            const pre = S.mode === 'lump' ? '실제' : '초과';
+            rows.push(row('⑤ 약정 초과 근무 수당',
+                `${pre} 연장 ${fmt1(r.excessOT)}h × ${fmt(r.applied)}원 × ${r.mult}` + (r.excessNight > 0 ? ` + ${pre} 야간 ${fmt1(r.excessNight)}h × ${fmt(r.applied)}원 × ${r.nightAdd}` : ''),
+                r.extraOT > 0 ? `+${fmt(r.extraOT)}원` : '0원', r.extraOT > 0 ? 'text-rose-700' : 'text-slate-800'));
+            $('stepsBox').innerHTML = rows.join('');
+        }
+
+        // ---------- utilities ----------
+        function koreanMoney(n) {
+            n = Math.round(n);
+            if (n <= 0) return '';
+            const man = Math.floor(n / 10000), rest = n % 10000;
+            return `${man > 0 ? fmt(man) + '만 ' : ''}${rest > 0 ? fmt(rest) : ''}원`.replace('만 원', '만원');
+        }
+
+        function copySummaryToClipboard() {
+            if (!last || last.r.empty) { showToast('먼저 월급을 입력해 주세요'); return; }
+            const { i, r } = last;
+            const modeName = { total: '총액+약정 연장시간형', split: '기본급·고정수당 분리형', lump: '시간 약정 없는 정액급' }[S.mode];
+            const text = [
+                '[포괄임금 월급 진단 결과]',
+                `■ 기준: ${S.year === 'custom' ? '직접입력' : S.year + '년'} 최저시급 ${fmt(i.minWage)}원 / ${i.isOver5 ? '5인 이상' : '5인 미만'} / ${modeName}`,
+                `■ 월 지급 총액(시급 산정분): ${fmt(r.salary)}원`,
+                `■ 나누는 시간: ${fmt2(r.divisor)}시간 (소정 ${r.baseHours}h + 약정 환산 ${fmt2(r.agreedPaid)}h)`,
+                '----------------------------------------',
+                `▶ 통상시급: ${fmt(r.rate)}원 (${r.violation ? '최저임금 미달 의심' : '최저시급 이상'})`,
+                `▶ 법정 최소 월급: ${fmt(r.legalMin)}원 / 부족분 ${fmt(r.shortfall)}원`,
+                `▶ 약정 초과 수당: ${fmt(r.extraOT)}원`,
+                `▶ 월 추가 청구 가능액: ${fmt(r.total)}원 (연 환산 약 ${fmt(r.total * 12)}원)`,
+                '※ 참고용 계산이며 법적 판단은 노무사 확인이 필요합니다.'
+            ].join('\n');
+            const done = () => showToast('계산 내역이 복사되었습니다');
+            const fallback = () => {
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); done(); } catch (e) { showToast('복사에 실패했습니다'); }
+                document.body.removeChild(ta);
+            };
+            if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+            else fallback();
+        }
+
+        let toastTimer;
+        function showToast(msg) {
+            const t = $('toastBox');
+            $('toastMsg').innerText = msg;
+            t.classList.remove('opacity-0', 'pointer-events-none'); t.classList.add('opacity-100');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { t.classList.remove('opacity-100'); t.classList.add('opacity-0', 'pointer-events-none'); }, 2400);
+        }
+
+        let modalOpener = null;
+        function openLegalModal() {
+            modalOpener = document.activeElement;
+            const m = $('legalModal'); m.classList.remove('hidden'); m.classList.add('flex');
+            $('modalClose').focus();
+        }
+        function closeLegalModal() {
+            const m = $('legalModal'); m.classList.add('hidden'); m.classList.remove('flex');
+            if (modalOpener && modalOpener.focus) modalOpener.focus();
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLegalModal(); });
+
+        window.onload = () => { loadState(); update(); };
+    </script>
+</body>
+</html>

@@ -624,12 +624,20 @@
 
   <!-- 4. 예상 육아휴직 급여 -->
   <section class="card" aria-labelledby="h-pay">
-    <h2 id="h-pay"><span class="step">4</span>예상 육아휴직 급여 (고용보험)</h2>
+    <h2 id="h-pay"><span class="step">4</span>예상 고용보험 급여</h2>
     <label class="field">
       <span>월 통상임금 (원)</span>
       <input type="text" id="wage" class="won" inputmode="numeric" placeholder="예: 3,000,000" autocomplete="off">
-      <div class="hint">육아휴직 시작일 기준 월 통상임금입니다. 비워 두면 계산하지 않습니다.</div>
+      <div class="hint">휴가·휴직 시작일 기준 월 통상임금입니다. 비워 두면 계산하지 않습니다.</div>
     </label>
+    <label class="toggle">
+      <input type="checkbox" id="sme">
+      <span class="sw"></span>
+      <span class="tx"><b>우선지원 대상기업 (중소기업 등)</b><small>끄면 대규모기업으로 보고, 출산전후휴가 최초 60일(다태아 75일)은 사업주가 통상임금을 지급하는 것으로 계산합니다.</small></span>
+    </label>
+    <h3>출산전후휴가 급여</h3>
+    <div id="matPayOut"></div>
+    <h3>육아휴직 급여</h3>
     <label class="toggle">
       <input type="checkbox" id="single">
       <span class="sw"></span>
@@ -658,24 +666,27 @@
         <dd>휴가 기간에 법정휴일·약정휴일이 끼어 있어도 달력상 90일을 주면 됩니다.
           <span class="src">고용노동부 행정해석 여성고용팀-333(2006.1.24.)</span></dd>
         <dt>임신기 근로시간 단축</dt>
-        <dd>임신 후 12주 이내 또는 32주 이후(유산·조산 등 위험이 있으면 임신 전 기간)에 1일 2시간 단축을 신청하면 허용해야 하며, 1일 근로시간 8시간 미만이면 1일 6시간이 되도록 허용할 수 있습니다. 단축을 이유로 임금을 삭감할 수 없습니다. 이 도구의 주수는 출산예정일을 40주 0일로 본 추정치이고, '12주 이내'는 12주 6일까지로 표시했습니다. <span class="tag chk">확인 필요</span>
-          <span class="src">근로기준법 제74조 제7항·제8항</span></dd>
+        <dd>임신 후 12주 이내 또는 32주 이후(유산·조산 등 위험이 있으면 임신 전 기간)에 1일 2시간 단축을 신청하면 허용해야 하며, 1일 근로시간 8시간 미만이면 1일 6시간이 되도록 허용할 수 있습니다. 단축을 이유로 임금을 삭감할 수 없습니다. 개시 예정일 3일 전까지 진단서를 붙여 신청합니다.
+          <span class="src">근로기준법 제74조 제7항·제8항, 같은 법 시행령 제43조의2</span></dd>
+        <dd>고용노동부 1350 상담은 '12주 이내'를 임신 후 84일까지, '32주 이후'를 임신 후 218일 이후로 안내합니다. 이 도구는 출산예정일을 임신 280일째로 보고 날짜를 역산합니다(추정).
+          <span class="src">고용노동부 1350 모바일 상담 '임신기 근로시간 단축 사용방법'(2026.7.2. 답변) — 일반 안내이며 법적 효력은 없음</span></dd>
         <dt>미숙아</dt>
         <dd>임신 37주 미만 출생아 또는 출생 체중 2,500g 미만 영유아로서, 특별한 의료적 관리를 위해 출생 후 24시간 이내 신생아중환자실에 입원한 경우. 100일 휴가를 받으려면 (사용 중인) 휴가 종료예정일 7일 전까지 증명서류를 사업주에게 제출.
           <span class="src">근로기준법 시행규칙 제12조의2</span></dd>
         <dt>출산 전 분할 사용</dt>
         <dd>유산·사산 경험, 청구 당시 만 40세 이상, 유산·사산 위험 진단서 제출 중 하나에 해당하면 출산 전 어느 때라도 나누어 사용 가능. 출산 후는 연속 45일(다태아 60일) 이상.
           <span class="src">근로기준법 제74조 제2항, 같은 법 시행령 제43조 제1항</span></dd>
-        <dt>출산일을 어디에 넣는가 <span class="tag chk">해석 여지</span></dt>
-        <dd>행정해석은 출산전후휴가 90일에 "출산일이 포함되며 산후 45일이 확보"되어야 한다고 하나, 출산일이 산후 45일 안에 들어가는지는 문언상 분명하지 않습니다. 이 도구는 <u>출산일 다음 날부터</u> 45일을 세는 보수적 방식을 쓰므로 권장 시작일은 출산예정일 44일 전(다태아 59일 전)입니다.
-          <span class="src">고용노동부 행정해석 여성고용과-514(2008.9.5.)</span></dd>
+        <dt>출산일을 어디에 넣는가</dt>
+        <dd>고용노동부는 90일을 '출산 전 44일 + 출산일 1일 + 출산 후 45일'로 예시하고, 산후 45일은 출산일을 빼고 보장해야 한다고 안내합니다. 이 도구도 출산일 다음 날부터 45일을 세므로 권장 시작일은 출산예정일 44일 전(다태아 59일 전)입니다.
+          <span class="src">고용노동부 일생활균형 누리집 '출산전후휴가 및 급여', 고용노동부 1350 상담, 행정해석 여성고용과-514(2008.9.5.)</span></dd>
         <dt>출산이 늦어진 경우</dt>
-        <dd>출산이 예정보다 늦어져도 산후 기간은 법정 일수 이상 보장되어야 하므로 종료일을 늘려 표시합니다. 행정해석은 이 경우 출산 전 기간 중 초과한 부분을 단체협약·취업규칙에 따로 정함이 없으면 무급으로 처리할 수 있다고 보았습니다(구법 60일·산후 30일 당시 해석).
-          <span class="src">고용노동부 행정해석 부소 68240-203(1997.9.11.)</span></dd>
+        <dd>출산이 예정보다 늦어져도 사업주는 산후 45일이 보장되도록 휴가를 더 주어야 하므로 종료일을 늘려 표시합니다. 다만 추가로 준 기간에 대해 사업주의 임금 지급 의무는 없습니다.
+          <span class="src">고용노동부 일생활균형 누리집 Q&A, 행정해석 부소 68240-203(1997.9.11.)</span></dd>
         <dt>배우자 출산전후휴가</dt>
         <dd>20일 유급, 배우자 출산예정일 50일 전부터 사용 가능, 출산한 날부터 120일이 지나면 사용 불가, 3회에 한정하여 분할(총 4번 사용). 2026.9.18.부터 명칭이 '배우자 출산전후휴가'로 바뀌고 출산 전 사용이 가능해졌습니다. 사용하려는 날·출산(예정)일 등을 적은 문서로 고지합니다.
           <span class="src">남녀고용평등법 제18조의2(2026.3.17. 개정, 2026.9.18. 시행), 같은 법 시행령 제9조의2</span></dd>
-        <dd><span class="tag chk">확인 필요</span> 이 도구는 20일을 토·일을 뺀 근로일로 세고(공휴일·사업장 휴일은 반영하지 않음), 120일은 출산일을 1일째로 세는 보수적 방식을 씁니다. 20일이 근로일 기준인지에 대해서는 이번 검토에서 법령 원문·행정해석으로 확인하지 못했으므로 사업장 또는 고용센터에 확인하세요.</dd>
+        <dd>20일은 근로제공 의무가 없는 휴일을 빼고 셉니다. 이 도구는 토·일과 직접 입력한 쉬는 날을 뺍니다. 120일은 출산일을 1일째로 세는 보수적 방식을 씁니다.
+          <span class="src">행정해석 여성고용정책과-843(2019.6.14.), 법제처 찾기쉬운 생활법령정보 '배우자 출산전후휴가 신청'</span></dd>
         <dt>육아휴직 대상</dt>
         <dd>임신 중인 여성 근로자, 유산·조산 등 위험이 있는 임신 중 배우자를 돌보는 남성 근로자(2026.9.18. 시행), 만 8세 이하 또는 초등학교 2학년 이하 자녀를 둔 근로자.
           <span class="src">남녀고용평등법 제19조 제1항</span></dd>
@@ -685,9 +696,11 @@
         <dt>육아휴직 기간</dt>
         <dd>1년 이내. 같은 자녀로 부모가 각각 3개월 이상 사용한 경우의 부·모, 한부모, 고용노동부령으로 정하는 장애아동의 부·모는 6개월 이내 추가.
           <span class="src">남녀고용평등법 제19조 제2항</span></dd>
+        <dd>1년은 365일이 아니라 12개월 단위로 셉니다. 나누어 쓴 경우 꽉 찬 달은 1개월, 남은 날은 그 달 일수에 비례해 더합니다(예: 6.1.~6.7. = 7/30개월).
+          <span class="src">행정해석 여성고용정책과-326(2020.1.16.), 고용24 '육아휴직급여', 고용노동부 「단기 육아휴직 제도 안내」(2026)</span></dd>
         <dt>1·2주 단기 육아휴직 (2026.8.20. 시행)</dt>
-        <dd>자녀가 다니는 학교·유치원·어린이집의 휴업·휴교·휴원 또는 방학, 자녀의 질병·사고로 인한 입원, 감염병 자가격리·등교중지·어린이집 격리 사유로 1년에 1회, 1주 또는 2주 사용. 기간은 전체 육아휴직 기간에서 차감되지만 분할 횟수에는 들어가지 않습니다. 방학 기간은 사업 운영에 막대한 지장이 있으면 협의해 시기를 바꿀 수 있고, 이때 사업주는 서면으로 알려야 합니다.
-          <span class="src">남녀고용평등법 제19조 제6항~제8항, 같은 법 시행규칙 제15조, 고용노동부 질의회시 '단기 육아휴직 사용 사유와 기간'(2026.7.30.)</span></dd>
+        <dd>자녀가 다니는 학교·유치원·어린이집의 휴업·휴교·휴원 또는 방학, 자녀의 질병·사고로 인한 입원, 감염병 자가격리·등교중지·어린이집 격리 사유로 1주 또는 2주 사용. '1년에 1회'는 자녀별로 회계연도(1.1.~12.31.) 안에서 개시일 기준입니다. 기간은 전체 육아휴직 기간에서 차감되지만 분할 횟수에는 들어가지 않습니다. 방학 기간은 사업 운영에 막대한 지장이 있으면 협의해 시기를 바꿀 수 있고, 이때 사업주는 서면으로 알려야 합니다.
+          <span class="src">남녀고용평등법 제19조 제6항~제8항, 같은 법 시행규칙 제15조, 고용노동부 질의회시 '단기 육아휴직 사용 사유와 기간'(2026.7.30.), 고용노동부 「단기 육아휴직 제도 안내」(2026)</span></dd>
         <dt>분할 사용</dt>
         <dd>3회에 한정하여 나누어 사용(총 4개 구간). 임신 중 육아휴직(배우자 돌봄 포함)과 1·2주 단기 육아휴직은 횟수에서 제외.
           <span class="src">남녀고용평등법 제19조의4 제1항</span></dd>
@@ -700,10 +713,14 @@
         <dt>자녀 나이</dt>
         <dd>만 9세 생일 전날과 초등학교 3학년이 되는 해 3월 1일의 전날(정상 취학 가정) 중 늦은 날까지 대상이며, 휴직 <u>개시일</u> 기준으로 판단합니다. 개시 후 나이를 넘겨도 이미 시작한 휴직은 끝까지 쓸 수 있습니다.
           <span class="src">고용노동부 질의회시 '육아휴직 신청방법 및 사용가능 자녀 연령 질의'(2025.7.14.)</span></dd>
-        <dt>육아휴직 급여 <span class="tag chk">원문 재확인 필요</span></dt>
-        <dd>월 통상임금 기준으로 1~3개월째 100%(상한 250만원), 4~6개월째 100%(상한 200만원), 7개월째부터 80%(상한 160만원), 하한은 모두 70만원. 나누어 쓴 기간은 합산하고, 1개월이 안 되는 달은 휴직 일수에 비례해 지급합니다. 한부모는 첫 3개월 상한 300만원. 부모가 모두 출생 후 18개월 안에 육아휴직을 하면 첫 6개월은 100%이고, 상한은 각자 사용 개월 수에 따라 1·2개월째 250만원, 3개월째 300만원, 4개월째 350만원, 5개월째 400만원, 6개월째 450만원입니다.
-          <span class="src">고용보험법 시행령 제95조, 제95조의3 — 국가법령정보센터 데이터 2026.9.17. 기준 판본(LawPlayer 재게시본)으로 확인. 법제처 서버 접속 장애로 공식 사이트 직접 대조는 하지 못했습니다.</span></dd>
-        <dd>이 도구의 계산은 추정치입니다. 1개월 미만 기간은 해당 달 일수로 비례 계산하고, 6+6 특례에서 부모의 사용 개월 수가 다르면 짧은 쪽 개월 수까지만 특례 상한을 적용합니다<span class="tag chk">확인 필요</span>. 두 번째 육아휴직자 한시 특례(시행령 제95조의2), 휴직 중 사업주 금품에 따른 감액(제98조), 수급 요건(피보험단위기간 통산 180일 이상 등)은 반영하지 않았습니다. 출산전후휴가급여의 상한액은 매년 고용노동부장관이 고시하므로(시행령 제101조) 계산하지 않습니다.</dd>
+        <dt>육아휴직 급여</dt>
+        <dd>월 통상임금 기준으로 1~3개월째 100%(상한 250만원), 4~6개월째 100%(상한 200만원), 7개월째부터 80%(상한 160만원), 하한은 모두 70만원. 나누어 쓴 기간은 합산하고, 1개월이 안 되는 기간은 일수에 비례해 지급합니다. 한부모는 첫 3개월 상한 300만원. 부모가 모두 자녀 생후 18개월 안에(동시 또는 순차) 육아휴직을 하면 첫 6개월은 100%이고 상한은 1·2개월째 250만원, 3개월째 300만원, 4개월째 350만원, 5개월째 400만원, 6개월째 450만원이며, 부모가 6개월 미만을 쓰면 공통으로 사용한 기간만큼만 적용됩니다.
+          <span class="src">고용보험법 시행령 제95조, 제95조의3(국가법령정보센터 2026.9.17. 기준 데이터), 고용24 '육아휴직급여' 안내·자주묻는질문</span></dd>
+        <dd>수급하려면 육아휴직 개시일 기준 피보험 단위기간 180일 이상, 같은 자녀로 육아휴직 30일 이상 사용(단기 육아휴직은 7일 이상) 등의 요건이 있고, 휴직 시작 1개월 후부터 종료 후 12개월 안에 신청해야 합니다. 두 번째 육아휴직자 한시 특례(시행령 제95조의2)와 휴직 중 받은 금품에 따른 감액(제98조)은 반영하지 않았습니다.
+          <span class="src">고용24 '육아휴직급여', 고용노동부 질의회시(2026.7.30.)</span></dd>
+        <dt>출산전후휴가 급여</dt>
+        <dd>통상임금 100%를 지급하며 상한은 30일 기준 220만원(90일 660만원, 미숙아 100일 7,333,330원, 다태아 120일 880만원)입니다. 우선지원 대상기업은 전체 기간을, 대규모기업은 최초 60일(다태아 75일)을 넘는 기간(30일, 미숙아 40일, 다태아 45일)을 정부가 지급하고, 최초 60일은 사업주가 통상임금(우선지원 대상기업은 정부 지원액과의 차액)을 지급합니다. 배우자 출산전후휴가 급여 상한은 20일 기준 1,684,210원입니다. 이 도구는 월 통상임금을 30으로 나눈 일액으로 계산합니다(추정).
+          <span class="src">고용보험법 제76조, 같은 법 시행령 제101조, 고용노동부고시 제2026-67호(2026.9.18. 시행, 2026.12.31.까지 유효), 고용노동부 일생활균형 '출산전후휴가 및 급여'</span></dd>
         <dt>예정된 개정</dt>
         <dd>남녀고용평등법 개정(2026.11.27. 시행)은 난임치료휴가 관련이고, 근로기준법 개정(2026.12.8.·12.10. 시행)은 제74조를 바꾸지 않아 이 계산에는 영향이 없습니다.</dd>
         <dd>참고용 계산이며, 고용보험 급여액은 계산하지 않습니다. 실제 신청 전에는 사업장 규정과 관할 고용센터에 확인하세요.</dd>
@@ -815,6 +832,7 @@
       hire: '',
       holidays: '',
       wage: 0,
+      sme: true,
       single: false,
       six: { on: false, months: 6 },
       mode: 'once',
@@ -852,6 +870,7 @@
   if (!state.preg || typeof state.preg !== 'object') state.preg = d0.preg;
   if (!Array.isArray(state.shorts)) state.shorts = [];
   if (!state.six || typeof state.six !== 'object') state.six = d0.six;
+  if (typeof state.sme !== 'boolean') state.sme = true;
   if (!state.spouse || !Array.isArray(state.spouse.segs) || !state.spouse.segs.length) state.spouse = d0.spouse;
 
   if (!state.due) {
@@ -973,7 +992,11 @@
     var first = all.reduce(function (a, x) { return !a || x.start < a ? x.start : a; }, null);
     var allowance = first ? diff(first, endOfMonths(first, limitMonths)) + 1 : (state.extend ? 548 : 365);
     var used = all.reduce(function (a, b) { return a + b.days; }, 0);
-    return { segs: out, preg: preg, shorts: shorts, used: used, allowance: allowance, limitMonths: limitMonths };
+    // 1년은 365일이 아니라 12개월 단위로 산정(행정해석 여성고용정책과-326, 2020.1.16.)
+    var usedM = all.reduce(function (a, x) {
+      return a + monthPieces(x.start, x.end).reduce(function (b, pc) { return b + pc.f; }, 0);
+    }, 0);
+    return { segs: out, preg: preg, shorts: shorts, used: used, usedM: usedM, remainM: limitMonths - usedM, allowance: allowance, limitMonths: limitMonths };
   }
 
   // 육아휴직 대상 자녀 나이 한도: 만 9세 생일 전날과 초2를 마치는 2월 말일 중 늦은 날
@@ -1126,7 +1149,7 @@
     el.segments.innerHTML = html;
     el.addSeg.classList.toggle('hidden', state.mode !== 'split');
     var full = state.segments.length >= MAX_SEGMENTS;
-    var noRemain = leave.used >= leave.allowance;
+    var noRemain = leave.remainM <= 1e-6;
     el.addSeg.disabled = full || noRemain;
     el.addSeg.textContent = full ? '최대 4개 구간 (3회 분할)' : noRemain ? '남은 기간 없음 — 앞 구간을 줄이면 추가할 수 있습니다' : '+ 구간 추가';
   }
@@ -1145,22 +1168,27 @@
         '<div class="seg-range">' + (c.end ? fmt(c.start) + ' ~ ' + fmt(c.end) + ' · ' + c.days + '일' : '시작일을 입력하세요') + '</div>' +
         '</div>';
     }).join('');
-    var noRemain = leave.used + 7 > leave.allowance;
+    var noRemain = leave.remainM * 31 < 7;
     el.addShort.disabled = noRemain;
     el.addShort.textContent = noRemain ? '남은 기간 없음 — 다른 구간을 줄이면 추가할 수 있습니다' : '+ 단기 육아휴직 추가';
   }
 
+  function fmtM(m) {
+    var r = Math.round(m * 100) / 100;
+    return (Math.abs(r - Math.round(r)) < 1e-9 ? Math.round(r) : r.toFixed(2)) + '개월';
+  }
+
   function renderLeaveChecks(mat, leave) {
-    var pct = Math.min(100, leave.used / leave.allowance * 100);
+    var pct = Math.min(100, leave.usedM / leave.limitMonths * 100);
     el.meter.firstElementChild.style.width = pct + '%';
-    el.meter.classList.toggle('over', leave.used > leave.allowance);
-    el.usedTxt.textContent = leave.used + '일 / ' + leave.allowance + '일 (' + leave.limitMonths + '개월)';
+    el.meter.classList.toggle('over', leave.remainM < -1e-6);
+    el.usedTxt.textContent = fmtM(leave.usedM) + ' / ' + leave.limitMonths + '개월 (' + leave.used + '일)';
 
     var html = '';
-    if (leave.used > leave.allowance) {
-      html += badge('bad', '사용 가능 기간(' + leave.limitMonths + '개월, ' + leave.allowance + '일)을 ' + (leave.used - leave.allowance) + '일 초과했습니다.');
+    if (leave.remainM < -1e-6) {
+      html += badge('bad', '사용 가능 기간(' + leave.limitMonths + '개월)을 ' + fmtM(-leave.remainM) + ' 초과했습니다.');
     } else if (leave.used > 0) {
-      html += badge('ok', '남은 기간: ' + (leave.allowance - leave.used) + '일');
+      html += badge('ok', '남은 기간: ' + fmtM(leave.remainM) + ' (1년은 12개월 단위로 셉니다. 1개월 미만은 그 달 일수 비례)');
     }
 
     // 임신 중 육아휴직은 출산 전에만
@@ -1189,7 +1217,7 @@
       years[y] = (years[y] || 0) + 1;
     });
     Object.keys(years).forEach(function (y) {
-      if (years[y] > 1) html += badge('bad', y + '년에 단기 육아휴직이 ' + years[y] + '번 있습니다. 1년에 1회만 쓸 수 있습니다(“1년”을 연도로 볼지 12개월로 볼지는 사업장·고용센터에 확인).');
+      if (years[y] > 1) html += badge('bad', y + '년에 단기 육아휴직이 ' + years[y] + '번 있습니다. 자녀별로 회계연도(1.1.~12.31.) 안에서 개시일 기준 연 1회만 쓸 수 있습니다(고용노동부 「단기 육아휴직 제도 안내」, 2026).');
     });
     if (mat && leave.shorts.some(function (s) { return s.start && diff(mat.birth, s.start) < 365; })) {
       html += badge('warn', '출생 후 1년 안에 잡힌 단기 육아휴직이 있습니다. 방학·휴원 사유는 자녀가 어린이집·유치원·학교에 다녀야 하고, 그 밖에는 자녀의 입원이나 감염병 격리 사유가 있어야 합니다.');
@@ -1361,7 +1389,7 @@
       '<div class="kd"><div class="k">유급 기간 끝</div><div class="v">' + fmt(mat.paidEnd) + '</div><div class="s">최초 ' + mat.rules.paid + '일</div></div>';
     if (segs.length) {
       html += '<div class="kd"><div class="k">육아휴직</div><div class="v">' + fmt(segs[0].start) + '</div><div class="s">' +
-        (segs.length > 1 ? segs.length + '개 구간 · ' : '') + '사용 ' + leave.used + '일 / ' + leave.allowance + '일</div></div>';
+        (segs.length > 1 ? segs.length + '개 구간 · ' : '') + '사용 ' + fmtM(leave.usedM) + ' / ' + leave.limitMonths + '개월</div></div>';
     }
     if (sp && sp.segs.some(function (s) { return s.end; })) {
       html += '<div class="kd"><div class="k">배우자 휴가 사용 기한</div><div class="v">' + fmt(sp.to) + '</div><div class="s">근로일 ' + sp.used + '일 / ' + SPOUSE_DAYS + '일 계획</div></div>';
@@ -1375,20 +1403,24 @@
   function renderPregCut(mat) {
     var box = $('pregCut');
     if (!mat) { box.innerHTML = ''; return; }
-    var early = addDays(pregWeek(mat.due, 13), -1);   // 12주 6일
-    var late = pregWeek(mat.due, 32);
+    // 고용노동부 1350 안내: 12주 이내 = 임신 후 84일까지, 32주 이후 = 임신 후 218일 이후
+    var early = addDays(pregWeek(mat.due, 0), 84);
+    var late = addDays(pregWeek(mat.due, 0), 218);
     box.innerHTML = '<h3>임신기 근로시간 단축</h3>' +
       '<div class="summary">' +
-        stat('임신 12주 이내 (추정)', '~ ' + fmt(early)) +
-        stat('임신 32주 이후 (추정)', fmt(late) + ' ~') +
+        stat('임신 12주 이내 (임신 84일까지, 추정)', '~ ' + fmt(early)) +
+        stat('임신 32주 이후 (임신 218일부터, 추정)', fmt(late) + ' ~') +
       '</div>' +
-      badge('info', '이 기간에 1일 2시간 근로시간 단축을 신청하면 사용자는 허용해야 하고, 이를 이유로 임금을 깎을 수 없습니다(1일 8시간 미만 근로자는 1일 6시간이 되도록). 유산·조산 등 위험이 있으면 임신 전 기간에 쓸 수 있습니다(근로기준법 제74조 제7항·제8항). 주수는 출산예정일을 40주 0일로 본 추정치이므로 실제로는 진단서상 주수를 따르세요.');
+      badge('info', '이 기간에 1일 2시간 근로시간 단축을 신청하면 사용자는 허용해야 하고, 이를 이유로 임금을 깎을 수 없습니다(1일 8시간 미만 근로자는 1일 6시간이 되도록). 유산·조산 등 위험이 있으면 임신 전 기간에 쓸 수 있습니다(근로기준법 제74조 제7항·제8항). 단축 개시 예정일 3일 전까지 의사 진단서를 붙여 문서로 신청합니다(시행령 제43조의2). 나누어 쓰는 개념은 없고 기간이 지나면 소멸합니다. 날짜는 출산예정일을 280일째로 보고 역산한 추정치이므로 진단서상 주수를 따르세요.');
   }
 
   function todoItems(mat, leave, sp) {
     var items = [];
-    var cutLate = pregWeek(mat.due, 32);
-    if (cutLate < mat.start) items.push({ d: cutLate, t: '임신기 근로시간 단축 사용 가능 (32주)', s: '1일 2시간, 임금 삭감 없음 (근로기준법 제74조 제7항) · 추정 주수' });
+    var cutLate = addDays(pregWeek(mat.due, 0), 218);
+    if (cutLate < mat.start) {
+      items.push({ d: addDays(cutLate, -3), t: '임신기 근로시간 단축 신청 (32주분)', s: '개시 3일 전까지 진단서 첨부 (시행령 제43조의2) · 추정 날짜' });
+      items.push({ d: cutLate, t: '임신기 근로시간 단축 사용 가능 (32주)', s: '1일 2시간, 임금 삭감 없음 (근로기준법 제74조 제7항) · 추정 날짜' });
+    }
     var within18 = leave.segs.some(function (s) { return s.start && s.end && s.start <= endOfMonths(mat.birth, 18); });
     items.push({ d: mat.start, t: '출산전후휴가 시작', s: '사업주에게 청구' + (within18 ? '. 출생 후 18개월 안에 시작하는 육아휴직을 함께 신청할 수 있습니다' : '') });
     if (state.preterm && !state.multi) items.push({ d: addDays(mat.end, -7), t: '미숙아 증빙서류 제출 기한', s: '출산전후휴가 종료예정일 7일 전 (시행규칙 제12조의2)' });
@@ -1460,11 +1492,36 @@
     return { rows: rows, total: total, months: k };
   }
 
+  // 출산전후휴가 급여: 고용노동부고시 제2026-67호(2026.9.18.~12.31.) 상한, 30일 기준 220만원
+  var MAT_CAP30 = 2200000;
+  function renderMatPay(mat) {
+    var box = $('matPayOut');
+    if (!state.wage || !mat) { box.innerHTML = state.wage ? '' : badge('info', '월 통상임금을 입력하면 출산전후휴가 급여도 추정합니다.'); return; }
+    var r = mat.rules;
+    var base = state.multi ? 120 : (state.preterm ? 100 : 90);     // 연장된 날은 급여 대상 아님
+    var govDays = state.sme ? base : base - r.paid;                // 대규모: 60(75)일 초과분만
+    var totalCap = state.multi ? 8800000 : (state.preterm ? 7333330 : 6600000);
+    var perDay = Math.min(state.wage, MAT_CAP30) / 30;
+    var gov = Math.min(Math.floor(perDay * govDays), govDays === base ? totalCap : Infinity);
+    var firstGov = state.sme ? Math.min(state.wage, MAT_CAP30) / 30 * r.paid : 0;
+    var employer = Math.max(0, state.wage / 30 * r.paid - firstGov);
+    var html = '<div class="summary">' +
+      stat('정부 지급 (고용보험)', won(gov) + '<div class="tier" style="font-weight:500;color:var(--muted);font-size:0.78rem">' + govDays + '일분 · 30일 상한 220만원</div>') +
+      stat('사업주 지급 (최초 ' + r.paid + '일)', won(employer) + '<div class="tier" style="font-weight:500;color:var(--muted);font-size:0.78rem">' +
+        (state.sme ? '통상임금과 정부 지원액의 차액' : '통상임금 전액') + '</div>') +
+      '</div>';
+    if (mat.extended) html += badge('warn', '출산 지연으로 늘어난 ' + mat.extended + '일은 급여 대상에서 뺐습니다. 이 기간은 사업주의 임금 지급 의무도 없습니다(고용노동부 일생활균형 안내).');
+    html += badge('info', '배우자 출산전후휴가 급여 상한은 20일 기준 1,684,210원입니다. 이 금액들은 2026.12.31.까지 유효한 고시 기준이며, 2027년 상한은 아직 고시되지 않았습니다.');
+    box.innerHTML = html;
+  }
+
   function renderPay(mat, leave) {
     var box = $('payOut');
     var wageEl = $('wage');
     if (document.activeElement !== wageEl) wageEl.value = state.wage ? state.wage.toLocaleString('ko-KR') : '';
     $('single').checked = state.single;
+    $('sme').checked = state.sme !== false;
+    renderMatPay(mat);
     $('sixOn').checked = state.six.on;
     $('sixWrap').classList.toggle('hidden', !state.six.on);
     $('sixMonths').value = state.six.months;
@@ -1479,7 +1536,7 @@
     });
     html += '</tbody><tfoot><tr><td colspan="2">합계 (약 ' + (Math.round(pay.months * 10) / 10) + '개월)</td><td>' + won(pay.total) + '</td></tr></tfoot></table></div>';
     html += badge('warn', '추정치입니다. 실제 지급액은 통상임금 산정, 휴직 중 받은 금품에 따른 감액, 수급 요건 충족 여부에 따라 달라집니다. 신청은 고용24 또는 관할 고용센터에서 합니다.');
-    if (state.six.on) html += badge('info', '6+6 특례는 같은 자녀에 대해 출생 후 18개월이 될 때까지 부모가 모두 육아휴직을 한 경우에 적용됩니다. 부모의 사용 개월 수가 다를 때 적용 방식은 고용센터에 확인하세요.');
+    if (state.six.on) html += badge('info', '6+6 특례는 자녀 생후 18개월 안에 부모가 동시에 또는 순차로 육아휴직을 하면 적용되고, 6개월 미만이면 부모가 공통으로 사용한 개월 수만큼만 적용됩니다(고용24). 입력한 배우자 개월 수까지만 특례 상한을 적용했습니다.');
     box.innerHTML = html;
   }
 
@@ -1573,6 +1630,7 @@
     render();
   });
   $('single').addEventListener('change', function (e) { state.single = e.target.checked; render(); });
+  $('sme').addEventListener('change', function (e) { state.sme = e.target.checked; render(); });
   $('sixOn').addEventListener('change', function (e) { state.six.on = e.target.checked; render(); });
   $('sixMonths').addEventListener('change', function (e) { state.six.months = readInt(e.target.value, 6) || 1; render(); });
   $('printBtn').addEventListener('click', function () { window.print(); });
@@ -1736,10 +1794,10 @@
   el.addSeg.addEventListener('click', function () {
     if (state.segments.length >= MAX_SEGMENTS) return;
     var leave = calcLeave(calcMaternity());
-    var remain = Math.max(0, leave.allowance - leave.used);
-    // 남은 일수를 넘지 않도록 기본 기간 설정 (한 달은 최대 31일로 가정)
-    var m = Math.min(3, Math.floor(remain / 31));
-    var d = m === 0 ? Math.min(30, remain) : 0;
+    var remain = Math.max(0, leave.remainM);
+    // 남은 개월 수를 넘지 않도록 기본 기간 설정 (1개월 미만은 28일 기준으로 보수적으로)
+    var m = Math.min(3, Math.floor(remain + 1e-9));
+    var d = m === 0 ? Math.min(30, Math.floor(remain * 28)) : 0;
     var last = leave.segs.filter(function (s) { return s.end; }).pop();
     // 새 구간은 기본적으로 3개월 복직 후 시작하는 예시
     var start = last ? addDays(endOfMonths(addDays(last.end, 1), 3), 1) : null;
@@ -1766,7 +1824,7 @@
   el.addShort.addEventListener('click', function () {
     var mat = calcMaternity();
     var leave = calcLeave(mat);
-    var remain = leave.allowance - leave.used;
+    var remain = leave.remainM * 28;   // 대략 남은 일수(보수적)
     // 예시: 마지막 단기 휴직(없으면 출산일) 1년 뒤 여름방학 무렵 월요일
     var base = leave.shorts.filter(function (s) { return s.start; }).pop();
     var y = base ? base.start.getFullYear() + 1 : (mat ? mat.birth.getFullYear() + 2 : today().getFullYear() + 1);

@@ -4,56 +4,65 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>모성보호 플래너</title>
+<meta name="description" content="출산예정일만 넣으면 출산전후휴가·배우자 출산전후휴가·육아휴직 일정과 신청 기한, 예상 고용보험 급여를 한 번에 계산합니다.">
+<meta name="theme-color" content="#fbf7f3">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root {
-    --bg: #f5f6f8;
+    --bg: #fbf7f3;
     --card: #ffffff;
-    --text: #1c2430;
-    --muted: #64707d;
-    --line: #e2e6eb;
-    --accent: #2f6fde;
-    --accent-soft: #e6eefc;
-    --pre: #f4a7b9;
-    --post: #d9476b;
+    --text: #2b2326;
+    --muted: #75686b;
+    --line: #efe5e0;
+    --accent: #c43862;
+    --accent-soft: #fdeef2;
+    --accent-2: #f4a3b8;
+    --pre: #f6b9c8;
+    --post: #e0607e;
     --post-soft: #fbe3ea;
-    --leave: #3b82f6;
-    --leave-alt: #0ea5a4;
-    --preg: #c084fc;
-    --short: #f97316;
-    --spouse: #64748b;
-    --ok: #15803d;
-    --ok-soft: #e7f6ec;
-    --warn: #b45309;
-    --warn-soft: #fdf3e2;
-    --bad: #b91c1c;
-    --bad-soft: #fde8e8;
-    --track: #eef1f4;
-    --radius: 16px;
+    --leave: #5fa39c;
+    --leave-alt: #8db889;
+    --preg: #b59be0;
+    --short: #eea25c;
+    --spouse: #7f9bc4;
+    --ok: #2c7a4b;
+    --ok-soft: #e9f6ee;
+    --warn: #9a560c;
+    --warn-soft: #fff3e3;
+    --bad: #b02a3b;
+    --bad-soft: #fdecee;
+    --track: #f5eee9;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(80, 40, 50, 0.04), 0 10px 30px rgba(80, 40, 50, 0.07);
+    --on-accent: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #10141a;
-      --card: #1a2029;
-      --text: #e8ecf1;
-      --muted: #98a3b0;
-      --line: #2c3440;
-      --accent: #6b9cf5;
-      --accent-soft: #1f2d47;
-      --pre: #a8566d;
-      --post: #ec6a8b;
+      --bg: #1a1517;
+      --card: #241d20;
+      --text: #f4ebed;
+      --muted: #b9aaae;
+      --line: #3a2f33;
+      --accent: #f28aa8;
+      --accent-soft: #3b2129;
+      --accent-2: #a8566d;
+      --pre: #8e4a5c;
+      --post: #e8789a;
       --post-soft: #3a2029;
-      --leave: #5b9bf8;
-      --leave-alt: #2cc2c0;
-      --preg: #a874e0;
-      --short: #fb923c;
-      --spouse: #94a3b8;
-      --ok: #4ade80;
-      --ok-soft: #173023;
-      --warn: #fbbf24;
-      --warn-soft: #3a2e14;
-      --bad: #f87171;
-      --bad-soft: #3b1c1c;
-      --track: #232a35;
+      --leave: #6fb3ac;
+      --leave-alt: #94c18f;
+      --preg: #a98bd8;
+      --short: #e9a25f;
+      --spouse: #8fa8cf;
+      --ok: #7fd6a0;
+      --ok-soft: #1c3326;
+      --warn: #f2c16b;
+      --warn-soft: #3a2c17;
+      --bad: #ff8f9c;
+      --bad-soft: #3d1f24;
+      --track: #30272a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
+      --on-accent: #1a1517;
     }
   }
 
@@ -63,7 +72,7 @@
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.5;
     -webkit-tap-highlight-color: transparent;
@@ -91,6 +100,7 @@
     gap: 8px;
   }
   .card h3 { margin: 18px 0 6px; font-size: 0.95rem; }
+  /* step */
   .step {
     display: inline-grid;
     place-items: center;
@@ -461,8 +471,199 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ===================== 디자인 2.0 ===================== */
+  body { font-size: 16px; letter-spacing: -0.01em; font-feature-settings: "tnum" 1; }
+  .wrap { padding-top: 12px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  h1, h2, h3 { letter-spacing: -0.025em; }
+
+  /* 카드: 테두리 대신 부드러운 그림자 */
+  .card { border: 0; box-shadow: var(--shadow); padding: 22px 20px; margin-bottom: 16px; }
+  .card.soft { box-shadow: none; background: transparent; border: 1px dashed var(--line); }
+  .card h2 { font-size: 1.15rem; margin-bottom: 16px; }
+  .card h3 { font-size: 1rem; margin: 24px 0 8px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .step { width: 28px; height: 28px; font-size: 0.85rem; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
+
+  /* 히어로 */
+  .masthead {
+    position: relative; overflow: hidden;
+    margin: 4px 0 14px; padding: 26px 20px 18px;
+    border-radius: 28px;
+    background:
+      radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent-2) 45%, transparent) 0%, transparent 60%),
+      radial-gradient(90% 80% at 0% 100%, color-mix(in srgb, var(--leave) 22%, transparent) 0%, transparent 60%),
+      var(--card);
+    box-shadow: var(--shadow);
+  }
+  .masthead::after {
+    content: ""; position: absolute; right: -28px; top: -28px; width: 120px; height: 120px; border-radius: 50%;
+    background: color-mix(in srgb, var(--accent-2) 35%, transparent); filter: blur(2px); pointer-events: none;
+  }
+  .eyebrow { display: inline-block; font-size: 0.78rem; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; }
+  .masthead h1 { font-size: 1.9rem; margin: 10px 0 6px; }
+  .hero-text p { margin: 0 0 18px; color: var(--muted); font-size: 0.98rem; line-height: 1.6; }
+  .br-wide { display: none; }
+  .hero-due {
+    display: block; position: relative; z-index: 1;
+    background: var(--card); border-radius: 18px; padding: 14px 14px 12px;
+    box-shadow: 0 0 0 2px var(--accent-soft), 0 6px 18px rgba(196, 56, 98, 0.10);
+  }
+  .hero-due > span { display: block; font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .hero-due input { font-size: 1.25rem; font-weight: 700; min-height: 54px; background: var(--bg); border-color: transparent; }
+  .hero-due small { display: block; margin-top: 8px; font-size: 0.8rem; color: var(--muted); }
+  .masthead .asof { margin: 12px 2px 0; font-size: 0.76rem; color: var(--muted); position: relative; z-index: 1; }
+
+  /* 섹션 바로가기 */
+  .secnav {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    margin: 0 -16px 14px; padding: 10px 16px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  }
+  .secnav::-webkit-scrollbar { display: none; }
+  .secnav a {
+    flex: none; text-decoration: none; color: var(--muted);
+    font-size: 0.86rem; font-weight: 600; padding: 8px 14px; border-radius: 999px;
+    background: var(--card); box-shadow: 0 0 0 1px var(--line);
+    transition: background 0.15s, color 0.15s;
+  }
+  .secnav a[aria-current="true"] { background: var(--accent); color: var(--on-accent); box-shadow: none; }
+  [id^="sec-"] { scroll-margin-top: 64px; }
+
+  /* 입력 */
+  input[type="date"], input[type="number"], input[type="text"] {
+    border-radius: 14px; border: 1.5px solid var(--line); background: var(--card);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); outline: none; }
+  input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .field > span { font-size: 0.9rem; }
+  .hint { font-size: 0.82rem; line-height: 1.5; }
+  .seg { border-radius: 14px; background: var(--track); }
+  .seg button { border-radius: 11px; font-size: 0.95rem; }
+  .seg button[aria-pressed="true"] { color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(196, 56, 98, .12); }
+  .stepper { border-radius: 14px; border: 1.5px solid var(--line); background: var(--card); }
+  .stepper button { color: var(--accent); font-weight: 700; }
+  .stepper output { font-size: 1.05rem; }
+  .toggle { padding: 12px 0; }
+  .toggle .sw { background: color-mix(in srgb, var(--muted) 35%, transparent); }
+  .toggle input:checked + .sw { background: var(--accent); }
+  .toggle .tx b { font-size: 0.97rem; }
+  .toggle .tx small { font-size: 0.82rem; line-height: 1.45; display: block; margin-top: 2px; }
+
+  /* 자세히 보기 */
+  details.more { margin: -2px 0 8px 58px; font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .field details.more { margin-left: 0; margin-top: 6px; }
+  details.more > summary { min-height: 32px; font-weight: 600; color: var(--accent); font-size: 0.82rem; list-style: none; }
+  details.more > summary::-webkit-details-marker { display: none; }
+  details.more > summary::before { content: "＋"; display: inline-block; width: 1.2em; font-weight: 700; }
+  details.more[open] > summary::before { content: "－"; }
+
+  /* 결과 숫자 */
+  .stat, .kd { border-radius: 16px; background: var(--bg); }
+  .stat .v, .kd .v { letter-spacing: -0.02em; }
+  .kd.hero {
+    background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 50%, var(--card)));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+  .kd.hero .v { font-size: 1.45rem; }
+  .sum { border: 0; box-shadow: var(--shadow), inset 0 0 0 2px var(--accent-soft); }
+
+  /* 안내 배지 */
+  .badge { border-radius: 14px; padding: 11px 13px; line-height: 1.55; font-size: 0.86rem; }
+  .badge .ic {
+    width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center;
+    font-size: 0.72rem; color: var(--on-accent); margin-top: 1px;
+  }
+  .badge.ok .ic { background: var(--ok); }
+  .badge.warn .ic { background: var(--warn); }
+  .badge.bad .ic { background: var(--bad); }
+  .badge.info .ic { background: var(--accent); }
+  .badge.info { background: var(--accent-soft); color: var(--text); }
+  .badge.ok, .badge.warn, .badge.bad { color: var(--text); }
+  .badge.ok { background: var(--ok-soft); } .badge.warn { background: var(--warn-soft); } .badge.bad { background: var(--bad-soft); }
+  .badge details { display: inline; }
+  .badge details > summary { display: inline; cursor: pointer; font-weight: 700; color: var(--accent); list-style: none; margin-left: 4px; }
+  .badge details > summary::-webkit-details-marker { display: none; }
+  .badge details[open] > summary { display: none; }
+
+  /* 구간 박스 */
+  .segment { border: 0; background: var(--bg); border-radius: 18px; padding: 14px; }
+  .segment input[type="date"], .segment input[type="number"] { background: var(--card); }
+  .btn.ghost { border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent); background: transparent; border-radius: 14px; }
+  .btn.ghost:not(:disabled):hover { background: var(--accent-soft); }
+  .btn.ghost:disabled { opacity: 1; color: var(--muted); border-color: var(--line); font-weight: 500; font-size: 0.85rem; cursor: default; }
+  .meter { height: 12px; border-radius: 6px; }
+  .meter > i { border-radius: 6px; background: linear-gradient(90deg, var(--leave), var(--leave-alt)); }
+
+  /* 저장·공유 */
+  .share { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0;
+    background: var(--bg); color: var(--text); font: inherit; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+  }
+  .chip:hover { background: var(--accent-soft); color: var(--accent); }
+  .chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 할 일 */
+  .dday { border-radius: 10px; }
+
+  /* 일정 막대 */
+  .tl-track { height: 22px; border-radius: 11px; }
+  .tl-bar { border-radius: 11px; }
+
+  /* 접이식 카드 제목 */
+  .card details > summary { font-size: 1rem; }
+
+  /* 푸터 */
+  .foot { text-align: center; color: var(--muted); font-size: 0.82rem; line-height: 1.6; padding: 10px 8px 0; }
+  .foot p { margin: 0 0 6px; }
+  .link-btn { background: none; border: 0; color: var(--muted); text-decoration: underline; font: inherit; font-size: 0.82rem; cursor: pointer; min-height: 40px; padding: 0 8px; }
+  .link-btn:hover { color: var(--bad); }
+
+  /* 모바일 하단 고정 막대 */
+  .dock {
+    position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 8;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 10px 10px 16px; border-radius: 18px;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 30px rgba(80, 40, 50, 0.18);
+    transform: translateY(140%); visibility: hidden; transition: transform 0.25s ease, visibility 0.25s;
+  }
+  .dock.show { transform: none; visibility: visible; }
+  .dock-tx { flex: 1; min-width: 0; font-size: 0.82rem; line-height: 1.35; }
+  .dock-tx b { display: block; font-size: 0.95rem; }
+  .dock-tx span { color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dock-btn { flex: none; text-decoration: none; background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 0.86rem; padding: 10px 14px; border-radius: 12px; }
+
+  @media (min-width: 640px) {
+    .masthead { padding: 34px 32px 24px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: end; }
+    .masthead .asof { grid-column: 1 / -1; }
+    .hero-text p { margin-bottom: 0; }
+    .br-wide { display: inline; }
+    .masthead h1 { font-size: 2.2rem; }
+  }
+  @media (min-width: 1000px) {
+    .dock { display: none; }
+    .secnav { margin: 0 0 16px; padding: 10px 0; }
+    .aside { top: 72px; max-height: calc(100vh - 88px); padding: 4px 10px 16px; margin: -4px -10px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; scroll-behavior: auto !important; }
+  }
+  html { scroll-behavior: smooth; }
+
   @media print {
-    .toast { display: none; }
+    .toast, .secnav, .dock, .share, .foot .link-btn, .hero-due small { display: none !important; }
+    .masthead { box-shadow: none; background: none; padding: 0; display: block; }
+    .masthead::after, .hero-due { display: none !important; }
+    html, body, .wrap, .layout, .main, .aside { background: #fff !important; }
+    .card, .sum, .kd, .stat, .segment { box-shadow: none !important; }
+    .card { border: 1px solid #ddd !important; }
+    .aside { padding: 0 !important; margin: 0 !important; }
+    .masthead .asof { margin: 6px 0 0 !important; }
     body { background: #fff; color: #000; font-size: 12px; }
     .actions, .btn.ghost, .icon-btn, .stepper button { display: none !important; }
     .wrap { max-width: none; padding: 0; }
@@ -491,32 +692,37 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <div>
+  <header class="masthead">
+    <div class="hero-text">
+      <span class="eyebrow">출산 · 육아 휴가 계산기</span>
       <h1>모성보호 플래너</h1>
       <div class="print-only" id="printDate"></div>
-      <p>출산예정일을 입력하면 출산전후휴가, 배우자 출산전후휴가, 이어지는 육아휴직 일정과 신청 기한을 계산합니다.<br>
-        <span class="asof">법령 기준일 2026.10.24. · 입력값은 이 브라우저에만 저장됩니다.</span></p>
+      <p>출산예정일 하나만 넣으면 출산휴가부터 복직까지,<br class="br-wide"> 신청 기한과 예상 급여를 한 번에 정리합니다.</p>
     </div>
-    <div class="actions">
-      <button type="button" class="btn-sm" id="shareBtn" title="지금 입력한 내용이 담긴 링크를 복사합니다">링크 복사</button>
-      <button type="button" class="btn-sm" id="icsBtn" title="휴가·휴직 기간과 신청 기한을 캘린더 파일로 내려받습니다">캘린더</button>
-      <button type="button" class="btn-sm" id="printBtn">인쇄·PDF</button>
-      <button type="button" class="btn-sm" id="resetBtn">초기화</button>
-    </div>
+    <label class="hero-due">
+      <span>출산예정일</span>
+      <input type="date" id="due" required>
+      <small>날짜를 바꾸면 아래 일정이 모두 바로 다시 계산됩니다.</small>
+    </label>
+    <p class="asof">법령 기준일 2026.10.24. · 입력 내용은 이 기기 브라우저에만 저장됩니다.</p>
   </header>
+
+  <nav class="secnav" aria-label="섹션 바로가기">
+    <a href="#sec-sum" data-nav>요약</a>
+    <a href="#sec-mat" data-nav>출산휴가</a>
+    <a href="#sec-sp" data-nav>배우자</a>
+    <a href="#sec-par" data-nav>육아휴직</a>
+    <a href="#sec-pay" data-nav>급여</a>
+    <a href="#sec-plan" data-nav>일정</a>
+    <a href="#sec-law" data-nav>법적 근거</a>
+  </nav>
 
   <div class="layout">
   <div class="main">
 
   <!-- 1. 출산전후휴가 -->
-  <section class="card" aria-labelledby="h-mat">
+  <section class="card" id="sec-mat" aria-labelledby="h-mat">
     <h2 id="h-mat"><span class="step">1</span>출산전후휴가</h2>
-
-    <label class="field">
-      <span>출산예정일</span>
-      <input type="date" id="due" required>
-    </label>
 
     <div class="field">
       <span>임신 유형</span>
@@ -534,13 +740,14 @@
         <button type="button" id="prePlus" aria-label="하루 늘리기">+</button>
       </div>
       <div class="hint" id="preHint">최대값이 권장 시작일입니다. 줄이면 출산 후 휴가가 늘어납니다.</div>
-      <div class="hint">유산·사산 경험이 있거나, 휴가 청구 당시 만 40세 이상이거나, 유산·사산 위험 진단서를 낸 경우에는 출산 전 휴가를 나누어 쓸 수 있습니다. 이 계산기는 이어서 쓰는 경우만 계산합니다.</div>
+      <details class="more"><summary>출산 전 휴가를 나눠 쓸 수 있는 경우</summary>
+        유산·사산 경험이 있거나, 휴가 청구 당시 만 40세 이상이거나, 유산·사산 위험 진단서를 낸 경우에는 출산 전 휴가를 나누어 쓸 수 있습니다. 이 계산기는 이어서 쓰는 경우만 계산합니다.</details>
     </div>
 
     <label class="toggle">
       <input type="checkbox" id="hasActual">
       <span class="sw"></span>
-      <span class="tx"><b>실제 출산일 입력</b><small>출산 후 실제 날짜로 다시 계산합니다 (출산 지연 시 종료일 연장 확인).</small></span>
+      <span class="tx"><b>실제 출산일 입력</b><small>출산 후 실제 날짜로 다시 계산합니다.</small></span>
     </label>
     <label class="field hidden" id="actualWrap">
       <span>실제 출산일</span>
@@ -550,8 +757,10 @@
     <label class="toggle">
       <input type="checkbox" id="preterm">
       <span class="sw"></span>
-      <span class="tx"><b>미숙아 출산 (100일)</b><small>임신 37주 미만 출생 또는 출생 체중 2.5kg 미만이고, 출생 후 24시간 안에 신생아중환자실에 입원한 경우입니다. 휴가 종료예정일 7일 전까지 증명서류를 내야 합니다. 다태아는 120일이 적용됩니다.</small></span>
+      <span class="tx"><b>미숙아 출산 (100일)</b><small>37주 미만 또는 2.5kg 미만으로 태어나 신생아중환자실에 입원한 경우</small></span>
     </label>
+    <details class="more"><summary>미숙아 기준과 제출 서류</summary>
+      임신 37주 미만 출생 또는 출생 체중 2.5kg 미만이고, 출생 후 24시간 안에 신생아중환자실에 입원한 경우입니다. 휴가 종료예정일 7일 전까지 증명서류를 내야 합니다. 다태아는 120일이 적용됩니다.</details>
 
     <div class="summary" id="matSummary"></div>
     <div id="matChecks"></div>
@@ -559,13 +768,13 @@
   </section>
 
   <!-- 2. 배우자 출산전후휴가 -->
-  <section class="card" aria-labelledby="h-sp">
+  <section class="card" id="sec-sp" aria-labelledby="h-sp">
     <h2 id="h-sp"><span class="step">2</span>배우자 출산전후휴가</h2>
 
     <label class="toggle">
       <input type="checkbox" id="spouseOn">
       <span class="sw"></span>
-      <span class="tx"><b>배우자 휴가도 계획하기</b><small>유급 20일. 출산예정일 50일 전부터 쓸 수 있고, 출산일부터 120일이 지나면 쓸 수 없습니다. 3회까지 나누어 쓸 수 있습니다(총 4번).</small></span>
+      <span class="tx"><b>배우자 휴가도 계획하기</b><small>유급 20일 · 예정일 50일 전부터 · 출산 후 120일 안에 · 4번까지 나눠 사용</small></span>
     </label>
 
     <div id="spouseBox" class="hidden">
@@ -587,25 +796,25 @@
   </section>
 
   <!-- 3. 육아휴직 -->
-  <section class="card" aria-labelledby="h-par">
+  <section class="card" id="sec-par" aria-labelledby="h-par">
     <h2 id="h-par"><span class="step">3</span>육아휴직</h2>
 
     <label class="toggle">
       <input type="checkbox" id="extend">
       <span class="sw"></span>
-      <span class="tx"><b>1년 6개월 연장 대상</b><small>같은 자녀로 부모가 각각 3개월 이상 사용 / 한부모 / 고용노동부령으로 정하는 장애아동의 부모</small></span>
+      <span class="tx"><b>1년 6개월 연장 대상</b><small>부모 각각 3개월 이상 사용 · 한부모 · 장애아동 부모</small></span>
     </label>
 
     <label class="field">
       <span>현 직장 입사일 (선택)</span>
       <input type="date" id="hire">
-      <div class="hint">육아휴직 시작 전날까지 같은 사업에서 계속 근로한 기간이 6개월 미만이면 사업주가 육아휴직을 허용하지 않을 수 있습니다(시행령 제10조). 입력하면 구간마다 확인합니다.</div>
+      <div class="hint">근속 6개월이 안 되면 회사가 거부할 수 있어서, 넣으면 구간마다 확인해 드립니다(시행령 제10조).</div>
     </label>
 
     <label class="toggle">
       <input type="checkbox" id="pregOn">
       <span class="sw"></span>
-      <span class="tx"><b>임신 중 육아휴직</b><small>출산전후휴가 전에 쓰는 육아휴직입니다. 전체 기간에는 들어가지만 분할 횟수에는 들어가지 않습니다.</small></span>
+      <span class="tx"><b>임신 중 육아휴직</b><small>출산휴가 전에 쓰는 육아휴직 · 나눠 쓰는 횟수에서는 빠집니다</small></span>
     </label>
     <div id="pregBox" class="hidden"></div>
 
@@ -615,14 +824,14 @@
         <button type="button" data-mode="once" aria-pressed="true">한 번에 사용</button>
         <button type="button" data-mode="split" aria-pressed="false">나눠서 사용</button>
       </div>
-      <div class="hint">3회까지 나누어 쓸 수 있습니다(총 4개 구간). 임신 중 육아휴직과 1·2주 단기 육아휴직은 분할 횟수에 들어가지 않습니다.</div>
+      <div class="hint">최대 4개 구간까지 나눠 쓸 수 있습니다. 임신 중 육아휴직과 단기 육아휴직은 횟수에서 빠집니다.</div>
     </div>
 
     <div id="segments"></div>
     <button type="button" class="btn ghost" id="addSeg">+ 구간 추가</button>
 
     <h3>1·2주 단기 육아휴직</h3>
-    <div class="hint" style="margin-top:0">자녀가 다니는 어린이집·유치원·학교의 방학이나 휴원·휴교, 자녀의 입원, 감염병 격리·등교중지 때 1주 또는 2주 단위로 1년에 1회 쓸 수 있습니다. 전체 육아휴직 기간에 들어갑니다.</div>
+    <div class="hint" style="margin-top:0">방학·휴원, 자녀 입원, 감염병 격리 때 1주 또는 2주씩, 자녀별로 1년에 1회. 전체 육아휴직 기간에서 빠집니다.</div>
     <div id="shorts" style="margin-top:10px"></div>
     <button type="button" class="btn ghost" id="addShort">+ 단기 육아휴직 추가</button>
 
@@ -636,7 +845,7 @@
   </section>
 
   <!-- 4. 예상 육아휴직 급여 -->
-  <section class="card print-keep" aria-labelledby="h-pay">
+  <section class="card print-keep" id="sec-pay" aria-labelledby="h-pay">
     <h2 id="h-pay"><span class="step">4</span>예상 고용보험 급여</h2>
     <div class="print-only" id="payBasis"></div>
     <label class="field">
@@ -647,7 +856,7 @@
     <label class="toggle">
       <input type="checkbox" id="sme">
       <span class="sw"></span>
-      <span class="tx"><b>우선지원 대상기업 (중소기업 등)</b><small>끄면 대규모기업으로 보고, 출산전후휴가 최초 60일(다태아 75일)은 사업주가 통상임금을 지급하는 것으로 계산합니다.</small></span>
+      <span class="tx"><b>우선지원 대상기업 (중소기업 등)</b><small>끄면 대규모기업 기준 — 출산휴가 최초 60일(다태아 75일)은 회사가 지급</small></span>
     </label>
     <h3>출산전후휴가 급여</h3>
     <div id="matPayOut"></div>
@@ -655,12 +864,12 @@
     <label class="toggle">
       <input type="checkbox" id="single">
       <span class="sw"></span>
-      <span class="tx"><b>한부모</b><small>첫 3개월 상한이 월 300만원입니다(시행령 제95조의3 제3항).</small></span>
+      <span class="tx"><b>한부모</b><small>첫 3개월 상한 월 300만원</small></span>
     </label>
     <label class="toggle">
       <input type="checkbox" id="sixOn">
       <span class="sw"></span>
-      <span class="tx"><b>부모 모두 출생 후 18개월 안에 육아휴직 (6+6)</b><small>첫 6개월 상한이 달마다 올라갑니다(시행령 제95조의3 제1항).</small></span>
+      <span class="tx"><b>부모 모두 출생 후 18개월 안에 육아휴직 (6+6)</b><small>첫 6개월 상한이 달마다 올라갑니다 (최대 월 450만원)</small></span>
     </label>
     <label class="field hidden" id="sixWrap">
       <span>배우자 육아휴직 개월 수 (18개월 안)</span>
@@ -670,9 +879,9 @@
   </section>
 
   <!-- 유산·사산휴가 -->
-  <section class="card" aria-labelledby="h-loss">
+  <section class="card soft" id="sec-loss" aria-labelledby="h-loss">
     <details id="lossBox">
-      <summary id="h-loss">유산·사산휴가 계산</summary>
+      <summary id="h-loss">유산·사산휴가 계산이 필요하신가요?</summary>
       <div class="row2" style="margin-top:8px">
         <label class="field" style="margin:0"><span>유산·사산한 날</span><input type="date" id="lossDate"></label>
         <label class="field" style="margin:0"><span>임신 기간 (주)</span><input type="number" id="lossWeeks" inputmode="numeric" min="1" max="45" placeholder="예: 18"></label>
@@ -681,7 +890,7 @@
     </details>
   </section>
 
-  <section class="card print-keep">
+  <section class="card print-keep soft" id="sec-law">
     <details id="lawBox">
       <summary>계산 기준과 법적 근거</summary>
       <dl class="law">
@@ -759,9 +968,17 @@
   </div><!-- /.main -->
 
   <aside class="aside">
-    <section class="card sum" aria-labelledby="h-sum">
+    <section class="card sum" id="sec-sum" aria-labelledby="h-sum">
       <h2 id="h-sum">핵심 날짜</h2>
       <div class="keydates" id="keyDates"></div>
+      <div class="share" role="group" aria-label="저장·공유">
+        <button type="button" class="chip" id="shareBtn" title="지금 입력한 내용이 담긴 링크를 복사합니다">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>링크 복사</button>
+        <button type="button" class="chip" id="icsBtn" title="휴가·휴직 기간과 신청 기한을 캘린더 파일로 내려받습니다">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더에 추가</button>
+        <button type="button" class="chip" id="printBtn" title="상담용 요약을 인쇄하거나 PDF로 저장합니다">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>PDF 저장</button>
+      </div>
     </section>
 
     <section class="card todo" aria-labelledby="h-todo">
@@ -769,7 +986,7 @@
       <ol class="todo-list" id="todo"></ol>
     </section>
 
-    <section class="card plan" aria-labelledby="h-tl">
+    <section class="card plan" id="sec-plan" aria-labelledby="h-tl">
       <h2 id="h-tl">한눈에 보는 일정</h2>
       <div class="tl" id="timeline"></div>
       <div class="legend" id="legend"></div>
@@ -777,6 +994,16 @@
     </section>
   </aside>
   </div><!-- /.layout -->
+
+  <footer class="foot">
+    <p>이 계산 결과는 참고용입니다. 실제 신청 전에는 회사 규정과 관할 고용센터(국번 없이 1350)에 확인하세요.</p>
+    <button type="button" class="link-btn" id="resetBtn">입력 내용 모두 지우기</button>
+  </footer>
+</div>
+
+<div class="dock" id="dock" aria-live="polite">
+  <div class="dock-tx" id="dockTx"></div>
+  <a class="dock-btn" href="#sec-sum">요약 보기</a>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -790,7 +1017,7 @@
   var SPOUSE_DAYS = 20;
   var DAY = 86400000;
   var WEEK = ['일', '월', '화', '수', '목', '금', '토'];
-  var SEG_COLORS = ['var(--leave)', 'var(--leave-alt)', '#8b5cf6', '#f59e0b'];
+  var SEG_COLORS = ['var(--leave)', 'var(--leave-alt)', '#9b8ac9', '#e0a15f'];
   var STORE_KEY = 'parental-planner-v2';
   var ASOF = new Date(2026, 9, 24, 12);   // 법령 기준일
 
@@ -1044,9 +1271,14 @@
   }
 
   // ---------- 렌더링 ----------
+  // 긴 안내는 첫 문장만 보이고 나머지는 '더보기'로 접음
   function badge(kind, text) {
     var ic = kind === 'ok' ? '✓' : kind === 'info' ? 'i' : '!';
-    return '<div class="badge ' + kind + '"><span class="ic">' + ic + '</span><span>' + text + '</span></div>';
+    var cut = text.length > 90 ? text.search(/[.)]\s/) : -1;
+    var body = cut > 20 && cut < text.length - 20
+      ? text.slice(0, cut + 1) + '<details><summary>더보기</summary>' + text.slice(cut + 1) + '</details>'
+      : text;
+    return '<div class="badge ' + kind + '"><span class="ic">' + ic + '</span><span>' + body + '</span></div>';
   }
   function stat(k, v, wide) {
     return '<div class="stat' + (wide ? ' wide' : '') + '"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
@@ -1069,10 +1301,8 @@
     el.matSummary.innerHTML =
       stat(mat.earlyBirth ? '시작일 (출산일)' : pre === r.maxPre ? '시작 추천일' : '시작일', fmt(mat.start)) +
       stat('종료일', fmt(mat.end)) +
-      stat('출산 전', mat.preUsed + '일') +
-      stat('출산일 + 출산 후', '1일 + ' + mat.post + '일') +
-      stat('총 휴가 일수', mat.total + '일' + (mat.extended ? ' (연장 ' + mat.extended + '일 포함)' : '')) +
-      stat('법정 유급 기간', '최초 ' + r.paid + '일 · ~' + fmt(mat.paidEnd));
+      stat('출산 전 · 출산일 · 출산 후', mat.preUsed + '일 · 1일 · ' + mat.post + '일') +
+      stat('총 ' + mat.total + '일' + (mat.extended ? ' (연장 ' + mat.extended + '일)' : '') + ' 중 유급', '최초 ' + r.paid + '일 · ~' + fmtShort(mat.paidEnd));
 
     var checks = '';
     checks += badge('ok', '출산 후 ' + mat.post + '일 확보 — 기준 ' + r.postReq + '일 이상 충족' +
@@ -1447,10 +1677,10 @@
     var late = addDays(pregWeek(mat.due, 0), 218);
     box.innerHTML = '<h3>임신기 근로시간 단축</h3>' +
       '<div class="summary">' +
-        stat('임신 12주 이내 (임신 84일까지, 추정)', '~ ' + fmt(early)) +
-        stat('임신 32주 이후 (임신 218일부터, 추정)', fmt(late) + ' ~') +
+        stat('12주 이내 · 끝나는 날', fmt(early)) +
+        stat('32주 이후 · 시작하는 날', fmt(late)) +
       '</div>' +
-      badge('info', '이 기간에 1일 2시간 근로시간 단축을 신청하면 사용자는 허용해야 하고, 이를 이유로 임금을 깎을 수 없습니다(1일 8시간 미만 근로자는 1일 6시간이 되도록). 유산·조산 등 위험이 있으면 임신 전 기간에 쓸 수 있습니다(근로기준법 제74조 제7항·제8항). 단축 개시 예정일 3일 전까지 의사 진단서를 붙여 문서로 신청합니다(시행령 제43조의2). 나누어 쓰는 개념은 없고 기간이 지나면 소멸합니다. 날짜는 출산예정일을 280일째로 보고 역산한 추정치이므로 진단서상 주수를 따르세요.');
+      badge('info', '이 기간에 하루 2시간 단축을 신청하면 회사는 허용해야 하고, 임금을 깎을 수 없습니다. 1일 8시간 미만 근로자는 1일 6시간이 되도록 단축할 수 있고, 유산·조산 등 위험이 있으면 임신 전 기간에 쓸 수 있습니다(근로기준법 제74조 제7항·제8항). 단축 개시 3일 전까지 의사 진단서를 붙여 문서로 신청합니다(시행령 제43조의2). 기간이 지나면 소멸합니다. 날짜는 출산예정일로 역산한 추정치(12주 이내 = 임신 84일까지, 32주 이후 = 임신 218일부터)이니 진단서상 주수를 따르세요.');
   }
 
   function todoItems(mat, leave, sp) {
@@ -1644,6 +1874,17 @@
     toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
   }
 
+  function renderDock(mat, leave, sp) {
+    var tx = $('dockTx');
+    if (!mat) { tx.innerHTML = '<b>출산예정일을 넣어 주세요</b>'; return; }
+    var ends = [mat.end].concat(leave.segs.filter(function (x) { return x.end; }).map(function (x) { return x.end; }),
+      leave.shorts.filter(function (x) { return x.end; }).map(function (x) { return x.end; }));
+    var back = addDays(ends.reduce(function (a, b) { return b > a ? b : a; }), 1);
+    var next = todoItems(mat, leave, sp).filter(function (x) { return diff(today(), x.d) >= 0; })[0];
+    tx.innerHTML = '<b>복직 ' + fmt(back) + '</b><span>' +
+      (next ? '다음 할 일 · ' + dday(next.d).t + ' ' + next.t : '남은 신청 기한이 없습니다') + '</span>';
+  }
+
   function render() {
     // 입력 동기화
     holidaySet = parseHolidays(state.holidays);
@@ -1678,8 +1919,36 @@
     renderTodo(mat, leave, sp);
     renderPay(mat, leave);
     renderLoss();
+    renderDock(mat, leave, sp);
     save();
   }
+
+  // ---------- 바로가기 탭 강조 · 하단 막대 표시 ----------
+  (function () {
+    var links = [].slice.call(document.querySelectorAll('[data-nav]'));
+    var targets = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+    var dock = $('dock'), hero = document.querySelector('.masthead');
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var y = 90, cur = 0;
+      targets.forEach(function (t, i) { if (t && t.getBoundingClientRect().top - y <= 0) cur = i; });
+      // 넓은 화면에서는 요약이 옆에 고정되므로 위치 대신 왼쪽 열 기준으로 판단
+      links.forEach(function (a, i) { a.setAttribute('aria-current', String(i === cur)); });
+      var active = links[cur];
+      if (active && active.scrollIntoView && active.parentNode.scrollWidth > active.parentNode.clientWidth) {
+        var nav = active.parentNode, l = active.offsetLeft - 16;
+        if (l < nav.scrollLeft || l + active.offsetWidth > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = l;
+      }
+      var sum = $('sec-sum').getBoundingClientRect();
+      var pastHero = hero.getBoundingClientRect().bottom < 0;
+      var sumVisible = sum.top < window.innerHeight && sum.bottom > 0;
+      dock.classList.toggle('show', pastHero && !sumVisible);
+    }
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener('resize', update);
+    setTimeout(update, 0);
+  })();
 
   // ---------- 이벤트 ----------
   el.due.addEventListener('change', function () { state.due = el.due.value; render(); });

@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "지역가입자 건강보험료 계산기 2026",
+  "short_name": "건보료 계산기",
+  "description": "2026년 기준 지역가입자 건강보험료를 소득과 재산으로 계산합니다. 국민건강보험공단 모의계산과 대조 검증한 산식입니다.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef2f6",
+  "theme_color": "#0f5e57",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

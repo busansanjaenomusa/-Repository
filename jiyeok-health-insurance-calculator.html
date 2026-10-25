@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지역가입자 건강보험료 계산기 2026</title>
+    <meta name="description" content="2026년 기준 건강보험 지역가입자 월 보험료를 소득(7.19%)과 재산(점수당 211.5원)으로 계산합니다. 근로·연금소득 50% 반영, 재산 기본공제 1억원, 전월세 평가, 주택대출 공제, 상·하한, 장기요양보험료까지 반영.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        :root { --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --brand: #0d9488; }
+        *, ::before, ::after { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; background: #f4f6fb; color: var(--ink); }
+        .num { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+        .card { background: #fff; border: 1px solid var(--line); border-radius: 1.25rem; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(15,23,42,.08); }
+        button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid rgba(13,148,136,.45); outline-offset: 2px; }
+        input::placeholder { color: #cbd5e1; }
+        .seg { display: flex; background: #eef1f6; padding: 4px; border-radius: 14px; gap: 4px; }
+        .seg > button { flex: 1; min-height: 42px; border-radius: 10px; font-size: .88rem; font-weight: 600; color: #475569; transition: background .15s, color .15s, box-shadow .15s; }
+        .seg > button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(15,23,42,.12); }
+        .chip { min-height: 36px; padding: 0 .85rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: .82rem; font-weight: 600; color: #334155; transition: all .15s; white-space: nowrap; }
+        .chip:hover { border-color: #5eead4; color: var(--brand); }
+        .fld { width: 100%; min-height: 46px; border: 1px solid #cbd5e1; border-radius: 12px; padding: .55rem 2.4rem .55rem .85rem; background: #fff; font-weight: 600; text-align: right; transition: border-color .15s, box-shadow .15s; }
+        .fld:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(13,148,136,.12); outline: none; }
+        .fld-wrap { position: relative; }
+        .fld-wrap > .unit { position: absolute; right: .9rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .85rem; pointer-events: none; }
+        .sel { width: 100%; min-height: 46px; border: 1px solid #cbd5e1; border-radius: 12px; padding: .5rem .8rem; background: #fff; font-weight: 600; }
+        .lbl { font-size: .85rem; font-weight: 700; color: #334155; }
+        .hint { font-size: .76rem; color: var(--muted); line-height: 1.45; margin-top: .3rem; }
+        .ko { font-size: .74rem; color: var(--brand); font-weight: 600; min-height: 1.1em; margin-top: .2rem; text-align: right; }
+        .sw { display: flex; align-items: flex-start; gap: .75rem; cursor: pointer; padding: .6rem 0; position: relative; }
+        .sw input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        .sw .track { flex-shrink: 0; width: 44px; height: 26px; border-radius: 999px; background: #cbd5e1; position: relative; transition: background .15s; margin-top: 1px; }
+        .sw .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .15s; }
+        .sw input:checked + .track { background: var(--brand); }
+        .sw input:checked + .track::after { transform: translateX(18px); }
+        .sw input:focus-visible + .track { outline: 3px solid rgba(13,148,136,.45); outline-offset: 2px; }
+        .sw .t { font-size: .9rem; font-weight: 600; color: #1e293b; line-height: 1.35; }
+        .sw .d { display: block; font-size: .76rem; font-weight: 500; color: var(--muted); margin-top: 2px; }
+        .sec-title { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; font-weight: 800; }
+        .sec-title .n { width: 28px; height: 28px; border-radius: 9px; background: #ccfbf1; color: #0f766e; display: flex; align-items: center; justify-content: center; font-size: .85rem; }
+        .hide { display: none !important; }
+        .row { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem 0; border-bottom: 1px dashed var(--line); font-size: .88rem; }
+        .row:last-child { border-bottom: 0; }
+        .row .k { color: #475569; }
+        .row .v { font-weight: 700; text-align: right; }
+        .formula { font-size: .74rem; color: var(--muted); margin-top: .15rem; line-height: 1.4; }
+        .bar { height: 12px; border-radius: 999px; background: #e2e8f0; overflow: hidden; display: flex; }
+        .bar > span { display: block; height: 100%; }
+        .modal-bg { position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+        @media (min-width: 640px) { .modal-bg { align-items: center; } }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+        @media print {
+            header, .no-print, #mobileBar { display: none !important; }
+            body { background: #fff; }
+            #resultCol { position: static !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 lg:pb-0">
+
+    <header class="bg-white/90 backdrop-blur border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0"><i class="fa-solid fa-house-medical"></i></div>
+                <div class="min-w-0">
+                    <h1 class="text-[15px] sm:text-lg font-extrabold tracking-tight truncate">지역가입자 건강보험료 계산기 <span class="text-teal-600">2026</span></h1>
+                    <p class="hidden sm:block text-xs text-slate-500 truncate">소득 7.19% + 재산 점수 × 211.5원 · 국민건강보험법 시행령 기준</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <button type="button" onclick="resetAll()" class="h-10 px-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-1.5" aria-label="처음부터 다시"><i class="fa-solid fa-rotate-left"></i><span class="hidden sm:inline">처음부터</span></button>
+                <button type="button" onclick="openModal()" class="h-10 px-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-1.5" aria-label="계산 기준과 출처"><i class="fa-solid fa-book-open"></i><span class="hidden sm:inline">계산 기준</span></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-8">
+        <div class="no-print mb-4 flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-slate-500 mr-1">예시 불러오기</span>
+            <button type="button" class="chip" data-preset="A">자영업자 (사업소득 2,400만 · 주택 과표 3억)</button>
+            <button type="button" class="chip" data-preset="B">은퇴자 (국민연금 2,400만 · 전세 3억)</button>
+            <button type="button" class="chip" data-preset="C">저소득 (소득 300만 · 과표 8천만)</button>
+        </div>
+
+        <form id="f" onsubmit="return false" autocomplete="off" class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-start">
+
+            <div class="lg:col-span-7 space-y-5">
+                <!-- ① 소득 -->
+                <section class="card p-5 sm:p-7">
+                    <h2 class="sec-title"><span class="n">1</span>세대의 연간 소득</h2>
+                    <p class="hint mt-2">세대원 전체 소득을 <b>합산</b>해서 넣으세요. 1~10월분 보험료는 <b>전전년도</b>, 11~12월분은 <b>전년도</b> 소득이 반영됩니다. (2026년 11월분부터: 2025년 귀속 소득)</p>
+
+                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                        <div>
+                            <label class="lbl" for="biz">사업소득 <span class="badge-100 text-[11px] font-bold text-teal-700 bg-teal-50 rounded-full px-1.5">100%</span></label>
+                            <div class="fld-wrap mt-2"><input id="biz" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="biz"></p>
+                            <p class="hint">매출이 아니라 필요경비를 뺀 <b>소득금액</b>(종합소득세 신고서 기준). 주택임대소득 포함.</p>
+                        </div>
+                        <div>
+                            <label class="lbl" for="labor">근로소득 <span class="text-[11px] font-bold text-amber-700 bg-amber-50 rounded-full px-1.5">50%</span></label>
+                            <div class="fld-wrap mt-2"><input id="labor" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="labor"></p>
+                            <p class="hint">비과세를 뺀 <b>총급여액</b>(근로소득공제 전 금액).</p>
+                        </div>
+                        <div>
+                            <label class="lbl" for="pension">연금소득 <span class="text-[11px] font-bold text-amber-700 bg-amber-50 rounded-full px-1.5">50%</span></label>
+                            <div class="fld-wrap mt-2"><input id="pension" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="pension"></p>
+                            <p class="hint">국민연금·공무원연금 등 공적연금은 <b>그해 받은 연금 전액</b>을 넣으세요(연금 자료는 전년도 기준).</p>
+                        </div>
+                        <div>
+                            <label class="lbl" for="other">기타소득 <span class="text-[11px] font-bold text-teal-700 bg-teal-50 rounded-full px-1.5">100%</span></label>
+                            <div class="fld-wrap mt-2"><input id="other" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="other"></p>
+                            <p class="hint">필요경비를 뺀 <b>기타소득금액</b>.</p>
+                        </div>
+                        <div>
+                            <label class="lbl" for="interest">이자소득 <span class="text-[11px] font-bold text-teal-700 bg-teal-50 rounded-full px-1.5">100%</span></label>
+                            <div class="fld-wrap mt-2"><input id="interest" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="interest"></p>
+                        </div>
+                        <div>
+                            <label class="lbl" for="dividend">배당소득 <span class="text-[11px] font-bold text-teal-700 bg-teal-50 rounded-full px-1.5">100%</span></label>
+                            <div class="fld-wrap mt-2"><input id="dividend" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="dividend"></p>
+                        </div>
+                    </div>
+                    <p class="hint mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3"><i class="fa-solid fa-circle-info text-slate-400 mr-1"></i>이자·배당소득 합계가 <b>연 1,000만원 이하</b>이면 보험료에 반영하지 않습니다(국민건강보험법 시행규칙 제44조제1항 단서). 넘으면 전액 반영합니다.</p>
+                </section>
+
+                <!-- ② 재산 -->
+                <section class="card p-5 sm:p-7">
+                    <h2 class="sec-title"><span class="n">2</span>세대의 재산</h2>
+                    <p class="hint mt-2">시가가 아니라 <b>재산세 과세표준</b>이 기준입니다. 재산세 고지서의 '과세표준' 금액이 가장 정확합니다. 자동차에는 2024년 2월분부터 보험료를 매기지 않습니다.</p>
+
+                    <span class="lbl block mt-5">주거 형태</span>
+                    <div class="seg mt-2" id="homeSeg" role="group" aria-label="주거 형태">
+                        <button type="button" data-home="own" aria-pressed="true">주택 있음</button>
+                        <button type="button" data-home="rent" aria-pressed="false">무주택 (전·월세)</button>
+                    </div>
+
+                    <!-- 주택 보유 -->
+                    <div id="ownBox" class="mt-5">
+                        <span class="lbl block">주택 금액 입력 방식</span>
+                        <div class="seg mt-2" id="taxSeg" role="group" aria-label="주택 금액 입력 방식">
+                            <button type="button" data-tax="base" aria-pressed="true">과세표준 직접 입력</button>
+                            <button type="button" data-tax="price" aria-pressed="false">공시가격으로 추정</button>
+                        </div>
+                        <div id="baseBox" class="mt-4">
+                            <label class="lbl" for="houseBase">주택 재산세 과세표준 합계</label>
+                            <div class="fld-wrap mt-2"><input id="houseBase" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                            <p class="ko" data-ko="houseBase"></p>
+                        </div>
+                        <div id="priceBox" class="mt-4 hide">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                <div>
+                                    <label class="lbl" for="housePrice">주택 공시가격 합계</label>
+                                    <div class="fld-wrap mt-2"><input id="housePrice" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                    <p class="ko" data-ko="housePrice"></p>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="sw w-full"><input type="checkbox" id="oneHouse" checked><span class="track"></span><span class="t">1세대 1주택이에요<span class="d">2026년 공정시장가액비율 43~45% 적용 (아니면 60%)</span></span></label>
+                                </div>
+                            </div>
+                            <p class="hint mt-2 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3">공시가격 × 공정시장가액비율(지방세법 시행령 제109조)로 <b>추정</b>한 값입니다. 재산세 과세표준 상한제 등으로 실제 과세표준은 이보다 낮을 수 있으니, 고지서의 과세표준을 넣는 것이 정확합니다.</p>
+                            <p class="text-sm font-semibold text-slate-700 mt-2">추정 과세표준: <span id="estBase" class="num text-teal-700">0원</span></p>
+                        </div>
+
+                        <details class="mt-4 border border-slate-200 rounded-xl">
+                            <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-slate-700 flex items-center justify-between">주택담보대출 공제 (1세대 1주택) <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i></summary>
+                            <div class="px-4 pb-4">
+                                <label class="sw"><input type="checkbox" id="ownLoanOn"><span class="track"></span><span class="t">공제 요건을 갖춰 공단에 통보했어요<span class="d">실거주 목적, 주택 취득일 전후 3개월 안에 받은 주택담보대출 등 (시행령 제42조의2)</span></span></label>
+                                <div id="ownLoanBox" class="hide grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mt-1">
+                                    <div>
+                                        <label class="lbl" for="ownLoan">대출 잔액 (상환분 제외)</label>
+                                        <div class="fld-wrap mt-2"><input id="ownLoan" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                        <p class="ko" data-ko="ownLoan"></p>
+                                    </div>
+                                    <div>
+                                        <label class="lbl" for="loanRatio">공정시장가액비율</label>
+                                        <select id="loanRatio" class="sel mt-2">
+                                            <option value="auto">공시가격 기준 자동</option>
+                                            <option value="0.43">43% (1주택, 3억 이하)</option>
+                                            <option value="0.44">44% (1주택, 3억 초과~6억)</option>
+                                            <option value="0.45">45% (1주택, 6억 초과)</option>
+                                            <option value="0.6">60% (일반 주택)</option>
+                                        </select>
+                                    </div>
+                                    <p class="hint sm:col-span-2">공제액 = 대출 잔액 × 공정시장가액비율. 단, 주택 과세표준과 <b>5,000만원</b> 중 작은 금액을 넘을 수 없습니다. 재산세 과세표준이 기준시가 × 공정시장가액비율 이하인 주택이어야 합니다.</p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- 무주택 -->
+                    <div id="rentBox" class="mt-5 hide">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                            <div>
+                                <label class="lbl" for="deposit">임차 보증금</label>
+                                <div class="fld-wrap mt-2"><input id="deposit" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                <p class="ko" data-ko="deposit"></p>
+                            </div>
+                            <div>
+                                <label class="lbl" for="rent">월세</label>
+                                <div class="fld-wrap mt-2"><input id="rent" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                <p class="ko" data-ko="rent"></p>
+                            </div>
+                        </div>
+                        <p class="hint mt-2">평가액 = (보증금 + 월세 × 40) × 30% (시행규칙 별표 8). 계약 갱신으로 10% 넘게 오른 부분은 그 계약기간 동안 빼 주는데, 이 계산기에는 반영하지 않았습니다.</p>
+
+                        <details class="mt-4 border border-slate-200 rounded-xl">
+                            <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-slate-700 flex items-center justify-between">전세자금대출 공제 (1세대 무주택) <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i></summary>
+                            <div class="px-4 pb-4">
+                                <label class="sw"><input type="checkbox" id="rentLoanOn"><span class="track"></span><span class="t">공제 요건을 갖춰 공단에 통보했어요<span class="d">입주일·전입일 중 빠른 날 전후 3개월 안에 받은 보증금담보대출 등 (시행령 제42조의2)</span></span></label>
+                                <div id="rentLoanBox" class="hide mt-1 max-w-sm">
+                                    <label class="lbl" for="rentLoan">대출 잔액 (상환분 제외)</label>
+                                    <div class="fld-wrap mt-2"><input id="rentLoan" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                    <p class="ko" data-ko="rentLoan"></p>
+                                    <p class="hint">공제액 = 대출 잔액 × 30%. 단, 보증금의 30%를 넘을 수 없습니다.</p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="lbl" for="etcBase">토지·건축물(주택 외)·선박·항공기 과세표준 합계</label>
+                        <div class="fld-wrap mt-2"><input id="etcBase" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                        <p class="ko" data-ko="etcBase"></p>
+                        <p class="hint">상가·오피스텔(주택 외)·나대지·농지 등. 무주택 세대도 여기에 해당하면 넣으세요. 종중·마을 공동재산은 제외합니다.</p>
+                    </div>
+                </section>
+
+                <!-- ③ 옵션 -->
+                <section class="card p-5 sm:p-7">
+                    <h2 class="sec-title"><span class="n">3</span>옵션</h2>
+                    <label class="sw mt-2"><input type="checkbox" id="ltcOn" checked><span class="track"></span><span class="t">장기요양보험료 함께 계산<span class="d">건강보험료 × 13.14% (2026년, 소득 대비 0.9448% ÷ 7.19%)</span></span></label>
+                </section>
+            </div>
+
+            <!-- 결과 -->
+            <aside id="resultCol" class="lg:col-span-5 lg:sticky lg:top-24 space-y-5">
+                <section class="card p-5 sm:p-7" aria-live="polite">
+                    <p class="text-sm font-semibold text-slate-500">예상 월 납부액 <span id="totalSub" class="font-normal">(건강 + 장기요양)</span></p>
+                    <p class="mt-1 text-4xl sm:text-5xl font-extrabold num tracking-tight"><span id="total">0</span><span class="text-2xl font-bold text-slate-400 ml-1">원</span></p>
+                    <p class="mt-1 text-sm text-slate-500">연간 약 <b id="yearTotal" class="num text-slate-700">0원</b></p>
+
+                    <div class="mt-5">
+                        <div class="bar" aria-hidden="true"><span id="barInc" style="background:#0d9488;width:0"></span><span id="barProp" style="background:#f59e0b;width:0"></span><span id="barLtc" style="background:#94a3b8;width:0"></span></div>
+                        <div class="mt-2 flex gap-3 flex-wrap text-xs text-slate-600">
+                            <span><i class="fa-solid fa-square text-teal-600"></i> 소득분</span>
+                            <span><i class="fa-solid fa-square text-amber-500"></i> 재산분</span>
+                            <span id="ltcLegend"><i class="fa-solid fa-square text-slate-400"></i> 장기요양</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <div class="row"><span class="k">소득보험료</span><span class="v num" id="rInc">0원</span></div>
+                        <div class="row"><span class="k">재산보험료</span><span class="v num" id="rProp">0원</span></div>
+                        <div class="row"><span class="k font-bold text-slate-800">건강보험료</span><span class="v num text-teal-700" id="rHealth">0원</span></div>
+                        <div class="row" id="rLtcRow"><span class="k">장기요양보험료</span><span class="v num" id="rLtc">0원</span></div>
+                    </div>
+                    <p id="capNote" class="hide mt-3 text-xs leading-relaxed rounded-xl p-3"></p>
+                </section>
+
+                <section class="card p-5 sm:p-7">
+                    <h3 class="font-extrabold">계산 과정</h3>
+                    <div id="steps" class="mt-3 text-sm"></div>
+                    <div class="no-print mt-4 flex gap-2 flex-wrap">
+                        <button type="button" onclick="copyResult()" class="h-10 px-4 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700"><i class="fa-regular fa-copy mr-1"></i>결과 복사</button>
+                        <button type="button" onclick="window.print()" class="h-10 px-4 rounded-xl text-sm font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50"><i class="fa-solid fa-print mr-1"></i>인쇄</button>
+                    </div>
+                </section>
+
+                <section class="text-xs leading-relaxed text-slate-500 px-1">
+                    <p><b>반영하지 않은 것:</b> 65세 이상·장애인·농어촌 등 경감, 전자고지·자동이체 감액, 전월세 갱신 시 10% 초과분 제외, 피부양자 해당 여부. 실제 고지액은 국민건강보험공단 모의계산이나 고지서로 확인하세요.</p>
+                </section>
+            </aside>
+        </form>
+    </main>
+
+    <!-- 모바일 하단 결과 바 -->
+    <div id="mobileBar" class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-500">월 예상 납부액</span>
+        <a href="#resultCol" class="text-xl font-extrabold num text-teal-700"><span id="mTotal">0</span>원</a>
+    </div>
+
+    <!-- 계산 기준 모달 -->
+    <div id="modal" class="modal-bg hide" role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="if(event.target===this)closeModal()">
+        <div class="bg-white w-full sm:max-w-2xl max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 sm:p-7">
+            <div class="flex items-center justify-between">
+                <h2 id="modalTitle" class="text-lg font-extrabold">계산 기준과 출처</h2>
+                <button type="button" onclick="closeModal()" class="w-10 h-10 rounded-xl hover:bg-slate-100" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="mt-4 text-sm leading-relaxed text-slate-700 space-y-4">
+                <div>
+                    <h3 class="font-bold text-slate-900">기본 구조</h3>
+                    <ul class="list-disc pl-5 mt-1 space-y-1">
+                        <li>월 보험료 = 소득월액 × 보험료율 + 재산보험료부과점수 × 점수당 금액, 세대 단위로 산정(국민건강보험법 제69조제5항).</li>
+                        <li>2026년 보험료율 7.19%, 재산 점수당 211.5원(국민건강보험법 시행령 제44조, 2026년 1월분부터).</li>
+                        <li>2027년 보험료율·점수당 금액은 2026. 9. 8. 건강보험정책심의위원회에서 동결 의결된 것으로 보도되었습니다. 시행령 개정 전이라 이 계산기는 2026년 기준으로만 계산합니다.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">소득</h3>
+                    <ul class="list-disc pl-5 mt-1 space-y-1">
+                        <li>대상 소득: 이자·배당·사업·근로·연금·기타소득. 비과세소득 제외. 공적연금은 해당 과세기간 연금소득 전부(시행령 제41조제1항).</li>
+                        <li>반영 비율: 이자·배당·사업·기타 100%, 근로·연금 50%. 이자·배당 합계 1,000만원 이하는 미반영(시행규칙 제44조).</li>
+                        <li>소득월액 = 연간 소득 ÷ 12(법 제71조제2항). 소득월액이 28만원 이하이면 하한액 ÷ 보험료율을 소득월액으로 봄 → 소득보험료 20,160원(시행규칙 제44조제3항).</li>
+                        <li>반영 시기: 1~10월분은 전전년도, 11~12월분은 전년도 자료(연금은 전년도). 소득이 줄면 조정신청 가능(시행령 제41조제3항, 제41조의2).</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">재산</h3>
+                    <ul class="list-disc pl-5 mt-1 space-y-1">
+                        <li>대상: 재산세 과세대상 토지·건축물·주택·선박·항공기의 과세표준. 무주택 세대는 임차보증금·월세(시행령 제42조).</li>
+                        <li>(재산 합계 − 1억원 − 주택 관련 대출 공제액)을 60개 등급으로 나눠 점수 부여(시행령 별표 4).</li>
+                        <li>전월세 평가: (보증금 + 월세 × 40) × 30%(시행규칙 별표 8).</li>
+                        <li>대출 공제: 1세대 1주택은 대출액 × 공정시장가액비율(과세표준·5,000만원 한도), 1세대 무주택은 대출액 × 30%(보증금의 30% 한도)(법 제72조제1항 단서, 시행령 제42조의2).</li>
+                        <li>공시가격 추정: 주택 공정시장가액비율 60%, 2026년 1세대 1주택은 3억 이하 43%·6억 이하 44%·6억 초과 45%(지방세법 시행령 제109조제1항제2호).</li>
+                        <li>자동차: 2024년 2월분부터 부과 안 함(시행령 부칙 대통령령 제34217호).</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">상·하한과 단수 처리</h3>
+                    <ul class="list-disc pl-5 mt-1 space-y-1">
+                        <li>2026년 지역가입자 월별 보험료 상한 4,591,740원, 하한 20,160원(보건복지부 고시 제2025-222호).</li>
+                        <li>장기요양보험료 = 건강보험료 × (0.9448% ÷ 7.19%) ≈ 13.14%(2026년 장기요양보험료율, 언론 보도 기준).</li>
+                        <li>건강보험료·장기요양보험료는 10원 미만을 절사했습니다. 공단 실제 고지와 원 단위 차이가 날 수 있습니다.</li>
+                    </ul>
+                </div>
+                <p class="text-xs text-slate-500">법령은 2026. 10. 25. 국가법령정보 현행 조문 기준으로 확인했습니다. 이 계산기는 상담 참고용이며, 실제 보험료는 국민건강보험공단 결정에 따릅니다.</p>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ===== 2026년 기준 상수 =====
+    const RATE = 0.0719;                  // 시행령 제44조제1항
+    const POINT_WON = 211.5;              // 시행령 제44조제2항
+    const LTC_RATIO = 0.009448 / 0.0719;  // 장기요양보험료율 ÷ 건강보험료율
+    const FLOOR = 20160, CAP = 4591740;   // 고시 제2025-222호
+    const BASIC_DEDUCT = 100000000;       // 시행령 별표 4 제1호
+    const FIN_THRESHOLD = 10000000;       // 시행규칙 제44조제1항 단서
+    const LOW_INCOME_MONTH = 280000;      // 시행규칙 제44조제3항 단서
+    const OWN_LOAN_CAP = 50000000;        // 시행령 제42조의2제3항제1호
+
+    // 시행령 별표 4 제3호: [상한(만원), 점수]
+    const GRADES = [
+        [450,22],[900,44],[1350,66],[1800,97],[2250,122],[2700,146],[3150,171],[3600,195],[4050,219],[4500,244],
+        [5020,268],[5590,294],[6220,320],[6930,344],[7710,365],[8590,386],[9570,412],[10700,439],[11900,465],[13300,490],
+        [14800,516],[16400,535],[18300,559],[20400,586],[22700,611],[25300,637],[28100,659],[31300,681],[34900,706],[38800,731],
+        [43200,757],[48100,785],[53600,812],[59700,841],[66500,881],[74000,921],[82400,961],[91800,1001],[103000,1041],[114000,1091],
+        [127000,1141],[142000,1191],[158000,1241],[176000,1291],[196000,1341],[218000,1391],[242000,1451],[270000,1511],[300000,1571],[330000,1641],
+        [363000,1711],[399300,1781],[439230,1851],[483153,1921],[531468,1991],[584615,2061],[643077,2131],[707385,2201],[778124,2271],[Infinity,2341]
+    ];
+
+    const MONEY_IDS = ['biz','labor','pension','other','interest','dividend','houseBase','housePrice','ownLoan','deposit','rent','rentLoan','etcBase'];
+    const st = { home: 'own', tax: 'base' };
+    const $ = (id) => document.getElementById(id);
+    const f10 = (v) => Math.floor(v / 10 + 1e-9) * 10;
+    const won = (n) => Math.round(n).toLocaleString('ko-KR') + '원';
+    const val = (id) => Number(($(id).value || '').replace(/[^\d]/g, '')) || 0;
+
+    function koMoney(n) {
+        if (!n) return '';
+        const eok = Math.floor(n / 1e8), man = Math.floor((n % 1e8) / 1e4), rest = n % 1e4;
+        let s = '';
+        if (eok) s += eok.toLocaleString('ko-KR') + '억 ';
+        if (man) s += man.toLocaleString('ko-KR') + '만 ';
+        if (rest) s += rest.toLocaleString('ko-KR');
+        return s.trim() + '원';
+    }
+
+    function gradeOf(amount) {
+        if (amount <= 0) return null;
+        const man = amount / 10000;
+        for (let i = 0; i < GRADES.length; i++) if (man <= GRADES[i][0]) return { grade: i + 1, point: GRADES[i][1] };
+        return null;
+    }
+
+    function houseRatio(price, one) {
+        if (!one) return 0.6;
+        if (price <= 300000000) return 0.43;
+        if (price <= 600000000) return 0.44;
+        return 0.45;
+    }
+
+    function calc() {
+        const i = {}; MONEY_IDS.forEach(k => i[k] = val(k));
+        const steps = [];
+
+        // ----- 소득 -----
+        const fin = i.interest + i.dividend;
+        const finApplied = fin > FIN_THRESHOLD ? fin : 0;
+        const annual = i.biz + i.other + finApplied + (i.labor + i.pension) * 0.5;
+        const monthly = annual / 12;
+        const low = monthly <= LOW_INCOME_MONTH;
+        const incPrem = low ? FLOOR : monthly * RATE;
+
+        let incLines = [];
+        if (i.biz) incLines.push(`사업 ${won(i.biz)}`);
+        if (i.other) incLines.push(`기타 ${won(i.other)}`);
+        if (fin) incLines.push(fin > FIN_THRESHOLD ? `이자·배당 ${won(fin)}` : `이자·배당 ${won(fin)} → 1,000만원 이하라 0원`);
+        if (i.labor) incLines.push(`근로 ${won(i.labor)} × 50%`);
+        if (i.pension) incLines.push(`연금 ${won(i.pension)} × 50%`);
+        steps.push({ k: '반영 소득 (연)', v: won(annual), f: incLines.join(' + ') || '입력한 소득 없음' });
+        steps.push({ k: '소득월액', v: won(Math.floor(monthly)), f: '반영 소득 ÷ 12' });
+        steps.push({ k: '소득보험료', v: won(Math.floor(incPrem)), f: low ? `소득월액 28만원 이하 → 최저 ${won(FLOOR)} 적용` : `${won(Math.floor(monthly))} × 7.19%` });
+
+        // ----- 재산 -----
+        let houseBase = 0, houseNote = '';
+        let rentEval = 0, loanDeduct = 0, loanNote = '';
+        if (st.home === 'own') {
+            if (st.tax === 'base') { houseBase = i.houseBase; houseNote = '주택 과세표준'; }
+            else {
+                const r = houseRatio(i.housePrice, $('oneHouse').checked);
+                houseBase = Math.floor(i.housePrice * r);
+                houseNote = `공시가격 ${won(i.housePrice)} × ${Math.round(r * 100)}% (추정)`;
+            }
+            $('estBase').textContent = won(st.tax === 'price' ? houseBase : 0);
+            if ($('ownLoanOn').checked && i.ownLoan) {
+                const sel = $('loanRatio').value;
+                const r = sel === 'auto' ? (st.tax === 'price' ? houseRatio(i.housePrice, $('oneHouse').checked) : 0.6) : Number(sel);
+                const raw = Math.floor(i.ownLoan * r);
+                loanDeduct = Math.min(raw, houseBase, OWN_LOAN_CAP);
+                loanNote = `대출 ${won(i.ownLoan)} × ${Math.round(r * 100)}% = ${won(raw)}` + (loanDeduct < raw ? ` → 한도 ${won(loanDeduct)}` : '');
+            }
+        } else {
+            rentEval = Math.floor((i.deposit + i.rent * 40) * 0.3);
+            if ($('rentLoanOn').checked && i.rentLoan) {
+                const raw = Math.floor(i.rentLoan * 0.3), lim = Math.floor(i.deposit * 0.3);
+                loanDeduct = Math.min(raw, lim);
+                loanNote = `대출 ${won(i.rentLoan)} × 30% = ${won(raw)}` + (loanDeduct < raw ? ` → 보증금 30% 한도 ${won(loanDeduct)}` : '');
+            }
+        }
+        const propTotal = houseBase + rentEval + i.etcBase;
+        const net = Math.max(0, propTotal - BASIC_DEDUCT - loanDeduct);
+        const g = gradeOf(net);
+        const propPrem = g ? g.point * POINT_WON : 0;
+
+        let propLines = [];
+        if (houseBase) propLines.push(`${houseNote} ${won(houseBase)}`);
+        if (st.home === 'rent' && (i.deposit || i.rent)) propLines.push(`전월세 (${won(i.deposit)} + ${won(i.rent)} × 40) × 30% = ${won(rentEval)}`);
+        if (i.etcBase) propLines.push(`토지·건축물 등 ${won(i.etcBase)}`);
+        steps.push({ k: '재산 합계', v: won(propTotal), f: propLines.join(' + ') || '입력한 재산 없음' });
+        steps.push({ k: '공제', v: '− ' + won(Math.min(propTotal, BASIC_DEDUCT + loanDeduct)), f: '기본공제 1억원' + (loanDeduct ? ` + 대출공제 ${won(loanDeduct)} (${loanNote})` : '') });
+        steps.push({ k: '공제 후 재산', v: won(net), f: g ? `${g.grade}등급 · ${g.point.toLocaleString('ko-KR')}점` : '0원 이하 → 재산보험료 없음' });
+        steps.push({ k: '재산보험료', v: won(Math.floor(propPrem)), f: g ? `${g.point.toLocaleString('ko-KR')}점 × 211.5원` : '—' });
+
+        // ----- 합계·상하한 -----
+        const rawHealth = incPrem + propPrem;
+        let health = f10(Math.min(CAP, Math.max(FLOOR, rawHealth)));
+        const capped = rawHealth > CAP;
+        const ltcOn = $('ltcOn').checked;
+        const ltc = ltcOn ? f10(health * LTC_RATIO) : 0;
+        const total = health + ltc;
+        steps.push({ k: '건강보험료', v: won(health), f: capped ? `상한 ${won(CAP)} 적용 (10원 미만 절사)` : '소득분 + 재산분 (10원 미만 절사)' });
+        if (ltcOn) steps.push({ k: '장기요양보험료', v: won(ltc), f: `${won(health)} × 13.14% (10원 미만 절사)` });
+
+        // 화면 반영
+        // 막대·내역은 상한 적용 전 비율로 나눠 보여 준다
+        const incShow = capped ? health * incPrem / rawHealth : Math.floor(incPrem);
+        const propShow = capped ? health * propPrem / rawHealth : Math.floor(propPrem);
+        $('total').textContent = total.toLocaleString('ko-KR');
+        $('mTotal').textContent = total.toLocaleString('ko-KR');
+        $('yearTotal').textContent = won(total * 12);
+        $('rInc').textContent = won(incShow);
+        $('rProp').textContent = won(propShow);
+        $('rHealth').textContent = won(health);
+        $('rLtc').textContent = won(ltc);
+        $('rLtcRow').classList.toggle('hide', !ltcOn);
+        $('ltcLegend').classList.toggle('hide', !ltcOn);
+        $('totalSub').textContent = ltcOn ? '(건강 + 장기요양)' : '(건강보험료만)';
+        const sum = incShow + propShow + ltc || 1;
+        $('barInc').style.width = (incShow / sum * 100) + '%';
+        $('barProp').style.width = (propShow / sum * 100) + '%';
+        $('barLtc').style.width = (ltc / sum * 100) + '%';
+
+        const note = $('capNote');
+        if (capped) {
+            note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-800';
+            note.textContent = `계산액 ${won(rawHealth)}이 월 상한 ${won(CAP)}을 넘어 상한액을 적용했습니다.`;
+        } else if (low && !g) {
+            note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-teal-50 border border-teal-200 text-teal-800';
+            note.textContent = `소득월액 28만원 이하, 공제 후 재산 0원이라 최저보험료 ${won(FLOOR)}가 적용됩니다.`;
+        } else note.className = 'hide';
+
+        $('steps').innerHTML = steps.map(s => `<div class="row"><div><div class="k">${s.k}</div><div class="formula">${s.f}</div></div><span class="v num whitespace-nowrap">${s.v}</span></div>`).join('');
+        window.__last = { steps, total, health, ltc };
+    }
+
+    // ===== 입력 처리 =====
+    function fmtInput(el) {
+        const n = Number(el.value.replace(/[^\d]/g, '')) || 0;
+        el.value = n ? n.toLocaleString('ko-KR') : '';
+        const ko = document.querySelector(`[data-ko="${el.id}"]`);
+        if (ko) ko.textContent = koMoney(n);
+    }
+    function setMoney(id, n) { $(id).value = n ? String(n) : ''; fmtInput($(id)); }
+
+    function setSeg(segId, attr, value) {
+        $(segId).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset[attr] === value ? 'true' : 'false'));
+    }
+    function setHome(v) {
+        st.home = v; setSeg('homeSeg', 'home', v);
+        $('ownBox').classList.toggle('hide', v !== 'own');
+        $('rentBox').classList.toggle('hide', v !== 'rent');
+    }
+    function setTax(v) {
+        st.tax = v; setSeg('taxSeg', 'tax', v);
+        $('baseBox').classList.toggle('hide', v !== 'base');
+        $('priceBox').classList.toggle('hide', v !== 'price');
+    }
+
+    document.querySelectorAll('.money').forEach(el => el.addEventListener('input', () => { fmtInput(el); calc(); }));
+    $('homeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { setHome(b.dataset.home); calc(); } });
+    $('taxSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { setTax(b.dataset.tax); calc(); } });
+    ['oneHouse','ltcOn','loanRatio'].forEach(id => $(id).addEventListener('change', calc));
+    $('ownLoanOn').addEventListener('change', () => { $('ownLoanBox').classList.toggle('hide', !$('ownLoanOn').checked); calc(); });
+    $('rentLoanOn').addEventListener('change', () => { $('rentLoanBox').classList.toggle('hide', !$('rentLoanOn').checked); calc(); });
+
+    function resetAll() {
+        MONEY_IDS.forEach(id => setMoney(id, 0));
+        ['ownLoanOn','rentLoanOn'].forEach(id => { $(id).checked = false; });
+        $('ownLoanBox').classList.add('hide'); $('rentLoanBox').classList.add('hide');
+        $('oneHouse').checked = true; $('ltcOn').checked = true; $('loanRatio').value = 'auto';
+        setHome('own'); setTax('base'); calc();
+    }
+
+    const PRESETS = {
+        A: { home: 'own', biz: 24000000, houseBase: 300000000 },
+        B: { home: 'rent', pension: 24000000, deposit: 300000000 },
+        C: { home: 'own', biz: 3000000, houseBase: 80000000 }
+    };
+    document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+        resetAll();
+        const p = PRESETS[b.dataset.preset];
+        setHome(p.home);
+        Object.keys(p).forEach(k => { if (k !== 'home') setMoney(k, p[k]); });
+        calc();
+    }));
+
+    function copyResult() {
+        const d = window.__last; if (!d) return;
+        const text = ['[지역가입자 건강보험료 계산 결과 · 2026년 기준]']
+            .concat(d.steps.map(s => `- ${s.k}: ${s.v} (${s.f})`))
+            .concat([`= 월 예상 납부액 ${won(d.total)}`, '※ 경감·감액 미반영. 실제 금액은 국민건강보험공단 고지 기준.']).join('\n');
+        const done = () => alert('계산 결과를 복사했습니다.');
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => prompt('아래 내용을 복사하세요.', text));
+        else prompt('아래 내용을 복사하세요.', text);
+    }
+
+    function openModal() { $('modal').classList.remove('hide'); }
+    function closeModal() { $('modal').classList.add('hide'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    calc();
+</script>
+</body>
+</html>

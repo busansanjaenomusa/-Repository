@@ -166,7 +166,7 @@
                                     <label class="sw w-full"><input type="checkbox" id="oneHouse" checked><span class="track"></span><span class="t">1세대 1주택이에요<span class="d">2026년 공정시장가액비율 43~45% 적용 (아니면 60%)</span></span></label>
                                 </div>
                             </div>
-                            <p class="hint mt-2 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3">공시가격 × 공정시장가액비율(지방세법 시행령 제109조)로 <b>추정</b>한 값입니다. 재산세 과세표준 상한제 등으로 실제 과세표준은 이보다 낮을 수 있으니, 고지서의 과세표준을 넣는 것이 정확합니다.</p>
+                            <p class="hint mt-2 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3">공시가격 × 공정시장가액비율(지방세법 시행령 제109조)로 <b>추정</b>한 값입니다. 주택 과세표준은 과세표준상한액을 넘을 수 없어(지방세법 제110조제3항) 실제 과세표준이 이보다 낮을 수 있습니다. <b>재산세 납세고지서나 지방세 세목별 과세증명서의 과세표준</b>을 넣는 것이 정확합니다.</p>
                             <p class="text-sm font-semibold text-slate-700 mt-2">추정 과세표준: <span id="estBase" class="num text-teal-700">0원</span></p>
                         </div>
 
@@ -276,7 +276,8 @@
                 </section>
 
                 <section class="text-xs leading-relaxed text-slate-500 px-1">
-                    <p><b>반영하지 않은 것:</b> 65세 이상·장애인·농어촌 등 경감, 전자고지·자동이체 감액, 전월세 갱신 시 10% 초과분 제외, 피부양자 해당 여부. 실제 고지액은 국민건강보험공단 모의계산이나 고지서로 확인하세요.</p>
+                    <p>안내용 <b>추정치</b>입니다. 국민건강보험공단 모의계산(2026년 기준)과 예시 5건을 대조해 일치했습니다. 공단 모의계산도 경감·한시적 감액이 반영되지 않은 예상 보험료입니다.</p>
+                    <p class="mt-1"><b>반영하지 않은 것:</b> 65세 이상·장애인·농어촌 등 경감, 전자고지·자동이체 감액, 전월세 갱신 시 10% 초과분 제외, 피부양자 해당 여부. 실제 금액은 공단 고지서로 확인하세요.</p>
                 </section>
             </aside>
         </form>
@@ -330,7 +331,10 @@
                     <ul class="list-disc pl-5 mt-1 space-y-1">
                         <li>2026년 지역가입자 월별 보험료 상한 4,591,740원, 하한 20,160원(보건복지부 고시 제2025-222호).</li>
                         <li>장기요양보험료 = 건강보험료 × (0.9448% ÷ 7.19%) ≈ 13.14%(2026년 장기요양보험료율, 언론 보도 기준).</li>
-                        <li>건강보험료·장기요양보험료는 10원 미만을 절사했습니다. 공단 실제 고지와 원 단위 차이가 날 수 있습니다.</li>
+                        <li>끝수 처리: 국민건강보험법 제107조와 국고금 관리법 제47조제1항에 따라 10원 미만을 계산하지 않습니다. 순서는 공단 모의계산과 같게 했습니다. ① 소득분·재산분은 각각 원 미만 버림 → ② 합한 건강보험료에서 10원 미만 절사 → ③ 장기요양보험료 = 건강보험료 × 0.9448 ÷ 7.19, 10원 미만 절사.</li>
+                        <li>2026년 기준 공단 모의계산과 대조해 일치한 예: 사업소득 2,400만원·주택 과표 1.5억 → 226,820원 / 사업소득 2,401만원·과표 1.5억 → 226,890원 / 연금 또는 근로 1,200만원·과표 2.5억 → 168,690원 / 소득 0원·과표 1.5억 → 86,930원 (건강+장기요양).</li>
+                        <li>[미확인] 공단 모의계산으로 대조하지 못한 구간: 소득 0원·재산 0원(계산기는 시행규칙 제44조제3항과 고시 제2025-222호에 따라 20,160원 + 장기요양 2,640원 = 22,800원), 소득월액 28만원 경계(연 336만원 근처), 상한 4,591,740원 경계.</li>
+                        <li>과세표준상한제: 주택 과세표준은 과세표준상한액을 넘을 수 없습니다(지방세법 제110조제3항). 건강보험은 재산세 과세표준을 쓰므로 상한제가 적용된 값이 기준이 된다고 보았습니다. 다만 이는 법 구조에 따른 해석이며, 공단 문서에서 이를 명시한 곳은 찾지 못했습니다.</li>
                     </ul>
                 </div>
                 <p class="text-xs text-slate-500">법령은 2026. 10. 25. 국가법령정보 현행 조문 기준으로 확인했습니다. 이 계산기는 상담 참고용이며, 실제 보험료는 국민건강보험공단 결정에 따릅니다.</p>
@@ -342,7 +346,7 @@
     // ===== 2026년 기준 상수 =====
     const RATE = 0.0719;                  // 시행령 제44조제1항
     const POINT_WON = 211.5;              // 시행령 제44조제2항
-    const LTC_RATIO = 0.009448 / 0.0719;  // 장기요양보험료율 ÷ 건강보험료율
+    const LTC_NUM = 9448, LTC_DEN = 71900; // 장기요양보험료 = 건강보험료 × 0.9448 ÷ 7.19 (부동소수 오차 피하려 정수로)
     const FLOOR = 20160, CAP = 4591740;   // 고시 제2025-222호
     const BASIC_DEDUCT = 100000000;       // 시행령 별표 4 제1호
     const FIN_THRESHOLD = 10000000;       // 시행규칙 제44조제1항 단서
@@ -408,7 +412,8 @@
         const annual = i.biz + i.other + finApplied + (i.labor + i.pension) * 0.5;
         const monthly = annual / 12;
         const low = monthly <= LOW_INCOME_MONTH;
-        const incPrem = low ? FLOOR : monthly * RATE;
+        // 소득분·재산분은 각각 원 미만 버림 → 합산 후 10원 미만 절사(법 제107조, 국고금 관리법 제47조, 공단 모의계산 순서)
+        const incPrem = low ? FLOOR : Math.floor(monthly * RATE);
 
         let incLines = [];
         if (i.biz) incLines.push(`사업 ${won(i.biz)}`);
@@ -418,7 +423,7 @@
         if (i.pension) incLines.push(`연금 ${won(i.pension)} × 50%`);
         steps.push({ k: '반영 소득 (연)', v: won(annual), f: incLines.join(' + ') || '입력한 소득 없음' });
         steps.push({ k: '소득월액', v: won(Math.floor(monthly)), f: '반영 소득 ÷ 12' });
-        steps.push({ k: '소득보험료', v: won(Math.floor(incPrem)), f: low ? `소득월액 28만원 이하 → 최저 ${won(FLOOR)} 적용` : `${won(Math.floor(monthly))} × 7.19%` });
+        steps.push({ k: '소득보험료', v: won(incPrem), f: low ? `소득월액 28만원 이하 → ${won(FLOOR)} ÷ 7.19%를 소득월액으로 봄 = ${won(FLOOR)}` : `${won(Math.floor(monthly))} × 7.19% (원 미만 버림)` });
 
         // ----- 재산 -----
         let houseBase = 0, houseNote = '';
@@ -457,7 +462,7 @@
         const propTotal = houseBase + rentEval + i.etcBase;
         const net = Math.max(0, propTotal - BASIC_DEDUCT - loanDeduct);
         const g = gradeOf(net);
-        const propPrem = g ? g.point * POINT_WON : 0;
+        const propPrem = g ? Math.floor(g.point * POINT_WON) : 0;
 
         let propLines = [];
         if (houseBase) propLines.push(`${houseNote} ${won(houseBase)}`);
@@ -466,22 +471,22 @@
         steps.push({ k: '재산 합계', v: won(propTotal), f: propLines.join(' + ') || '입력한 재산 없음' });
         steps.push({ k: '공제', v: '− ' + won(Math.min(propTotal, BASIC_DEDUCT + loanDeduct)), f: '기본공제 1억원' + (loanDeduct ? ` + 대출공제 ${won(loanDeduct)} (${loanNote})` : '') });
         steps.push({ k: '공제 후 재산', v: won(net), f: g ? `${g.grade}등급 · ${g.point.toLocaleString('ko-KR')}점` : '0원 이하 → 재산보험료 없음' });
-        steps.push({ k: '재산보험료', v: won(Math.floor(propPrem)), f: g ? `${g.point.toLocaleString('ko-KR')}점 × 211.5원` : '—' });
+        steps.push({ k: '재산보험료', v: won(propPrem), f: g ? `${g.point.toLocaleString('ko-KR')}점 × 211.5원 (원 미만 버림)` : '—' });
 
         // ----- 합계·상하한 -----
         const rawHealth = incPrem + propPrem;
         let health = f10(Math.min(CAP, Math.max(FLOOR, rawHealth)));
         const capped = rawHealth > CAP;
         const ltcOn = $('ltcOn').checked;
-        const ltc = ltcOn ? f10(health * LTC_RATIO) : 0;
+        const ltc = ltcOn ? f10(health * LTC_NUM / LTC_DEN) : 0;
         const total = health + ltc;
-        steps.push({ k: '건강보험료', v: won(health), f: capped ? `상한 ${won(CAP)} 적용 (10원 미만 절사)` : '소득분 + 재산분 (10원 미만 절사)' });
-        if (ltcOn) steps.push({ k: '장기요양보험료', v: won(ltc), f: `${won(health)} × 13.14% (10원 미만 절사)` });
+        steps.push({ k: '건강보험료', v: won(health), f: capped ? `상한 ${won(CAP)} 적용` : `${won(incPrem)} + ${won(propPrem)} = ${won(rawHealth)} → 10원 미만 절사` });
+        if (ltcOn) steps.push({ k: '장기요양보험료', v: won(ltc), f: `${won(health)} × 0.9448 ÷ 7.19 (10원 미만 절사)` });
 
         // 화면 반영
         // 막대·내역은 상한 적용 전 비율로 나눠 보여 준다
-        const incShow = capped ? health * incPrem / rawHealth : Math.floor(incPrem);
-        const propShow = capped ? health * propPrem / rawHealth : Math.floor(propPrem);
+        const incShow = capped ? health * incPrem / rawHealth : incPrem;
+        const propShow = capped ? health * propPrem / rawHealth : propPrem;
         $('total').textContent = total.toLocaleString('ko-KR');
         $('mTotal').textContent = total.toLocaleString('ko-KR');
         $('yearTotal').textContent = won(total * 12);

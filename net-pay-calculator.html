@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>월급 공제 계산기 2026</title>
+    <meta name="description" content="2026년 기준 세전 월급에서 국민연금·건강보험·장기요양·고용보험·소득세·지방소득세를 근로소득 간이세액표 그대로 계산합니다. 비과세 한도, 상여 지급월, 입사·퇴사 달, 두루누리, 중소기업 취업자 감면, 일용근로자까지 반영.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; }
+        input::placeholder { color: #94a3b8; font-weight: 500; }
+        button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+        .seg-on { background-color: #2563eb; color: #fff; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2); }
+        .seg-off { color: #475569; background: transparent; }
+        .seg-off:hover { background-color: rgba(226,232,240,0.7); }
+        .num { font-variant-numeric: tabular-nums; }
+        .fld { width: 100%; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 0.75rem; padding: 0.55rem 2.25rem 0.55rem 0.8rem; background: #fff; font-weight: 600; text-align: right; }
+        .fld:focus { border-color: #2563eb; }
+        .fld-wrap { position: relative; }
+        .fld-wrap > .unit { position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.85rem; pointer-events: none; }
+        .sel { width: 100%; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 0.75rem; padding: 0.5rem 0.75rem; background: #fff; font-weight: 600; }
+        .chk { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.875rem; color: #334155; cursor: pointer; line-height: 1.4; }
+        .chk input { margin-top: 0.2rem; width: 1rem; height: 1rem; accent-color: #2563eb; flex-shrink: 0; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+        .hide { display: none !important; }
+        @media print {
+            header, #presetBar, #inputCol, #mobileBar, .no-print { display: none !important; }
+            #resultCol { grid-column: span 12 / span 12 !important; position: static !important; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 lg:pb-0">
+
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="bg-blue-600 text-white p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0"><i class="fa-solid fa-receipt text-lg"></i></div>
+                <div class="min-w-0">
+                    <h1 class="text-base sm:text-xl font-bold tracking-tight truncate">월급 공제 계산기 <span class="text-blue-300">2026</span></h1>
+                    <p class="text-xs text-slate-400 truncate">4대보험 · 소득세 · 지방소득세를 간이세액표 그대로 계산</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" onclick="resetForm()" class="min-h-[40px] text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 rounded-lg border border-slate-700 transition flex items-center gap-1.5" aria-label="입력 초기화"><i class="fa-solid fa-rotate-left"></i><span class="hidden sm:inline">초기화</span></button>
+                <button type="button" onclick="openModal()" class="min-h-[40px] text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 rounded-lg border border-slate-700 transition flex items-center gap-1.5" aria-label="계산 기준과 출처 보기"><i class="fa-solid fa-circle-info text-amber-400"></i><span class="hidden sm:inline">계산 기준</span></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+
+        <div id="presetBar" class="mb-5 bg-white p-3 sm:p-3.5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div class="flex items-center gap-2 text-sm font-semibold text-slate-700"><i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i><span>예시로 먼저 써 보기</span></div>
+            <div class="flex flex-wrap gap-2" id="presetBtns"></div>
+        </div>
+
+        <div class="mb-5 inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 no-print" role="tablist" aria-label="근로 형태">
+            <button type="button" role="tab" id="tabMonthly" onclick="setMode('monthly')" class="seg-on min-h-[44px] px-4 rounded-lg text-sm transition">월급 근로자</button>
+            <button type="button" role="tab" id="tabDaily" onclick="setMode('daily')" class="seg-off min-h-[44px] px-4 rounded-lg text-sm transition">일용근로자</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
+            <!-- 입력 -->
+            <form id="inputCol" class="lg:col-span-7 space-y-5" onsubmit="return false" autocomplete="off">
+
+                <!-- 월급 근로자 -->
+                <div id="monthlyInputs" class="space-y-5">
+                    <section class="card p-4 sm:p-5">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-4"><span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">1</span>급여</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label class="block">
+                                <span class="text-sm font-semibold text-slate-700">급여 지급 월</span>
+                                <select id="month" class="sel mt-1.5"></select>
+                                <span class="text-xs text-slate-500 mt-1 block">국민연금 상·하한(7월 변경)과 자녀 공제액(3월 변경)이 달라집니다.</span>
+                            </label>
+                            <div>
+                                <span class="text-sm font-semibold text-slate-700">입력 방식</span>
+                                <div class="mt-1.5 flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                    <button type="button" id="inMonthly" onclick="setInputWay('m')" class="seg-on flex-1 min-h-[40px] rounded-lg text-sm">월급으로</button>
+                                    <button type="button" id="inAnnual" onclick="setInputWay('a')" class="seg-off flex-1 min-h-[40px] rounded-lg text-sm">연봉으로</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="annualBox" class="hide mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label class="block">
+                                <span class="text-sm font-semibold text-slate-700">연봉(세전)</span>
+                                <div class="fld-wrap mt-1.5"><input id="annual" class="fld num money" inputmode="numeric" placeholder="36,000,000"><span class="unit">원</span></div>
+                            </label>
+                            <label class="block">
+                                <span class="text-sm font-semibold text-slate-700">연봉 구성</span>
+                                <select id="annualSplit" class="sel mt-1.5">
+                                    <option value="12">퇴직금 별도 연봉 (÷12)</option>
+                                    <option value="13">퇴직금 포함 연봉 (÷13)</option>
+                                </select>
+                            </label>
+                            <p id="annual13Note" class="hide sm:col-span-2 text-xs leading-relaxed text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">퇴직금 포함 연봉이면 1/13은 퇴직금 몫이라 월급은 연봉÷13입니다. 다만 퇴직금을 매월 나눠 주기로 한 약정은 원칙적으로 퇴직금 지급으로서 효력이 없습니다(대법원 2010. 5. 20. 선고 2007다90760 전원합의체 판결). 퇴직할 때 법정 퇴직금을 따로 확인하세요.</p>
+                        </div>
+                        <label class="block mt-4">
+                            <span class="text-sm font-semibold text-slate-700">월 급여 총액 <span class="font-normal text-slate-500">(세전, 아래 비과세 항목 포함)</span></span>
+                            <div class="fld-wrap mt-1.5"><input id="total" class="fld num money text-lg" inputmode="numeric" placeholder="3,000,000"><span class="unit">원</span></div>
+                            <span id="totalHint" class="text-xs text-slate-500 mt-1 block">기본급과 모든 수당을 더한 금액입니다. 상여는 4번에서 따로 넣으세요.</span>
+                        </label>
+                    </section>
+
+                    <section class="card p-4 sm:p-5">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-1"><span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">2</span>비과세 항목</h2>
+                        <p class="text-xs text-slate-500 mb-4">월 급여 총액 안에 들어 있는 금액을 적으세요. 한도를 넘거나 요건이 안 되면 넘는 금액은 자동으로 과세됩니다. 비과세 금액은 4대보험료 계산에서도 빠집니다.</p>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">식대</span>
+                                    <div class="fld-wrap mt-1.5"><input id="meal" class="fld num money" inputmode="numeric" placeholder="200,000"><span class="unit">원</span></div></label>
+                                <label class="chk sm:mt-8"><input type="checkbox" id="mealProvided"><span>회사가 식사를 현물(구내식당·식권 등)로도 주고 있음 <span class="text-slate-500">→ 식대는 전액 과세</span></span></label>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">자가운전보조금(차량유지비)</span>
+                                    <div class="fld-wrap mt-1.5"><input id="car" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div></label>
+                                <label class="chk sm:mt-8"><input type="checkbox" id="carEligible" checked><span>본인(배우자 공동 포함) 차량을 업무에 직접 운전해 쓰고, 출장비 등 실제 여비를 따로 받지 않음</span></label>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">보육수당(6세 이하 자녀)</span>
+                                    <div class="fld-wrap mt-1.5"><input id="childcare" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div></label>
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">6세 이하 자녀 수</span>
+                                    <div class="fld-wrap mt-1.5"><input id="childcareKids" class="fld num" inputmode="numeric" placeholder="0"><span class="unit">명</span></div>
+                                    <span class="text-xs text-slate-500">2026년부터 자녀 1명당 월 20만원까지</span></label>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">연구보조비·연구활동비</span>
+                                    <div class="fld-wrap mt-1.5"><input id="research" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div></label>
+                                <label class="chk sm:mt-8"><input type="checkbox" id="researchEligible"><span>연구기관·기업부설연구소 연구원, 교원 등 비과세 대상자임</span></label>
+                            </div>
+                            <div class="rounded-xl border border-slate-200 p-3 sm:p-4 bg-slate-50/60">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">연장·야간·휴일근로수당 <span class="font-normal text-slate-500">(생산직 등 비과세 검토용)</span></span>
+                                    <div class="fld-wrap mt-1.5"><input id="ot" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div></label>
+                                <div class="mt-3 space-y-2">
+                                    <label class="chk"><input type="checkbox" id="otJob"><span>공장·광산 생산직, 운전·운송, 돌봄·미용·조리·음식, 매장 판매, 경비·청소 등 단순노무 등 대상 직종임</span></label>
+                                    <label class="chk"><input type="checkbox" id="otPrevYear" checked><span>직전 연도 총급여가 3,700만원 이하임</span></label>
+                                </div>
+                                <label class="block mt-3"><span class="text-sm font-semibold text-slate-700">올해 이미 비과세로 처리된 연장근로수당 등</span>
+                                    <div class="fld-wrap mt-1.5"><input id="otUsed" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                    <span class="text-xs text-slate-500">연 240만원 한도. 월정액급여 260만원 이하여야 합니다(이 계산기는 총액에서 연장수당 등을 빼서 추정).</span></label>
+                                <p class="text-xs text-slate-500 mt-2">대상 직종이 아니면 이 칸은 비워 두셔도 됩니다. 수당은 총액에 포함되어 그대로 과세됩니다.</p>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">출산지원금</span>
+                                    <div class="fld-wrap mt-1.5"><input id="birthGift" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                    <span class="text-xs text-slate-500">출생 후 2년 내 최대 2회 전액 비과세</span></label>
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">기타 비과세(직접 입력)</span>
+                                    <div class="fld-wrap mt-1.5"><input id="otherNontax" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                    <span class="text-xs text-slate-500">국외근로·직무발명보상금 등 확인된 금액만</span></label>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">자녀 학자금 지원금 <span class="font-normal text-slate-500">(과세)</span></span>
+                                    <div class="fld-wrap mt-1.5"><input id="tuition" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div></label>
+                                <label class="chk sm:mt-8"><input type="checkbox" id="tuitionExclude" checked><span>간이세액 계산에서는 학자금을 빼고 계산(별표 2 제5호)</span></label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card p-4 sm:p-5">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-4"><span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">3</span>소득세</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-sm font-semibold text-slate-700">공제대상가족 수 <span class="font-normal text-slate-500">(본인 포함)</span></span>
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <button type="button" class="w-11 h-11 rounded-xl border border-slate-300 bg-white text-lg font-bold" onclick="step('family',-1)" aria-label="가족 수 줄이기">−</button>
+                                    <div class="fld-wrap flex-1"><input id="family" class="fld num text-center" inputmode="numeric" value="1" style="text-align:center;padding-right:0.8rem"></div>
+                                    <button type="button" class="w-11 h-11 rounded-xl border border-slate-300 bg-white text-lg font-bold" onclick="step('family',1)" aria-label="가족 수 늘리기">+</button>
+                                </div>
+                                <details class="mt-2 text-xs text-slate-600">
+                                    <summary class="text-blue-700 font-semibold inline-flex items-center gap-1">누구를 세나요? <i class="fa-solid fa-chevron-down chev transition text-[10px]"></i></summary>
+                                    <p class="mt-1.5 leading-relaxed">본인과 배우자도 각각 1명으로 셉니다. 배우자·부양가족은 연간 소득금액 100만원 이하(근로소득만 있으면 총급여 500만원 이하)여야 하고, 부양가족은 20세 이하 또는 60세 이상(장애인은 나이 제한 없음)이어야 합니다. 맞벌이 부부가 같은 자녀를 동시에 넣을 수는 없습니다.</p>
+                                </details>
+                            </div>
+                            <label class="block">
+                                <span class="text-sm font-semibold text-slate-700">그중 8세 이상 20세 이하 자녀 수</span>
+                                <div class="fld-wrap mt-1.5"><input id="kids" class="fld num" inputmode="numeric" placeholder="0"><span class="unit">명</span></div>
+                                <span class="text-xs text-slate-500">2026년 3월분부터 1명 20,830원, 2명 45,830원, 3명부터 1명당 33,330원씩 더 뺍니다.</span>
+                            </label>
+                            <div>
+                                <span class="text-sm font-semibold text-slate-700">원천징수 비율</span>
+                                <div class="mt-1.5 flex bg-slate-100 p-1 rounded-xl border border-slate-200" id="ratioSeg">
+                                    <button type="button" data-v="80" class="seg-off flex-1 min-h-[40px] rounded-lg text-sm">80%</button>
+                                    <button type="button" data-v="100" class="seg-on flex-1 min-h-[40px] rounded-lg text-sm">100%</button>
+                                    <button type="button" data-v="120" class="seg-off flex-1 min-h-[40px] rounded-lg text-sm">120%</button>
+                                </div>
+                                <span class="text-xs text-slate-500">근로자가 신청하면 80%나 120%로 바꿀 수 있습니다(소득세법 시행령 제194조).</span>
+                            </div>
+                            <label class="block">
+                                <span class="text-sm font-semibold text-slate-700">중소기업 취업자 소득세 감면</span>
+                                <select id="sme" class="sel mt-1.5">
+                                    <option value="0">해당 없음</option>
+                                    <option value="0.9">청년 - 90% 감면 (5년)</option>
+                                    <option value="0.7">60세 이상·장애인·경력단절 - 70% 감면 (3년)</option>
+                                </select>
+                                <span class="text-xs text-slate-500">회사에 감면 신청서를 낸 경우만 매월 원천징수에 반영됩니다(조세특례제한법 제30조).</span>
+                            </label>
+                            <label id="smeUsedBox" class="block hide sm:col-span-2">
+                                <span class="text-sm font-semibold text-slate-700">올해 이미 감면받은 소득세</span>
+                                <div class="fld-wrap mt-1.5"><input id="smeUsed" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+                                <span class="text-xs text-slate-500">과세기간(1~12월)별 200만원 한도</span>
+                            </label>
+                            <label class="chk sm:col-span-2"><input type="checkbox" id="secondJob"><span>이 회사는 두 곳 이상 다니는 직장 중 <b>종된 근무지</b>임 <span class="text-slate-500">→ 본인 1명만 공제(소득세법 시행령 제194조제2항)</span></span></label>
+                        </div>
+                    </section>
+
+                    <section class="card p-4 sm:p-5">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-4"><span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">4</span>이번 달 상황</h2>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-700">이번 달은</span>
+                            <select id="status" class="sel mt-1.5">
+                                <option value="normal">평소처럼 한 달 다 일한 달</option>
+                                <option value="join">입사한 달</option>
+                                <option value="leave">퇴사한 달</option>
+                                <option value="joinleave">같은 달에 입사하고 퇴사함</option>
+                            </select>
+                        </label>
+                        <div id="joinBox" class="hide mt-3 space-y-2 rounded-xl bg-slate-50 border border-slate-200 p-3">
+                            <label class="chk"><input type="checkbox" id="joinFirstDay"><span>입사일이 그 달 <b>1일</b>임</span></label>
+                            <label class="chk"><input type="checkbox" id="npsWish"><span>입사한 달 국민연금도 내기를 희망함(국민연금법 제17조제1항제3호)</span></label>
+                            <p class="text-xs text-slate-500">입사한 달 급여는 실제로 받는 일할 금액을 1번 총액에 넣으세요.</p>
+                        </div>
+                        <p id="leaveNote" class="hide mt-3 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed">국민연금과 건강보험은 자격을 잃은 날(퇴사일 다음 날)의 <b>전날이 속한 달까지</b> 부과되므로 퇴사한 달 보험료는 공제됩니다. 퇴사할 때 건강보험 퇴직정산과 소득세 중도퇴사 연말정산으로 추가 공제·환급이 생길 수 있는데, 그 금액은 여기 포함하지 않았습니다.</p>
+
+                        <div class="mt-4 rounded-xl border border-slate-200 p-3 sm:p-4">
+                            <label class="chk font-semibold"><input type="checkbox" id="bonusOn"><span>이번 달에 상여금(성과급)을 함께 받음</span></label>
+                            <div id="bonusBox" class="hide mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">상여금(과세분)</span>
+                                    <div class="fld-wrap mt-1.5"><input id="bonus" class="fld num money" inputmode="numeric" placeholder="1,000,000"><span class="unit">원</span></div></label>
+                                <label class="block"><span class="text-sm font-semibold text-slate-700">지급대상기간</span>
+                                    <div class="fld-wrap mt-1.5"><input id="bonusMonths" class="fld num" inputmode="numeric" placeholder="3"><span class="unit">개월</span></div>
+                                    <span class="text-xs text-slate-500">분기 상여 3, 반기 6. 기간이 정해지지 않은 상여는 1월(또는 직전 상여 다음 달)부터 이번 달까지 개월 수</span></label>
+                                <label class="chk sm:col-span-2"><input type="checkbox" id="eiActual" checked><span>고용보험은 이번 달 실제 지급액(상여 포함)에 0.9%를 곱해 공제함</span></label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card p-4 sm:p-5">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 mb-4"><span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">5</span>4대보험 특수 상황</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">국민연금 기준소득월액 <span class="font-normal text-slate-500">(알면 입력)</span></span>
+                                <div class="fld-wrap mt-1.5"><input id="npsBase" class="fld num money" inputmode="numeric" placeholder="비우면 과세급여"><span class="unit">원</span></div>
+                                <span class="text-xs text-slate-500">입사 때 신고한 금액이나 매년 7월 결정된 금액. 이번 달 급여와 다를 수 있습니다.</span></label>
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">건강보험 보수월액 <span class="font-normal text-slate-500">(알면 입력)</span></span>
+                                <div class="fld-wrap mt-1.5"><input id="nhiBase" class="fld num money" inputmode="numeric" placeholder="비우면 과세급여"><span class="unit">원</span></div>
+                                <span class="text-xs text-slate-500">전년도 보수 기준으로 정해지고 매년 4월 정산됩니다.</span></label>
+                        </div>
+                        <div class="mt-4 space-y-2.5">
+                            <label class="chk"><input type="checkbox" id="age60"><span>만 60세 이상 <span class="text-slate-500">→ 국민연금 사업장 의무가입 제외(임의계속가입 신청 시는 다름)</span></span></label>
+                            <label class="chk"><input type="checkbox" id="age65new"><span>65세가 된 뒤에 새로 고용됨 <span class="text-slate-500">→ 고용보험 실업급여 보험료 근로자 부담 없음</span></span></label>
+                            <label class="chk"><input type="checkbox" id="durunuri"><span>두루누리 사회보험료 지원을 받고 있음 <span class="text-slate-500">(10인 미만 사업장, 월평균보수 270만원 미만 신규가입자)</span></span></label>
+                        </div>
+                    </section>
+
+                    <details class="card p-4 sm:p-5">
+                        <summary class="flex items-center justify-between gap-3">
+                            <span class="text-base font-bold text-slate-900 flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm">6</span>사업주 부담분도 보기 <span class="text-xs font-normal text-slate-500">(선택)</span></span>
+                            <i class="fa-solid fa-chevron-down chev transition text-slate-500"></i>
+                        </summary>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">기업 규모(고용안정·직업능력개발)</span>
+                                <select id="size" class="sel mt-1.5">
+                                    <option value="lt150">150인 미만 (0.25%)</option>
+                                    <option value="priority">150인 이상 우선지원대상기업 (0.45%)</option>
+                                    <option value="lt1000">150인 이상 1,000인 미만 (0.65%)</option>
+                                    <option value="ge1000">1,000인 이상·국가·지자체 (0.85%)</option>
+                                </select></label>
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">산재보험료율</span>
+                                <div class="fld-wrap mt-1.5"><input id="iaRate" class="fld num" inputmode="decimal" placeholder="예: 7.0"><span class="unit">/1000</span></div>
+                                <span class="text-xs text-slate-500">업종별 요율(출퇴근재해 포함). 산재보험료는 전액 사업주 부담입니다.</span></label>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- 일용근로자 -->
+                <div id="dailyInputs" class="hide space-y-5">
+                    <section class="card p-4 sm:p-5">
+                        <h2 class="text-base font-bold text-slate-900 mb-4">일용근로자 급여</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">지급 월</span><select id="dMonth" class="sel mt-1.5"></select></label>
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">일당(비과세 제외)</span>
+                                <div class="fld-wrap mt-1.5"><input id="dWage" class="fld num money" inputmode="numeric" placeholder="180,000"><span class="unit">원</span></div></label>
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">이번에 받는 근무일수</span>
+                                <div class="fld-wrap mt-1.5"><input id="dDays" class="fld num" inputmode="numeric" placeholder="10"><span class="unit">일</span></div></label>
+                            <label class="block"><span class="text-sm font-semibold text-slate-700">지급 방식</span>
+                                <select id="dPayUnit" class="sel mt-1.5">
+                                    <option value="daily">날마다 받음</option>
+                                    <option value="lump">여러 날을 모아서 받음</option>
+                                </select>
+                                <span class="text-xs text-slate-500">소득세 1,000원 미만 소액부징수 판단이 달라집니다.</span></label>
+                        </div>
+                        <div class="mt-4 space-y-2.5">
+                            <label class="chk"><input type="checkbox" id="dInsured"><span>국민연금·건강보험 사업장 가입 대상임 <span class="text-slate-500">(1개월 이상 계속 일하면서 월 8일 이상 근로하는 경우 등. 정확한 요건은 공단 확인)</span></span></label>
+                            <label class="chk"><input type="checkbox" id="dAge60"><span>만 60세 이상(국민연금 제외)</span></label>
+                            <label class="chk"><input type="checkbox" id="dAge65new"><span>65세가 된 뒤에 새로 고용됨(고용보험 근로자 부담 없음)</span></label>
+                        </div>
+                        <p class="mt-4 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed">일용근로자는 간이세액표를 쓰지 않고 하루 일당에서 15만원을 뺀 금액에 6%를 곱한 뒤 55%를 세액공제합니다(소득세법 제47조제2항·제55조·제59조). 생산직 일용근로자의 연장·야간·휴일수당은 한도 없이 비과세될 수 있으니(소득세법 시행령 제17조제2항) 일당에서 빼고 입력하세요.</p>
+                    </section>
+                </div>
+            </form>
+
+            <!-- 결과 -->
+            <aside id="resultCol" class="lg:col-span-5 lg:sticky lg:top-20 space-y-4 scroll-mt-20">
+                <section class="rounded-2xl bg-slate-900 text-white p-5 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-300">이번 달 예상 실수령액</span>
+                        <span id="periodLabel" class="text-xs text-slate-400"></span>
+                    </div>
+                    <div class="mt-1 text-3xl sm:text-4xl font-extrabold num tracking-tight" id="netOut">0원</div>
+                    <div class="mt-3 h-2.5 rounded-full bg-slate-700 overflow-hidden flex" aria-hidden="true">
+                        <div id="barNet" class="bg-blue-500 h-full" style="width:100%"></div>
+                        <div id="barDed" class="bg-rose-400 h-full" style="width:0%"></div>
+                    </div>
+                    <dl class="mt-3 grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-slate-800 rounded-xl p-2"><dt class="text-[11px] text-slate-400">지급 총액</dt><dd id="grossOut" class="text-sm font-bold num">0원</dd></div>
+                        <div class="bg-slate-800 rounded-xl p-2"><dt class="text-[11px] text-slate-400">공제 합계</dt><dd id="dedOut" class="text-sm font-bold num text-rose-300">0원</dd></div>
+                        <div class="bg-slate-800 rounded-xl p-2"><dt class="text-[11px] text-slate-400">공제 비율</dt><dd id="pctOut" class="text-sm font-bold num">0%</dd></div>
+                    </dl>
+                </section>
+
+                <section class="card p-4 sm:p-5">
+                    <h3 class="font-bold text-slate-900 mb-3">공제 내역</h3>
+                    <ul id="itemList" class="divide-y divide-slate-100"></ul>
+                </section>
+
+                <section id="ntCard" class="card p-4 sm:p-5">
+                    <h3 class="font-bold text-slate-900 mb-1">과세·비과세 구분</h3>
+                    <div class="flex justify-between text-sm py-1.5"><span class="text-slate-600">과세 급여(4대보험·세금 기준)</span><b id="taxableOut" class="num">0원</b></div>
+                    <div class="flex justify-between text-sm py-1.5"><span class="text-slate-600">비과세 인정</span><b id="nontaxOut" class="num text-emerald-700">0원</b></div>
+                    <ul id="ntList" class="mt-2 space-y-1.5 text-xs text-slate-600"></ul>
+                </section>
+
+                <section id="msgCard" class="space-y-2"></section>
+
+                <section id="annualCard" class="card p-4 sm:p-5">
+                    <h3 class="font-bold text-slate-900 mb-2">같은 조건으로 1년이면</h3>
+                    <div class="flex justify-between text-sm py-1"><span class="text-slate-600">연 실수령액(12개월, 상여 제외)</span><b id="annualNet" class="num">0원</b></div>
+                    <div class="flex justify-between text-sm py-1"><span class="text-slate-600">연 원천징수 소득세+지방소득세</span><b id="annualTax" class="num">0원</b></div>
+                    <p class="text-xs text-slate-500 mt-2">매월 떼는 소득세는 미리 내는 세금이라, 다음 해 2월 연말정산에서 실제 공제 내역(의료비·카드·보험료 등)에 따라 돌려받거나 더 낼 수 있습니다.</p>
+                </section>
+
+                <section id="employerCard" class="card p-4 sm:p-5">
+                    <h3 class="font-bold text-slate-900 mb-2">사업주 부담(참고)</h3>
+                    <ul id="erList" class="text-sm space-y-1"></ul>
+                </section>
+
+                <div class="flex gap-2 no-print">
+                    <button type="button" onclick="window.print()" class="flex-1 min-h-[44px] rounded-xl bg-white border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50"><i class="fa-solid fa-print mr-1.5"></i>결과 인쇄</button>
+                    <button type="button" onclick="copySummary()" class="flex-1 min-h-[44px] rounded-xl bg-white border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50"><i class="fa-regular fa-copy mr-1.5"></i><span id="copyLabel">결과 복사</span></button>
+                </div>
+            </aside>
+        </div>
+
+        <!-- 자주 생기는 차이 -->
+        <section class="mt-10 no-print">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-1">급여명세서와 금액이 다르다면</h2>
+            <p class="text-sm text-slate-600 mb-4">실제 공제액이 계산 결과와 어긋나는 대표적인 이유입니다.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="faq"></div>
+        </section>
+    </main>
+
+    <div id="mobileBar" class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-slate-900 text-white px-4 py-3 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
+        <div><div class="text-[11px] text-slate-400">예상 실수령액</div><div id="mNet" class="text-xl font-extrabold num">0원</div></div>
+        <button type="button" onclick="document.getElementById('resultCol').scrollIntoView({behavior:'smooth'})" class="min-h-[44px] px-4 rounded-xl bg-blue-600 text-sm font-semibold">공제 내역 보기</button>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="if(event.target===this)closeModal()">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+                <h2 id="modalTitle" class="text-lg font-bold">계산 기준과 출처 (2026년)</h2>
+                <button type="button" onclick="closeModal()" class="w-10 h-10 rounded-lg hover:bg-slate-100" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="text-sm text-slate-700 space-y-4 leading-relaxed">
+                <div>
+                    <h3 class="font-bold text-slate-900">소득세(원천징수)</h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>소득세법 시행령 [별표 2] 근로소득 간이세액표(2026. 2. 27. 개정, 2026. 3. 1. 이후 원천징수분부터 적용). 월급여 1,000만원 초과 구간은 별표의 산식을 그대로 적용했습니다.</li>
+                        <li>간이세액표의 각 칸을 같은 산식으로 다시 계산했고, 공표된 표(월급여 300만원 이상 구간 3,608칸 전부와 그 아래 구간 표본)와 원 단위까지 일치하는 것을 확인했습니다.</li>
+                        <li>8세 이상 20세 이하 자녀 공제: 2026년 3월분부터 1명 20,830원, 2명 45,830원, 3명 이상 45,830원 + 1명당 33,330원. 1~2월분은 종전 금액(12,500원, 29,160원, 1명당 25,000원)입니다.</li>
+                        <li>80%·120% 선택과 종된 근무지: 소득세법 시행령 제194조. 상여: 소득세법 제136조. 소액부징수(1,000원 미만): 소득세법 제86조.</li>
+                        <li>지방소득세: 소득세의 10%(10원 미만 절사).</li>
+                        <li>중소기업 취업자 감면: 조세특례제한법 제30조(청년 90%·5년, 60세 이상·장애인·경력단절 70%·3년, 과세기간별 200만원 한도, 2026. 12. 31.까지 취업분).</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">비과세</h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>식대 월 20만원(소득세법 제12조제3호러목), 6세 이하 자녀 보육수당 자녀 1명당 월 20만원·출산지원금(같은 호 머목), 자가운전보조금·연구보조비 월 20만원(같은 법 시행령 제12조).</li>
+                        <li>생산직 등 연장·야간·휴일근로수당: 월정액급여 260만원 이하, 직전 과세기간 총급여 3,700만원 이하, 연 240만원 한도(소득세법 시행령 제17조).</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">4대보험(근로자 부담분)</h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>국민연금 4.75%(총 9.5%, 국민연금법 제88조 및 부칙). 기준소득월액 상·하한: 2026년 1~6월 40만~637만원, 7월부터 41만~659만원(국민연금공단 2026. 2. 13. 안내). 기준소득월액은 천원 미만 절사.</li>
+                        <li>건강보험 3.595%(총 7.19%, 보건복지부 2025. 8. 28. 결정). 장기요양보험료 = 건강보험료 × (0.9448% ÷ 7.19%). 근로자 부담 상한 4,591,740원, 하한 10,080원.</li>
+                        <li>고용보험 실업급여 0.9%. 65세 이후 새로 고용된 사람은 실업급여 적용 제외(고용보험법 제10조).</li>
+                        <li>입사·퇴사 달: 국민연금법 제17조, 국민건강보험법 제69조(취득한 날이 속한 달의 다음 달부터, 1일 취득이면 그 달부터 / 자격을 잃은 날의 전날이 속한 달까지).</li>
+                        <li>건강보험·장기요양은 4대사회보험 정보연계센터 모의계산 산식대로 10원 미만을 절사했고, 국민연금은 천원 단위 기준소득월액에 요율을 곱한 원 단위 금액(2026년 7월 이후 상한 313,025원)입니다. 고용보험은 10원 미만을 절사했으며 회사 급여 프로그램에 따라 원 단위 차이가 날 수 있습니다.</li>
+                        <li>두루누리: 국민연금·고용보험 근로자분 80%, 월평균보수 230만원 초과 270만원 미만이면 230만원 기준으로 지원(2026년 국민연금 근로자 지원 상한 월 87,400원). 실제로는 다음 달 보험료 고지에서 빼 주는 방식이라 회사마다 급여 공제 반영 시점이 다를 수 있습니다.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900">반영하지 않은 것</h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                        <li>연말정산·중도퇴사 정산 결과, 건강보험 연말정산(4월)·퇴직정산, 보수 외 소득에 대한 건강보험료</li>
+                        <li>외국인 근로자 특례, 임원, 사내 대출 상환·노조비 등 회사별 기타 공제</li>
+                    </ul>
+                </div>
+                <p class="text-xs text-slate-500">이 계산기는 2026년 10월 기준 법령과 고시를 바탕으로 만든 참고용 도구입니다. 실제 공제액은 회사의 신고 내용과 공단 결정에 따라 달라질 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-5 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-slate-600">본 계산기는 소득세법·4대보험 관계 법령의 일반 원칙에 따른 참고용 도구입니다. 급여명세서와 차이가 크면 회사(급여 담당자)나 관할 공단, 공인노무사·세무사에게 최종 확인을 받으세요.</div>
+    </footer>
+
+    <script>
+/*ENGINE-START*/
+// 2026년 급여 공제 계산 엔진 (화면과 분리된 순수 함수)
+const PayEngine = (() => {
+    const f10 = (v) => Math.floor(v / 10 + 1e-9) * 10;          // 10원 미만 절사
+    const f1000 = (v) => Math.floor(v / 1000) * 1000;           // 천원 미만 절사
+
+    const RATE = {
+        nps: 0.0475,             // 국민연금 근로자 4.75% (총 9.5%)
+        nhi: 0.03595,            // 건강보험 근로자 3.595% (총 7.19%)
+        ltcOverNhi: 0.9448 / 7.19, // 장기요양 = 건강보험료 × 0.9448% ÷ 7.19%
+        ei: 0.009,               // 고용보험(실업급여) 근로자 0.9%
+    };
+    const EI_EMPLOYER_EXTRA = { lt150: 0.0025, priority: 0.0045, lt1000: 0.0065, ge1000: 0.0085 };
+    const NHI_EMP_MIN = 10080, NHI_EMP_MAX = 4591740;
+    const npsBounds = (month) => month <= 6 ? [400000, 6370000] : [410000, 6590000];
+
+    // ── 근로소득 간이세액표(소득세법 시행령 별표 2) 재현 ──
+    // 표의 각 칸은 구간 중간값을 월급여로 보고 아래 식으로 산출한 금액이며, 별표 2의 공표값과 모두 일치하도록 검증함
+    function earnedDeduction(t) {
+        if (t <= 5e6) return t * 0.7;
+        if (t <= 15e6) return 3.5e6 + (t - 5e6) * 0.4;
+        if (t <= 45e6) return 7.5e6 + (t - 15e6) * 0.15;
+        if (t <= 1e8) return 12e6 + (t - 45e6) * 0.05;
+        return Math.min(14.75e6 + (t - 1e8) * 0.02, 20e6);
+    }
+    function basicTax(x) {
+        const b = [[14e6, .06], [50e6, .15], [88e6, .24], [150e6, .35], [300e6, .38], [500e6, .40], [1e9, .42], [Infinity, .45]];
+        let tax = 0, prev = 0;
+        for (const [lim, r] of b) { if (x > prev) tax += (Math.min(x, lim) - prev) * r; prev = lim; }
+        return tax;
+    }
+    function specialDeduction(t, n) {
+        if (n >= 3) {
+            let v;
+            if (t <= 30e6) v = 5e6 + t * 0.07;
+            else if (t <= 45e6) v = 5e6 + t * 0.07 - (t - 30e6) * 0.05;
+            else if (t <= 70e6) v = 5e6 + t * 0.05;
+            else v = 5e6 + t * 0.03;
+            return v + Math.max(0, t - 40e6) * 0.04;
+        }
+        const base = n === 1 ? 3.1e6 : 3.6e6;
+        const p = n === 1 ? [0.04, 0.015, 0.005] : [0.04, 0.02, 0.01];
+        if (t <= 30e6) return base + t * p[0];
+        if (t <= 45e6) return base + t * p[0] - (t - 30e6) * 0.05;
+        if (t <= 70e6) return base + t * p[1];
+        return base + t * p[2];
+    }
+    function earnedTaxCredit(c, t) {
+        const cr = c <= 5e5 ? c * 0.55 : 2.75e5 + (c - 5e5) * 0.3;
+        let lim;
+        if (t <= 55e6) lim = 66e4;
+        else if (t <= 70e6) lim = Math.max(63e4, 66e4 - (t - 55e6) * 0.5);
+        else lim = Math.max(50e4, 63e4 - (t - 70e6) * 0.5);
+        return Math.min(cr, lim);
+    }
+    function cellTax(m, n) {
+        const t = m * 12;
+        const pension = f10(Math.min(m, 4.49e6) * 0.045);
+        const x = t - earnedDeduction(t) - 1.5e6 * n - pension * 12 - specialDeduction(t, n);
+        if (x <= 0) return 0;
+        const c = basicTax(x);
+        const d = c - earnedTaxCredit(c, t);
+        if (d <= 0) return 0;
+        const v = f10(d / 12);
+        return v >= 1000 ? v : 0;
+    }
+    function bracket(m) {               // m: 원. [이상, 미만) 천원 단위
+        const k = Math.floor(m / 1000);
+        if (k < 770) return null;
+        if (k < 1500) { const a = k - (k % 5); return [a, a + 5]; }
+        if (k < 3000) { const a = k - (k % 10); return [a, a + 10]; }
+        const a = k - (k % 20); return [a, a + 20];
+    }
+    function tableTax11(m, n) {        // 가족 수 1~11
+        if (m < 1e7) {
+            const br = bracket(m);
+            if (!br) return 0;
+            return cellTax((br[0] + br[1]) / 2 * 1000, n);
+        }
+        const base = cellTax(1e7, n);
+        const over = m - 1e7;
+        if (m === 1e7) return base;
+        let add;
+        if (m <= 14e6) add = over * 0.98 * 0.35 + 25000;
+        else if (m <= 28e6) add = 1397000 + (m - 14e6) * 0.98 * 0.38;
+        else if (m <= 30e6) add = 6610600 + (m - 28e6) * 0.98 * 0.40;
+        else if (m <= 45e6) add = 7394600 + (m - 30e6) * 0.40;
+        else if (m <= 87e6) add = 13394600 + (m - 45e6) * 0.42;
+        else add = 31034600 + (m - 87e6) * 0.45;
+        return f10(base + add);
+    }
+    function tableTax(m, n) {          // 별표 2 제4호: 11명 초과
+        n = Math.max(1, Math.floor(n));
+        if (n <= 11) return tableTax11(m, n);
+        const t11 = tableTax11(m, 11), t10 = tableTax11(m, 10);
+        return Math.max(0, t11 - (t10 - t11) * (n - 11));
+    }
+    function childDeduction(kids, month) {   // 8세 이상 20세 이하 자녀
+        if (kids <= 0) return 0;
+        const neu = month >= 3;              // 2026.3.1. 이후 원천징수분부터 개정 금액
+        const [one, two, extra] = neu ? [20830, 45830, 33330] : [12500, 29160, 25000];
+        if (kids === 1) return one;
+        return two + extra * Math.max(0, kids - 2);
+    }
+    // 간이세액(자녀 공제·징수비율 반영). 소액부징수는 최종 단계에서 적용
+    function simpleTax(m, o) {
+        const t = Math.max(0, tableTax(m, o.family) - childDeduction(o.kids, o.month));
+        return f10(t * o.ratio);
+    }
+
+    function calcMonthly(i) {
+        const W = [], N = [];
+        const month = i.month;
+        // 1) 비과세 판정
+        const nt = [];
+        const addNT = (label, amount, limit, why) => {
+            if (!(amount > 0)) return 0;
+            const ok = Math.min(amount, limit);
+            nt.push({ label, amount, nontax: ok, taxable: amount - ok, why });
+            if (ok === 0) W.push(`${label} ${won(amount)}은 비과세 요건에 해당하지 않아 전액 과세됩니다(${why}).`);
+            else if (amount > ok) W.push(`${label} ${won(amount)} 중 ${won(amount - ok)}은 비과세 한도(${won(limit)})를 넘어 과세됩니다.`);
+            return ok;
+        };
+        addNT('식대', i.meal, i.mealProvided ? 0 : 200000, i.mealProvided ? '식사를 현물로 받으면 식대는 비과세 대상이 아님' : '월 20만원 이하 (소득세법 제12조제3호러목)');
+        addNT('자가운전보조금', i.car, i.carEligible ? 200000 : 0, i.carEligible ? '월 20만원 이하 (소득세법 시행령 제12조)' : '본인 차량·업무 사용·실비 미지급 요건 미충족');
+        addNT('6세 이하 자녀 보육수당', i.childcare, 200000 * Math.max(0, i.childcareKids || 0), '자녀 1명당 월 20만원 (소득세법 제12조제3호머목2), 2026년~)');
+        addNT('연구보조비·연구활동비', i.research, i.researchEligible ? 200000 : 0, i.researchEligible ? '월 20만원 이하 (소득세법 시행령 제12조)' : '연구기관 연구원·교원 등 해당자가 아님');
+        addNT('출산지원금', i.birthGift, Infinity, '출생일 이후 2년 내, 최대 2회 전액 (소득세법 제12조제3호머목1))');
+        // 생산직 연장·야간·휴일수당
+        const monthlyFixed = Math.max(0, i.total - (i.ot || 0) - (i.car || 0) - (i.research || 0) - (i.birthGift || 0));
+        let otLimit = 0, otWhy = '';
+        if (i.ot > 0) {
+            if (!i.otJob) otWhy = '생산직 등 대상 직종이 아님';
+            else if (monthlyFixed > 2600000) otWhy = `월정액급여(추정 ${won(monthlyFixed)})가 260만원 초과`;
+            else if (!i.otPrevYear) otWhy = '직전 과세기간 총급여 3,700만원 초과';
+            else { otLimit = Math.max(0, 2400000 - (i.otUsed || 0)); otWhy = `연 240만원 한도 중 남은 ${won(otLimit)} (소득세법 시행령 제17조)`; }
+        }
+        addNT('연장·야간·휴일근로수당', i.ot, otLimit, otWhy);
+        if (i.otherNontax > 0) nt.push({ label: '기타 비과세(직접 입력)', amount: i.otherNontax, nontax: i.otherNontax, taxable: 0, why: '입력값 그대로 반영' });
+
+        const nontax = nt.reduce((s, x) => s + x.nontax, 0);
+        const ntSum = nt.reduce((s, x) => s + x.amount, 0);
+        if (ntSum > i.total) W.push('비과세 항목 합계가 월 급여 총액보다 큽니다. 비과세 항목은 월 급여 총액에 포함된 금액으로 입력하세요.');
+        const taxable = Math.max(0, i.total - nontax);           // 정기 과세급여
+        const bonus = i.bonusOn ? Math.max(0, i.bonus || 0) : 0;  // 상여(과세)
+        const taxablePaid = taxable + bonus;
+
+        // 2) 4대보험 부과 여부(입사·퇴사 달)
+        let npsOn = !i.age60, nhiOn = true;
+        if (i.status === 'join') { if (!i.joinFirstDay) { npsOn = npsOn && i.npsWish; nhiOn = false; } }
+        if (i.status === 'joinleave') {
+            if (i.joinFirstDay) { npsOn = npsOn && i.npsWish; }  // 1일 취득 후 같은 달 상실: 국민연금은 희망 시만
+            else { npsOn = npsOn && i.npsWish; nhiOn = false; }
+        }
+
+        const [lo, hi] = npsBounds(month);
+        const npsRaw = i.npsBase > 0 ? i.npsBase : taxable;
+        const npsBase = Math.min(hi, Math.max(lo, f1000(npsRaw)));
+        let nps = npsOn ? Math.floor(npsBase * RATE.nps) : 0;   // 기준소득월액이 천원 단위라 원 단위까지 나옴
+
+        const nhiBase = i.nhiBase > 0 ? i.nhiBase : taxable;
+        let nhi = nhiOn ? Math.min(NHI_EMP_MAX, Math.max(NHI_EMP_MIN, f10(nhiBase * RATE.nhi))) : 0;
+        let ltc = nhiOn ? f10(nhi * RATE.ltcOverNhi) : 0;
+
+        const eiBase = i.bonusOn && i.eiActual ? taxablePaid : taxable;
+        let ei = i.age65new ? 0 : f10(eiBase * RATE.ei);
+
+        // 두루누리(국민연금·고용보험 근로자분 80%, 월평균보수 230만원 초과분은 230만원 기준)
+        let duru = { nps: 0, ei: 0 };
+        if (i.durunuri) {
+            if (taxable >= 2700000) W.push('두루누리는 월평균보수 270만원 미만 근로자만 지원 대상이라 이번 계산에 반영하지 않았습니다.');
+            else {
+                duru.nps = Math.min(nps, Math.floor(Math.min(npsBase, 2300000) * RATE.nps * 0.8));
+                duru.ei = Math.min(ei, f10(Math.min(eiBase, 2300000) * RATE.ei * 0.8));
+            }
+        }
+
+        // 3) 소득세
+        const opt = { family: Math.max(1, i.family), kids: Math.max(0, i.kids || 0), month, ratio: (i.ratio || 100) / 100 };
+        if (opt.kids > opt.family - 1) W.push('8세 이상 20세 이하 자녀 수는 공제대상가족 수(본인 포함)에 포함되어 있어야 합니다.');
+        const taxBase = Math.max(0, taxable - (i.tuitionExclude ? (i.tuition || 0) : 0));
+        let it, itBasis;
+        if (bonus > 0) {
+            const nMon = Math.min(12, Math.max(1, Math.floor(i.bonusMonths || 1)));   // 1년 초과는 1년(소득세법 제136조제1항제3호)
+            const avg = (bonus + taxBase * nMon) / nMon;
+            const tAvg = simpleTax(avg, opt), tReg = simpleTax(taxBase, opt);
+            it = Math.max(0, tAvg * nMon - tReg * (nMon - 1));
+            itBasis = `상여 지급월(소득세법 제136조): (상여+${nMon}개월분 정기급여)÷${nMon} = ${won(Math.round(avg))}의 간이세액 ${won(tAvg)} × ${nMon} − 이미 낸 ${nMon - 1}개월분 ${won(tReg * (nMon - 1))}`;
+            N.push('국민연금·건강보험은 신고된 기준소득월액·보수월액에 매기므로 상여를 받은 달에도 그대로입니다. 상여분은 건강보험은 다음 해 4월 정산, 국민연금은 다음 해 7월 기준소득월액 결정에 반영됩니다.');
+            N.push(`상여를 ${nMon}개월로 나눠 계산하는 특례를 회사가 택하면 매월 ${won(simpleTax(taxBase + bonus / nMon, opt))}씩 원천징수할 수 있습니다(국세청 안내: 금액과 지급대상기간이 미리 정해진 상여의 특례).`);
+        } else {
+            it = simpleTax(taxBase, opt);
+            const tbl = tableTax(taxBase, opt.family), cd = childDeduction(opt.kids, month);
+            itBasis = `간이세액표 월급여 ${won(taxBase)} · 가족 ${opt.family}명 → ${won(tbl)}` + (cd ? ` − 자녀 ${opt.kids}명 공제 ${won(cd)}` : '') + (opt.ratio !== 1 ? ` → ${i.ratio}% 선택` : '');
+        }
+        let relief = 0;
+        if (i.sme > 0 && it > 0) {
+            const room = Math.max(0, 2000000 - (i.smeUsed || 0));
+            relief = Math.min(f10(it * i.sme), room);
+            if (room === 0) W.push('중소기업 취업자 감면은 과세기간별 200만원 한도를 이미 다 썼습니다.');
+        }
+        let incomeTax = it - relief;
+        if (incomeTax > 0 && incomeTax < 1000) { N.push(`원천징수할 소득세가 ${won(incomeTax)}으로 1,000원 미만이라 징수하지 않습니다(소득세법 제86조).`); incomeTax = 0; }
+        const localTax = f10(incomeTax * 0.1);
+
+        const items = [
+            { key: 'nps', label: '국민연금', amount: nps, support: duru.nps, basis: !npsOn ? (i.age60 ? '만 60세 이상: 사업장 의무가입 대상 아님(국민연금법 제6조)' : '입사한 달: 1일 입사가 아니면 다음 달부터 부과(국민연금법 제17조)') : `기준소득월액 ${won(npsBase)} × 4.75%` + (npsBase !== f1000(npsRaw) ? ` (상·하한 ${won(lo)}~${won(hi)} 적용)` : '') },
+            { key: 'nhi', label: '건강보험', amount: nhi, basis: nhiOn ? `보수월액 ${won(nhiBase)} × 3.595%` : '입사한 달: 1일 입사가 아니면 다음 달부터 부과(국민건강보험법 제69조)' },
+            { key: 'ltc', label: '장기요양보험', amount: ltc, basis: nhiOn ? `건강보험료 ${won(nhi)} × (0.9448% ÷ 7.19%)` : '건강보험료가 부과되지 않는 달' },
+            { key: 'ei', label: '고용보험', amount: ei, support: duru.ei, basis: i.age65new ? '65세 이후 새로 고용: 실업급여 보험료 근로자 부담 없음(고용보험법 제10조)' : `보수 ${won(eiBase)} × 0.9%` },
+            { key: 'it', label: '소득세', amount: incomeTax, basis: itBasis + (relief ? ` − 중소기업 취업자 감면 ${won(relief)}` : '') },
+            { key: 'lt', label: '지방소득세', amount: localTax, basis: `소득세 ${won(incomeTax)} × 10%` },
+        ];
+        for (const it2 of items) if (it2.support) it2.amount -= it2.support;
+        const deduct = items.reduce((s, x) => s + x.amount, 0);
+        const gross = i.total + bonus;
+
+        // 사업주 부담(참고)
+        const ee = {
+            nps: npsOn ? Math.floor(npsBase * RATE.nps) - duru.nps : 0,
+            nhi: nhiOn ? nhi : 0, ltc: nhiOn ? ltc : 0,
+            ei: f10(eiBase * (i.age65new ? 0 : RATE.ei)) - duru.ei + f10(eiBase * (EI_EMPLOYER_EXTRA[i.size || 'lt150'])),
+            ia: i.iaRate > 0 ? f10(taxablePaid * i.iaRate / 1000) : 0,
+        };
+        ee.total = ee.nps + ee.nhi + ee.ltc + ee.ei + ee.ia;
+
+        return { gross, taxable, taxablePaid, nontax, nt, items, deduct, net: gross - deduct, warnings: W, notes: N, relief, employer: ee, monthlyFixed };
+    }
+
+    // 일용근로자: (일급 − 15만원) × 6% − 근로소득세액공제 55% (소득세법 제47조·제59조·제134조)
+    function calcDaily(i) {
+        const W = [], N = [];
+        const days = Math.max(0, Math.floor(i.days || 0)), w = Math.max(0, i.wage || 0);
+        const perDay = Math.max(0, w - 150000) * 0.06 * 0.45;
+        let it;
+        if (i.payUnit === 'daily') {
+            const d = f10(perDay);
+            const each = d < 1000 ? 0 : d;
+            if (d > 0 && d < 1000) N.push(`하루 소득세가 ${won(d)}으로 1,000원 미만이라 날마다 지급하면 징수하지 않습니다(소액부징수).`);
+            it = each * days;
+        } else {
+            it = f10(perDay * days);
+            if (it > 0 && it < 1000) { N.push(`모아서 지급하는 소득세가 ${won(it)}으로 1,000원 미만이라 징수하지 않습니다.`); it = 0; }
+        }
+        const lt = i.payUnit === 'daily' ? f10((days ? it / days : 0) * 0.1) * days : f10(it * 0.1);
+        const pay = w * days;
+        const ei = i.age65new ? 0 : f10(pay * RATE.ei);
+        let nps = 0, nhi = 0, ltc = 0;
+        if (i.insured) {
+            const [lo, hi] = npsBounds(i.month);
+            nps = i.age60 ? 0 : Math.floor(Math.min(hi, Math.max(lo, f1000(pay))) * RATE.nps);
+            nhi = Math.min(NHI_EMP_MAX, Math.max(NHI_EMP_MIN, f10(pay * RATE.nhi)));
+            ltc = f10(nhi * RATE.ltcOverNhi);
+        }
+        const items = [
+            { key: 'nps', label: '국민연금', amount: nps, basis: i.insured ? `월 보수 ${won(pay)} 기준 4.75%` : '사업장 가입 대상이 아닌 일용근로' },
+            { key: 'nhi', label: '건강보험', amount: nhi, basis: i.insured ? `월 보수 ${won(pay)} × 3.595%` : '사업장 가입 대상이 아닌 일용근로' },
+            { key: 'ltc', label: '장기요양보험', amount: ltc, basis: i.insured ? '건강보험료 × (0.9448% ÷ 7.19%)' : '-' },
+            { key: 'ei', label: '고용보험', amount: ei, basis: i.age65new ? '65세 이후 새로 고용: 근로자 부담 없음' : `보수 ${won(pay)} × 0.9% (일용근로자도 적용)` },
+            { key: 'it', label: '소득세', amount: it, basis: `(일급 ${won(w)} − 150,000원) × 6% × (1 − 55%) = 하루 ${won(Math.floor(perDay))} × ${days}일` },
+            { key: 'lt', label: '지방소득세', amount: lt, basis: '소득세 × 10%' },
+        ];
+        const deduct = items.reduce((s, x) => s + x.amount, 0);
+        return { gross: pay, items, deduct, net: pay - deduct, warnings: W, notes: N };
+    }
+
+    function won(v) { return Math.round(v).toLocaleString('ko-KR') + '원'; }
+    return { calcMonthly, calcDaily, tableTax, cellTax, childDeduction, simpleTax, won, npsBounds };
+})();
+/*ENGINE-END*/
+    </script>
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const won = PayEngine.won;
+        const MONEY_IDS = ['annual','total','meal','car','childcare','research','ot','otUsed','birthGift','otherNontax','tuition','smeUsed','bonus','npsBase','nhiBase','dWage'];
+        let mode = 'monthly', inputWay = 'm', ratio = 100;
+
+        const num = (id) => { const v = ($(id).value || '').replace(/[^0-9.]/g, ''); return v ? Number(v) : 0; };
+        const chk = (id) => $(id).checked;
+
+        function fmtMoneyInput(el) {
+            const raw = el.value, pos = el.selectionStart ?? raw.length;
+            const digitsRight = raw.slice(pos).replace(/[^0-9]/g, '').length;
+            const digits = raw.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
+            const out = digits ? Number(digits).toLocaleString('ko-KR') : '';
+            el.value = out;
+            let p = out.length, seen = 0;
+            while (p > 0 && seen < digitsRight) { p--; if (/\d/.test(out[p])) seen++; }
+            try { el.setSelectionRange(p, p); } catch (e) {}
+        }
+        function setMoney(id, v) { $(id).value = v ? Number(v).toLocaleString('ko-KR') : ''; }
+
+        function fillMonths() {
+            const now = new Date();
+            const def = now.getFullYear() === 2026 ? now.getMonth() + 1 : 10;
+            for (const id of ['month', 'dMonth']) {
+                const s = $(id); s.innerHTML = '';
+                for (let m = 1; m <= 12; m++) { const o = document.createElement('option'); o.value = m; o.textContent = `2026년 ${m}월`; if (m === def) o.selected = true; s.appendChild(o); }
+            }
+        }
+        function setSeg(onEl, offEls) { onEl.classList.add('seg-on'); onEl.classList.remove('seg-off'); offEls.forEach(e => { e.classList.remove('seg-on'); e.classList.add('seg-off'); }); }
+        function setMode(m) {
+            mode = m;
+            setSeg(m === 'monthly' ? $('tabMonthly') : $('tabDaily'), [m === 'monthly' ? $('tabDaily') : $('tabMonthly')]);
+            $('monthlyInputs').classList.toggle('hide', m !== 'monthly');
+            $('dailyInputs').classList.toggle('hide', m !== 'daily');
+            ['ntCard', 'annualCard', 'employerCard'].forEach(id => $(id).classList.toggle('hide', m !== 'monthly'));
+            recalc();
+        }
+        function setInputWay(w) {
+            inputWay = w;
+            setSeg(w === 'm' ? $('inMonthly') : $('inAnnual'), [w === 'm' ? $('inAnnual') : $('inMonthly')]);
+            $('annualBox').classList.toggle('hide', w !== 'a');
+            $('total').readOnly = w === 'a';
+            $('total').classList.toggle('bg-slate-50', w === 'a');
+            recalc();
+        }
+        function step(id, d) { const v = Math.max(1, Math.min(30, (num(id) || 1) + d)); $(id).value = v; recalc(); }
+
+        function gather() {
+            if (inputWay === 'a') {
+                const a = num('annual'), sp = Number($('annualSplit').value);
+                setMoney('total', a ? Math.floor(a / sp) : 0);
+            }
+            const second = chk('secondJob');
+            return {
+                month: Number($('month').value), total: num('total'),
+                meal: num('meal'), mealProvided: chk('mealProvided'),
+                car: num('car'), carEligible: chk('carEligible'),
+                childcare: num('childcare'), childcareKids: num('childcareKids'),
+                research: num('research'), researchEligible: chk('researchEligible'),
+                ot: num('ot'), otJob: chk('otJob'), otPrevYear: chk('otPrevYear'), otUsed: num('otUsed'),
+                birthGift: num('birthGift'), otherNontax: num('otherNontax'),
+                tuition: num('tuition'), tuitionExclude: chk('tuitionExclude'),
+                family: second ? 1 : Math.max(1, num('family') || 1), kids: second ? 0 : num('kids'), ratio,
+                sme: Number($('sme').value), smeUsed: num('smeUsed'),
+                status: $('status').value, joinFirstDay: chk('joinFirstDay'), npsWish: chk('npsWish'),
+                bonusOn: chk('bonusOn'), bonus: num('bonus'), bonusMonths: num('bonusMonths') || 1, eiActual: chk('eiActual'),
+                npsBase: num('npsBase'), nhiBase: num('nhiBase'),
+                age60: chk('age60'), age65new: chk('age65new'), durunuri: chk('durunuri'),
+                size: $('size').value, iaRate: num('iaRate'),
+            };
+        }
+
+        function renderItems(items) {
+            $('itemList').innerHTML = items.map(x => `
+                <li class="py-2.5">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-semibold text-slate-800">${x.label}</span>
+                        <span class="num font-bold ${x.amount ? 'text-slate-900' : 'text-slate-400'}">${won(x.amount)}</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-0.5 leading-snug">${x.basis}</div>
+                    ${x.support ? `<div class="text-xs text-emerald-700 mt-0.5">두루누리 지원 −${won(x.support)} 반영</div>` : ''}
+                </li>`).join('');
+        }
+        function renderMsgs(w, n) {
+            $('msgCard').innerHTML =
+                w.map(t => `<div class="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-sm p-3 flex gap-2"><i class="fa-solid fa-triangle-exclamation mt-0.5"></i><span>${t}</span></div>`).join('') +
+                n.map(t => `<div class="rounded-xl border border-blue-200 bg-blue-50 text-blue-900 text-sm p-3 flex gap-2"><i class="fa-solid fa-circle-info mt-0.5"></i><span>${t}</span></div>`).join('');
+        }
+        function renderHead(r) {
+            $('netOut').textContent = won(r.net); $('mNet').textContent = won(r.net);
+            $('grossOut').textContent = won(r.gross); $('dedOut').textContent = won(r.deduct);
+            const pct = r.gross ? r.deduct / r.gross * 100 : 0;
+            $('pctOut').textContent = pct.toFixed(1) + '%';
+            $('barNet').style.width = (100 - pct) + '%'; $('barDed').style.width = pct + '%';
+        }
+
+        let last = null;
+        function recalc() {
+            $('annual13Note').classList.toggle('hide', !(inputWay === 'a' && $('annualSplit').value === '13'));
+            $('smeUsedBox').classList.toggle('hide', $('sme').value === '0');
+            const st = $('status').value;
+            $('joinBox').classList.toggle('hide', !(st === 'join' || st === 'joinleave'));
+            $('leaveNote').classList.toggle('hide', !(st === 'leave' || st === 'joinleave'));
+            $('bonusBox').classList.toggle('hide', !chk('bonusOn'));
+            $('family').disabled = chk('secondJob'); $('kids').disabled = chk('secondJob');
+
+            if (mode === 'daily') {
+                const r = PayEngine.calcDaily({ month: Number($('dMonth').value), wage: num('dWage'), days: num('dDays'), payUnit: $('dPayUnit').value, insured: chk('dInsured'), age60: chk('dAge60'), age65new: chk('dAge65new') });
+                $('periodLabel').textContent = `일용 ${num('dDays') || 0}일분`;
+                renderHead(r); renderItems(r.items); renderMsgs(r.warnings, r.notes);
+                last = { r, daily: true };
+                return;
+            }
+            const i = gather();
+            const r = PayEngine.calcMonthly(i);
+            $('periodLabel').textContent = `2026년 ${i.month}월분`;
+            renderHead(r); renderItems(r.items); renderMsgs(r.warnings, r.notes);
+            $('taxableOut').textContent = won(r.taxablePaid); $('nontaxOut').textContent = won(r.nontax);
+            $('ntList').innerHTML = r.nt.map(x => `<li class="flex justify-between gap-3"><span>${x.label} <span class="text-slate-400">· ${x.why}</span></span><span class="num shrink-0">${won(x.nontax)}${x.taxable ? ` <span class="text-amber-700">(+과세 ${won(x.taxable)})</span>` : ''}</span></li>`).join('');
+
+            // 같은 조건 1년(상여 제외, 평소 달 기준)
+            const base = { ...i, bonusOn: false, status: 'normal' };
+            let yNet = 0, yTax = 0;
+            let used = i.smeUsed || 0;
+            for (let m = 1; m <= 12; m++) {
+                const rr = PayEngine.calcMonthly({ ...base, month: m, smeUsed: used });
+                used += rr.relief;
+                yNet += rr.net; yTax += rr.items.find(x => x.key === 'it').amount + rr.items.find(x => x.key === 'lt').amount;
+            }
+            $('annualNet').textContent = won(yNet); $('annualTax').textContent = won(yTax);
+
+            const e = r.employer;
+            $('erList').innerHTML = [['국민연금', e.nps], ['건강보험', e.nhi], ['장기요양보험', e.ltc], ['고용보험(실업급여+고용안정·직능)', e.ei], ['산재보험', e.ia]]
+                .map(([k, v]) => `<li class="flex justify-between"><span class="text-slate-600">${k}</span><span class="num">${won(v)}</span></li>`).join('') +
+                `<li class="flex justify-between border-t border-slate-100 pt-1.5 mt-1.5 font-bold"><span>사업주 부담 합계</span><span class="num">${won(e.total)}</span></li>` +
+                `<li class="flex justify-between text-slate-500 text-xs"><span>회사가 이 근로자에게 쓰는 총비용(급여+사업주 부담)</span><span class="num">${won(r.gross + e.total)}</span></li>`;
+            last = { r, i };
+        }
+
+        function copySummary() {
+            if (!last) return;
+            const { r } = last;
+            const lines = [`[${$('periodLabel').textContent} 급여 공제 계산]`, `지급 총액 ${won(r.gross)}`, ...r.items.map(x => `${x.label} ${won(x.amount)}`), `공제 합계 ${won(r.deduct)}`, `실수령액 ${won(r.net)}`];
+            const text = lines.join('\n');
+            const done = () => { $('copyLabel').textContent = '복사됨'; setTimeout(() => $('copyLabel').textContent = '결과 복사', 1500); };
+            if (navigator.clipboard) navigator.clipboard.writeText(text).then(done).catch(() => {});
+        }
+
+        const PRESETS = [
+            { label: '신입 월 250만 (식대 20만)', set: { total: 2500000, meal: 200000 } },
+            { label: '월 450만 · 4인 가족(자녀 2명)', set: { total: 4500000, meal: 200000, family: 4, kids: 2 } },
+            { label: '분기 상여 받는 달', set: { total: 3500000, meal: 200000, family: 2, bonusOn: true, bonus: 3000000, bonusMonths: 3 } },
+            { label: '생산직 연장수당', set: { total: 2900000, meal: 200000, ot: 500000, otJob: true } },
+            { label: '중소기업 청년 감면', set: { total: 2800000, meal: 200000, sme: '0.9' } },
+            { label: '15일 입사한 달', set: { total: 1600000, meal: 100000, status: 'join' } },
+        ];
+        function applyPreset(p) {
+            resetForm(true);
+            for (const [k, v] of Object.entries(p.set)) {
+                const el = $(k);
+                if (el.type === 'checkbox') el.checked = !!v;
+                else if (MONEY_IDS.includes(k)) setMoney(k, v);
+                else el.value = v;
+            }
+            setMode('monthly');
+        }
+        function resetForm(silent) {
+            $('inputCol').reset();
+            fillMonths();
+            $('family').value = 1;
+            ratio = 100; setSeg($('ratioSeg').querySelector('[data-v="100"]'), [...$('ratioSeg').querySelectorAll('button')].filter(b => b.dataset.v !== '100'));
+            inputWay = 'm'; setInputWay('m');
+            if (!silent) recalc();
+        }
+        function openModal() { const m = $('modal'); m.classList.remove('hidden'); m.classList.add('flex'); }
+        function closeModal() { const m = $('modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+        const FAQ = [
+            ['국민연금이 이번 달 월급과 안 맞아요', '국민연금은 이번 달 급여가 아니라 <b>기준소득월액</b>에 매깁니다. 입사 때 신고한 금액으로 시작해 매년 7월 전년도 소득으로 다시 정해지므로, 그 사이 월급이 오르거나 상여를 받아도 바로 바뀌지 않습니다. 5번 칸에 결정통지 금액을 넣으면 정확해집니다.'],
+            ['4월 급여에서 건강보험이 갑자기 많이 빠졌어요', '건강보험은 전년도 보수로 정한 보수월액에 매기고, 매년 4월 실제 보수와 비교해 차액을 정산합니다. 작년에 급여가 올랐거나 상여가 있었다면 4월에 추가로 낼 수 있습니다. 이 계산기는 정산분을 넣지 않았습니다.'],
+            ['상여 받은 달 세금이 너무 많아요', '상여 지급월은 상여를 지급대상기간으로 나눠 월평균 급여를 높게 잡고 그 간이세액에 개월 수를 곱한 뒤 이미 낸 세금을 빼는 방식이라(소득세법 제136조) 한 달 세금이 크게 늘어 보입니다. 미리 낸 세금이라 연말정산에서 실제 세액과 맞춰집니다.'],
+            ['동료와 월급이 같은데 소득세가 달라요', '간이세액은 <b>공제대상가족 수</b>와 <b>8~20세 자녀 수</b>, 그리고 본인이 고른 80%·100%·120% 비율에 따라 달라집니다. 맞벌이라면 자녀를 어느 쪽 회사에 넣었는지도 영향을 줍니다.'],
+            ['식대 20만원이 넘는데 다 비과세인가요', '식대는 월 20만원까지만 비과세이고, 회사가 구내식당 등 현물 식사도 주면 식대는 전액 과세됩니다. 비과세 금액은 4대보험료 계산에서도 빠지므로 한도를 넘으면 보험료도 함께 올라갑니다.'],
+            ['입사한 달에 4대보험이 안 빠졌어요', '1일에 입사하지 않았다면 국민연금·건강보험은 입사 다음 달부터 부과됩니다(국민연금법 제17조, 국민건강보험법 제69조). 국민연금은 본인이 원하면 입사한 달부터 낼 수 있습니다. 고용보험은 실제 받은 보수에 매깁니다.'],
+            ['퇴직금 포함 연봉이라는데 월급이 적어요', '연봉을 13으로 나눠 1/13을 퇴직금 몫으로 떼는 방식입니다. 퇴직금을 매월 나눠 주기로 한 약정은 원칙적으로 퇴직금 지급의 효력이 없으므로(대법원 2010. 5. 20. 선고 2007다90760 전원합의체 판결), 퇴직할 때 법정 퇴직금을 따로 확인해야 합니다.'],
+            ['3월부터 소득세가 줄었어요', '2026년 3월 1일부터 간이세액표의 8세 이상 20세 이하 자녀 공제액이 올랐습니다(1명 12,500원 → 20,830원, 2명 29,160원 → 45,830원). 지급 월을 1~2월로 바꾸면 종전 금액으로 계산됩니다.'],
+            ['두루누리 지원을 받는데 공제가 그대로예요', '두루누리는 회사가 보험료를 기한 안에 내면 다음 달 고지 보험료에서 지원금을 빼 주는 방식입니다. 회사가 급여에서 공제하는 시점과 공단 고지가 한 달 어긋날 수 있습니다.'],
+            ['청년 감면을 받는데 세금이 0원이 아니에요', '중소기업 취업자 감면은 소득세의 90%(또는 70%)만 줄여 주고 1년에 200만원까지입니다. 회사에 감면 신청서를 내야 매월 원천징수에 반영됩니다(조세특례제한법 제30조).'],
+        ];
+        $('faq').innerHTML = FAQ.map(([q, a]) => `
+            <details class="card p-4">
+                <summary class="flex items-start justify-between gap-3"><span class="font-semibold text-slate-800 text-sm">${q}</span><i class="fa-solid fa-chevron-down chev transition text-slate-400 mt-1 text-xs"></i></summary>
+                <p class="mt-2 text-sm text-slate-600 leading-relaxed">${a}</p>
+            </details>`).join('');
+
+        $('presetBtns').innerHTML = PRESETS.map((p, k) => `<button type="button" data-k="${k}" class="min-h-[36px] px-3 rounded-full border border-slate-300 bg-white text-xs sm:text-sm text-slate-700 hover:border-blue-500 hover:text-blue-700">${p.label}</button>`).join('');
+        $('presetBtns').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) applyPreset(PRESETS[b.dataset.k]); });
+        $('ratioSeg').addEventListener('click', (e) => {
+            const b = e.target.closest('button'); if (!b) return;
+            ratio = Number(b.dataset.v);
+            setSeg(b, [...$('ratioSeg').querySelectorAll('button')].filter(x => x !== b));
+            recalc();
+        });
+        $('inputCol').addEventListener('input', (e) => { if (e.target.classList.contains('money')) fmtMoneyInput(e.target); recalc(); });
+        $('inputCol').addEventListener('change', recalc);
+
+        fillMonths();
+        applyPreset(PRESETS[0]);
+    </script>
+</body>
+</html>

@@ -570,7 +570,8 @@ const PayEngine = (() => {
         const taxablePaid = taxable + bonus;
 
         // 2) 4대보험 부과 여부(입사·퇴사 달)
-        let npsOn = !i.age60, nhiOn = true;
+        const noPay = taxablePaid <= 0;   // 급여 미입력: 하한액을 매기지 않고 0원으로 둠
+        let npsOn = !i.age60 && !noPay, nhiOn = !noPay;
         if (i.status === 'join') { if (!i.joinFirstDay) { npsOn = npsOn && i.npsWish; nhiOn = false; } }
         if (i.status === 'joinleave') {
             if (i.joinFirstDay) { npsOn = npsOn && i.npsWish; }  // 1일 취득 후 같은 달 상실: 국민연금은 희망 시만
@@ -588,6 +589,7 @@ const PayEngine = (() => {
 
         const eiBase = i.bonusOn && i.eiActual ? taxablePaid : taxable;
         let ei = i.age65new ? 0 : f10(eiBase * RATE.ei);
+        if (noPay) N.push('과세 급여를 입력하면 공제액이 계산됩니다.');
 
         // 두루누리: 보험료의 80%, 월 상한 국민연금 87,400원·고용보험 근로자 16,560원/사업주 21,160원 (2026년 운영지침)
         let duru = { nps: 0, ei: 0 };
@@ -638,10 +640,11 @@ const PayEngine = (() => {
         for (const it2 of items) if (it2.support) it2.amount -= it2.support;
         const deduct = items.reduce((s, x) => s + x.amount, 0);
         const gross = i.total + bonus;
+        if (deduct > gross) W.push('공제액이 지급액보다 큽니다. 급여가 국민연금·건강보험 하한(기준소득월액 41만원 등)보다 적으면 하한이 적용되기 때문입니다. 입력값을 확인하세요.');
 
         // 사업주 부담(참고)
         const ee = {
-            nps: npsOn ? Math.floor(npsBase * RATE.nps) - (duru.nps ? Math.min(Math.floor(npsBase * RATE.nps * 0.8), 87400) : 0) : 0,
+            nps: npsOn ? Math.floor(npsBase * RATE.nps) - duru.nps : 0,   // 사업주 부담금도 같은 금액·같은 상한(각각 87,400원)
             nhi: nhiOn ? nhi : 0, ltc: nhiOn ? ltc : 0,
             ei: (() => { const t = f10(eiBase * (i.age65new ? 0 : RATE.ei)) + f10(eiBase * EI_EMPLOYER_EXTRA[i.size || 'lt150']); return t - (duru.ei ? Math.min(f10(t * 0.8), 21160) : 0); })(),
             ia: i.iaRate > 0 ? f10(taxablePaid * i.iaRate / 1000) : 0,

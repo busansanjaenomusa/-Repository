@@ -110,7 +110,7 @@
                             <label class="lbl" for="pension">연금소득 <span class="text-[11px] font-bold text-amber-700 bg-amber-50 rounded-full px-1.5">50%</span></label>
                             <div class="fld-wrap mt-2"><input id="pension" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
                             <p class="ko" data-ko="pension"></p>
-                            <p class="hint">국민연금·공무원연금 등 공적연금은 <b>그해 받은 연금 전액</b>을 넣으세요(연금 자료는 전년도 기준).</p>
+                            <p class="hint">국민연금·공무원연금 등 공적연금은 <b>그해 받은 연금 전액</b>을 넣으세요(연금 자료는 전년도 기준). 연금저축·IRP 등 사적연금은 법령상 연금소득에 포함되지만 공단이 현재 부과하지 않는 것으로 보도되고 있어, 넣지 않는 것이 실제 고지에 가깝습니다.</p>
                         </div>
                         <div>
                             <label class="lbl" for="other">기타소득 <span class="text-[11px] font-bold text-teal-700 bg-teal-50 rounded-full px-1.5">100%</span></label>
@@ -183,14 +183,14 @@
                                     <div>
                                         <label class="lbl" for="loanRatio">공정시장가액비율</label>
                                         <select id="loanRatio" class="sel mt-2">
-                                            <option value="auto">공시가격 기준 자동</option>
+                                            <option value="auto">자동 (1주택 특례 구간)</option>
                                             <option value="0.43">43% (1주택, 3억 이하)</option>
                                             <option value="0.44">44% (1주택, 3억 초과~6억)</option>
                                             <option value="0.45">45% (1주택, 6억 초과)</option>
                                             <option value="0.6">60% (일반 주택)</option>
                                         </select>
                                     </div>
-                                    <p class="hint sm:col-span-2">공제액 = 대출 잔액 × 공정시장가액비율. 단, 주택 과세표준과 <b>5,000만원</b> 중 작은 금액을 넘을 수 없습니다. 재산세 과세표준이 기준시가 × 공정시장가액비율 이하인 주택이어야 합니다.</p>
+                                    <p class="hint sm:col-span-2">공제액 = 대출 잔액 × 공정시장가액비율. 단, 주택 과세표준과 <b>5,000만원</b> 중 작은 금액을 넘을 수 없습니다. 주택 과세표준이 <b>기준시가 6억원 × 공정시장가액비율</b> 이하여야 합니다(시행령 제42조의2제2항, 소득세법 제52조제5항). '자동'은 공시가격 입력 시 그 구간 비율을, 과세표준만 입력하면 과세표준으로 1주택 구간을 추정합니다.</p>
                                 </div>
                             </div>
                         </details>
@@ -220,7 +220,7 @@
                                     <label class="lbl" for="rentLoan">대출 잔액 (상환분 제외)</label>
                                     <div class="fld-wrap mt-2"><input id="rentLoan" class="fld num money" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
                                     <p class="ko" data-ko="rentLoan"></p>
-                                    <p class="hint">공제액 = 대출 잔액 × 30%. 단, 보증금의 30%를 넘을 수 없습니다.</p>
+                                    <p class="hint">공제액 = 대출 잔액 × 30%. 단, 보증금의 30%를 넘을 수 없습니다. 전월세 평가액이 기준시가 6억원의 30%(1억 8천만원) 이하인 주택이어야 합니다.</p>
                                 </div>
                             </div>
                         </details>
@@ -319,7 +319,8 @@
                         <li>대상: 재산세 과세대상 토지·건축물·주택·선박·항공기의 과세표준. 무주택 세대는 임차보증금·월세(시행령 제42조).</li>
                         <li>(재산 합계 − 1억원 − 주택 관련 대출 공제액)을 60개 등급으로 나눠 점수 부여(시행령 별표 4).</li>
                         <li>전월세 평가: (보증금 + 월세 × 40) × 30%(시행규칙 별표 8).</li>
-                        <li>대출 공제: 1세대 1주택은 대출액 × 공정시장가액비율(과세표준·5,000만원 한도), 1세대 무주택은 대출액 × 30%(보증금의 30% 한도)(법 제72조제1항 단서, 시행령 제42조의2).</li>
+                        <li>대출 공제: 1세대 1주택은 대출액 × 공정시장가액비율(과세표준·5,000만원 한도), 1세대 무주택은 대출액 × 30%(보증금의 30% 한도)(법 제72조제1항 단서, 시행령 제42조의2). 대상 주택은 과세표준이 기준시가 6억원 × 공정시장가액비율 이하(1주택), 전월세 평가액이 기준시가 6억원의 30% 이하(무주택)(시행령 제42조의2제2항, 소득세법 제52조제5항).</li>
+                        <li>사적연금(연금저축·IRP 등)은 법령상 연금소득 범위에 들어가지만 공단이 정책적으로 부과하지 않는 것으로 보도되고 있습니다(SBS Biz 등). 법령 근거는 확인하지 못했습니다.</li>
                         <li>공시가격 추정: 주택 공정시장가액비율 60%, 2026년 1세대 1주택은 3억 이하 43%·6억 이하 44%·6억 초과 45%(지방세법 시행령 제109조제1항제2호).</li>
                         <li>자동차: 2024년 2월분부터 부과 안 함(시행령 부칙 대통령령 제34217호).</li>
                     </ul>
@@ -347,6 +348,7 @@
     const FIN_THRESHOLD = 10000000;       // 시행규칙 제44조제1항 단서
     const LOW_INCOME_MONTH = 280000;      // 시행규칙 제44조제3항 단서
     const OWN_LOAN_CAP = 50000000;        // 시행령 제42조의2제3항제1호
+    const HOUSE_PRICE_LIMIT = 600000000;  // 시행령 제42조의2제2항 → 소득세법 제52조제5항 기준시가 6억원
 
     // 시행령 별표 4 제3호: [상한(만원), 점수]
     const GRADES = [
@@ -382,6 +384,13 @@
         return null;
     }
 
+    // 과세표준만 알 때: 1주택 특례 구간 경계(3억×43%, 6억×44%)로 비율을 거꾸로 추정
+    function ratioFromBase(base) {
+        if (base <= 300000000 * 0.43) return 0.43;
+        if (base <= 600000000 * 0.44) return 0.44;
+        return 0.45;
+    }
+
     function houseRatio(price, one) {
         if (!one) return 0.6;
         if (price <= 300000000) return 0.43;
@@ -413,7 +422,7 @@
 
         // ----- 재산 -----
         let houseBase = 0, houseNote = '';
-        let rentEval = 0, loanDeduct = 0, loanNote = '';
+        let rentEval = 0, loanDeduct = 0, loanNote = '', loanMsg = '';
         if (st.home === 'own') {
             if (st.tax === 'base') { houseBase = i.houseBase; houseNote = '주택 과세표준'; }
             else {
@@ -424,17 +433,25 @@
             $('estBase').textContent = won(st.tax === 'price' ? houseBase : 0);
             if ($('ownLoanOn').checked && i.ownLoan) {
                 const sel = $('loanRatio').value;
-                const r = sel === 'auto' ? (st.tax === 'price' ? houseRatio(i.housePrice, $('oneHouse').checked) : 0.6) : Number(sel);
-                const raw = Math.floor(i.ownLoan * r);
-                loanDeduct = Math.min(raw, houseBase, OWN_LOAN_CAP);
-                loanNote = `대출 ${won(i.ownLoan)} × ${Math.round(r * 100)}% = ${won(raw)}` + (loanDeduct < raw ? ` → 한도 ${won(loanDeduct)}` : '');
+                // 대출 공제는 1세대 1주택만 대상이므로 자동이면 1주택 특례 비율을 쓴다
+                const r = sel !== 'auto' ? Number(sel) : (st.tax === 'price' ? houseRatio(i.housePrice, true) : ratioFromBase(houseBase));
+                if (st.tax === 'price' && !$('oneHouse').checked) loanMsg = '주택대출 공제는 1세대 1주택 세대만 받을 수 있어 적용하지 않았습니다.';
+                else if (houseBase > HOUSE_PRICE_LIMIT * r) loanMsg = `주택 과세표준이 기준시가 6억원 × ${Math.round(r * 100)}%(${won(HOUSE_PRICE_LIMIT * r)})를 넘어 주택대출 공제 대상이 아닙니다.`;
+                else {
+                    const raw = Math.floor(i.ownLoan * r);
+                    loanDeduct = Math.min(raw, houseBase, OWN_LOAN_CAP);
+                    loanNote = `대출 ${won(i.ownLoan)} × ${Math.round(r * 100)}% = ${won(raw)}` + (loanDeduct < raw ? ` → 한도 ${won(loanDeduct)}` : '');
+                }
             }
         } else {
             rentEval = Math.floor((i.deposit + i.rent * 40) * 0.3);
             if ($('rentLoanOn').checked && i.rentLoan) {
-                const raw = Math.floor(i.rentLoan * 0.3), lim = Math.floor(i.deposit * 0.3);
-                loanDeduct = Math.min(raw, lim);
-                loanNote = `대출 ${won(i.rentLoan)} × 30% = ${won(raw)}` + (loanDeduct < raw ? ` → 보증금 30% 한도 ${won(loanDeduct)}` : '');
+                if (i.deposit + i.rent * 40 > HOUSE_PRICE_LIMIT) loanMsg = `전월세 평가액이 기준시가 6억원 × 30%(${won(HOUSE_PRICE_LIMIT * 0.3)})를 넘어 전세자금대출 공제 대상이 아닙니다.`;
+                else {
+                    const raw = Math.floor(i.rentLoan * 0.3), lim = Math.floor(i.deposit * 0.3);
+                    loanDeduct = Math.min(raw, lim);
+                    loanNote = `대출 ${won(i.rentLoan)} × 30% = ${won(raw)}` + (loanDeduct < raw ? ` → 보증금 30% 한도 ${won(loanDeduct)}` : '');
+                }
             }
         }
         const propTotal = houseBase + rentEval + i.etcBase;
@@ -481,12 +498,15 @@
         $('barLtc').style.width = (ltc / sum * 100) + '%';
 
         const note = $('capNote');
-        if (capped) {
+        if (loanMsg) {
+            note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-amber-50 border border-amber-200 text-amber-900';
+            note.textContent = loanMsg;
+        } else if (capped) {
             note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-800';
             note.textContent = `계산액 ${won(rawHealth)}이 월 상한 ${won(CAP)}을 넘어 상한액을 적용했습니다.`;
         } else if (low && !g) {
             note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-teal-50 border border-teal-200 text-teal-800';
-            note.textContent = `소득월액 28만원 이하, 공제 후 재산 0원이라 최저보험료 ${won(FLOOR)}가 적용됩니다.`;
+            note.textContent = `소득월액 28만원 이하, 공제 후 재산 0원이라 최저보험료 ${won(FLOOR)}이 적용됩니다.`;
         } else note.className = 'hide';
 
         $('steps').innerHTML = steps.map(s => `<div class="row"><div><div class="k">${s.k}</div><div class="formula">${s.f}</div></div><span class="v num whitespace-nowrap">${s.v}</span></div>`).join('');

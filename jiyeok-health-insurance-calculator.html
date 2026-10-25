@@ -1,248 +1,267 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-fs="m">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>지역가입자 건강보험료 계산기 2026</title>
-<meta name="description" content="2026년 기준 건강보험 지역가입자 월 보험료를 소득(7.19%)과 재산(점수당 211.5원)으로 계산합니다. 근로·연금소득 50% 반영, 재산 기본공제 1억원, 전월세 평가, 주택대출 공제, 상·하한, 장기요양보험료까지 반영. 국민건강보험공단 모의계산과 대조 검증.">
-<meta name="theme-color" content="#0f766e">
+<meta name="description" content="2026년 기준 건강보험 지역가입자 월 보험료를 소득(7.19%)과 재산(점수당 211.5원)으로 계산합니다. 만원 단위 입력, 큰 글자 보기 지원. 근로·연금소득 50% 반영, 재산 기본공제 1억원, 전월세 평가, 주택대출 공제, 상·하한, 장기요양보험료까지 반영. 국민건강보험공단 모의계산과 대조 검증.">
+<meta name="theme-color" content="#0f5e57">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" media="print" onload="this.media='all'">
 <style>
+/* 기본 글자 18px. 글자 크기 단계: 보통 18 · 크게 20 · 더 크게 22 (모든 크기는 rem) */
+html { font-size: 18px; }
+html[data-fs="l"] { font-size: 20px; }
+html[data-fs="xl"] { font-size: 22px; }
 :root {
-    --bg: #f3f5f9; --card: #ffffff; --ink: #0f172a; --ink2: #334155; --muted: #64748b; --faint: #94a3b8;
-    --line: #e2e8f0; --line2: #cbd5e1; --soft: #f1f5f9;
-    --brand: #0f766e; --brand-2: #14b8a6; --brand-soft: #e6f6f4; --brand-ink: #115e59;
-    --inc: #0d9488; --prop: #f59e0b; --ltc: #7c8aa5;
-    --warn-bg: #fffbeb; --warn-line: #fcd34d; --warn-ink: #92400e;
-    --bad-bg: #fff1f2; --bad-line: #fda4af; --bad-ink: #9f1239;
-    --ok-bg: #ecfdf5; --ok-line: #86efac; --ok-ink: #166534;
-    --shadow: 0 1px 2px rgba(15,23,42,.05), 0 10px 30px -14px rgba(15,23,42,.14);
-    --radius: 18px;
+    --bg: #eef2f6; --card: #ffffff; --ink: #0b1220; --ink2: #1f2937; --muted: #4b5563; --faint: #6b7280;
+    --line: #d5dbe3; --line2: #9aa5b4; --soft: #f1f5f9;
+    --brand: #0f5e57; --brand-2: #0d9488; --brand-soft: #dff3f0; --brand-ink: #0b4a44;
+    --inc: #0d9488; --prop: #d97706; --ltc: #64748b;
+    --warn-bg: #fff7e0; --warn-line: #e3a008; --warn-ink: #6b3d00;
+    --bad-bg: #fff0f2; --bad-line: #e1576b; --bad-ink: #8a1028;
+    --ok-bg: #e9f9ef; --ok-line: #34a061; --ok-ink: #135a2e;
+    --shadow: 0 1px 2px rgba(15,23,42,.06), 0 8px 24px -14px rgba(15,23,42,.18);
+    --radius: 1rem;
     color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --bg: #0b1220; --card: #111a2b; --ink: #e8edf5; --ink2: #c3cddb; --muted: #93a1b5; --faint: #6b7a90;
-        --line: #1f2b40; --line2: #2c3a52; --soft: #172235;
-        --brand: #2dd4bf; --brand-2: #5eead4; --brand-soft: #0f2e2c; --brand-ink: #99f6e4;
-        --inc: #2dd4bf; --prop: #fbbf24; --ltc: #94a3c4;
-        --warn-bg: #2a2111; --warn-line: #6b5419; --warn-ink: #fcd98a;
-        --bad-bg: #2a1219; --bad-line: #6d2435; --bad-ink: #fda4af;
-        --ok-bg: #0f2a1d; --ok-line: #1f6b43; --ok-ink: #86efac;
-        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+        --bg: #0b1220; --card: #121c2e; --ink: #f3f6fb; --ink2: #e2e8f0; --muted: #b8c2d1; --faint: #94a3b8;
+        --line: #26344c; --line2: #50617d; --soft: #19253a;
+        --brand: #3fd5c3; --brand-2: #5eead4; --brand-soft: #103532; --brand-ink: #a7f3e8;
+        --inc: #3fd5c3; --prop: #fbbf24; --ltc: #a3b1c9;
+        --warn-bg: #2d230c; --warn-line: #a17516; --warn-ink: #fde3a0;
+        --bad-bg: #2d1219; --bad-line: #b4425a; --bad-ink: #fecdd6;
+        --ok-bg: #0f2a1d; --ok-line: #2f8a57; --ok-ink: #bbf7d0;
+        --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px -14px rgba(0,0,0,.6);
         color-scheme: dark;
     }
 }
 *, ::before, ::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 80px; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, Roboto, sans-serif; font-size: 16px; line-height: 1.5; word-break: keep-all; overflow-wrap: anywhere; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, Roboto, sans-serif; font-size: 1rem; line-height: 1.65; word-break: keep-all; overflow-wrap: anywhere; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
-:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 55%, transparent); outline-offset: 2px; border-radius: 8px; }
+a { color: inherit; }
+:focus-visible { outline: 4px solid #f59e0b; outline-offset: 2px; border-radius: 10px; }
 .num { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .hide { display: none !important; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-svg.i { width: 1.1em; height: 1.1em; flex-shrink: 0; vertical-align: -0.18em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+svg.i { width: 1.15em; height: 1.15em; flex-shrink: 0; vertical-align: -0.2em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-/* 헤더 */
-.top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
-.top-in { max-width: 1160px; margin: 0 auto; padding: 0 16px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.logo { width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
-.logo svg.i { width: 20px; height: 20px; }
-.brand h1 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 헤더: 글자 크기 설정과 상관없이 고정 크기(px) — 큰 글자에서도 한 줄 유지 */
+.top { position: sticky; top: 0; z-index: 30; background: var(--card); border-bottom: 2px solid var(--line); }
+.top-in { max-width: 1200px; margin: 0 auto; padding: 0 14px; min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.logo { width: 38px; height: 38px; border-radius: 11px; background: var(--brand); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.logo svg.i { width: 22px; height: 22px; }
+.brand h1 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand h1 b { color: var(--brand); }
-.brand p { margin: 0; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.top-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.ghost { height: 40px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--ink2); display: inline-flex; align-items: center; gap: 6px; }
-.ghost:hover { background: var(--soft); }
-.ghost .t { display: none; }
-.brand h1 .long, .brand p { display: none; }
-@media (max-width: 359px) { .brand h1 { font-size: 15px; } .logo { width: 32px; height: 32px; } .top-in { gap: 6px; } .ghost { padding: 0 9px; } }
-@media (min-width: 640px) { .ghost .t { display: inline; } .brand h1 { font-size: 18px; } .brand h1 .long { display: inline; } .brand p { display: block; } }
+.top-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.tbtn { min-height: 48px; min-width: 64px; padding: 0 10px; border-radius: 12px; font-size: 14px; font-weight: 700; color: var(--ink2); display: inline-flex; flex-direction: column; align-items: center; justify-content: center; border: 1.5px solid var(--line); line-height: 1.2; }
+.tbtn svg.i { width: 18px; height: 18px; }
+.tbtn:hover { border-color: var(--brand); color: var(--brand); }
+@media (max-width: 420px) { .brand h1 { font-size: 17px; } .brand h1 b { display: none; } }
+@media (max-width: 370px) { .brand h1 { font-size: 16px; } .brand h1 .ki { display: none; } .tbtn { min-width: 54px; padding: 0 7px; } .top-in { padding: 0 10px; } }
+@media (min-width: 640px) { .tbtn { flex-direction: row; gap: 6px; font-size: 16px; padding: 0 14px; } .brand h1 { font-size: 21px; } }
 
 /* 레이아웃 */
-.wrap { max-width: 1160px; margin: 0 auto; padding: 20px 16px 120px; }
-@media (min-width: 1024px) { .wrap { padding: 28px 24px 48px; } }
-.intro { margin-bottom: 18px; }
-.intro h2 { margin: 0; font-size: clamp(20px, 4.6vw, 26px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.3; }
-.intro p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
-.formula-pill { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink2); }
-.formula-pill .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.formula-pill .term { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.formula-pill .plus { color: var(--faint); }
-.presets { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-.presets::-webkit-scrollbar { display: none; }
-.presets .lab { font-size: 12px; font-weight: 700; color: var(--muted); align-self: center; flex-shrink: 0; }
-.chip { flex-shrink: 0; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line2); background: var(--card); font-size: 13px; font-weight: 600; color: var(--ink2); display: inline-flex; align-items: center; gap: 6px; transition: border-color .15s, color .15s, background .15s; }
-.chip:hover { border-color: var(--brand); color: var(--brand); }
-.chip small { color: var(--muted); font-weight: 500; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 1.1rem 0.9rem 7rem; }
+@media (min-width: 1100px) { .wrap { padding: 1.6rem 1.3rem 3rem; } }
+.intro h2 { margin: 0; font-size: 1.55rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.35; }
+.intro .lead { margin: 0.5rem 0 0; color: var(--ink2); font-size: 1rem; }
+.intro .lead b { color: var(--brand); }
 
-.grid { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
-@media (min-width: 1024px) { .grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 26px; } }
-.col { display: grid; gap: 18px; min-width: 0; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; min-width: 0; }
-@media (min-width: 640px) { .card { padding: 26px; } }
-.sec-head { display: flex; align-items: flex-start; gap: 12px; }
-.step-n { width: 30px; height: 30px; border-radius: 10px; background: var(--brand-soft); color: var(--brand-ink); display: grid; place-items: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
-.sec-head h3 { margin: 2px 0 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
-.sec-head p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-.sec-sum { margin-left: auto; text-align: right; flex-shrink: 0; font-size: 12px; color: var(--muted); }
-.sec-sum b { display: block; font-size: 15px; color: var(--ink); }
+/* 보기 설정 */
+.prefs { margin-top: 1rem; display: grid; gap: 0.8rem; background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 0.9rem 1rem; }
+@media (min-width: 760px) { .prefs { grid-template-columns: 1fr 1fr; } }
+.pref-lbl { font-size: 0.9rem; font-weight: 800; color: var(--ink2); display: block; margin-bottom: 0.35rem; }
+.pref-hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.35rem; }
+
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--soft); padding: 0.25rem; border-radius: 0.8rem; gap: 0.25rem; border: 1.5px solid var(--line); }
+.seg button { min-height: 2.9rem; border-radius: 0.6rem; font-size: 1rem; font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0 0.4rem; transition: background .15s, color .15s; line-height: 1.25; }
+.seg button[aria-pressed="true"] { background: var(--brand); color: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.2); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #062421; } }
+.seg button .ck { display: none; }
+.seg button[aria-pressed="true"] .ck { display: inline; }
+.fs-s { font-size: 0.95rem !important; } .fs-m { font-size: 1.07rem !important; } .fs-l { font-size: 1.18rem !important; }
+
+/* 예시 */
+.presets { margin-top: 1rem; }
+.presets h3 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 800; color: var(--ink2); }
+.preset-grid { display: grid; gap: 0.5rem; }
+@media (min-width: 760px) { .preset-grid { grid-template-columns: repeat(3, 1fr); } }
+.preset { text-align: left; min-height: 3.6rem; padding: 0.7rem 1rem; border-radius: 0.9rem; border: 1.5px solid var(--line); background: var(--card); display: flex; flex-direction: column; justify-content: center; }
+.preset:hover { border-color: var(--brand); }
+.preset b { font-size: 1rem; color: var(--ink); }
+.preset span { font-size: 0.88rem; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: 1fr; gap: 1rem; align-items: start; margin-top: 1.3rem; }
+@media (min-width: 1100px) { .grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1.4rem; } }
+.col { display: grid; gap: 1rem; min-width: 0; }
+.card { background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.1rem; min-width: 0; }
+@media (min-width: 640px) { .card { padding: 1.5rem; } }
+.stage { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 800; color: var(--brand-ink); background: var(--brand-soft); padding: 0.2rem 0.75rem; border-radius: 999px; }
+.sec-head h3 { margin: 0.5rem 0 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; }
+.sec-head p { margin: 0.35rem 0 0; font-size: 0.95rem; color: var(--ink2); }
+.sec-sum { margin-top: 0.7rem; display: inline-flex; flex-wrap: wrap; gap: 0 0.5rem; align-items: baseline; padding: 0.35rem 0.8rem; border-radius: 0.6rem; background: var(--soft); font-size: 0.9rem; color: var(--muted); }
+.sec-sum b { font-size: 1rem; color: var(--ink); white-space: nowrap; }
 
 /* 입력 */
-.fields { display: grid; gap: 18px; margin-top: 20px; }
-@media (min-width: 640px) { .fields.two { grid-template-columns: 1fr 1fr; } }
-.field label.lb { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--ink2); }
-.rate { font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: var(--brand-soft); color: var(--brand-ink); }
+.fields { display: grid; gap: 1.4rem; margin-top: 1.3rem; }
+@media (min-width: 760px) { .fields.two { grid-template-columns: 1fr 1fr; } }
+.field label.lb { display: block; font-size: 1.1rem; font-weight: 800; color: var(--ink); line-height: 1.4; }
+.field label.lb .plain { display: block; font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+.rate { display: inline-block; font-size: 0.78rem; font-weight: 800; padding: 0.05rem 0.5rem; border-radius: 999px; background: var(--brand-soft); color: var(--brand-ink); vertical-align: 0.12em; margin-left: 0.25rem; }
 .rate.half { background: var(--warn-bg); color: var(--warn-ink); }
-.money-box { position: relative; margin-top: 8px; }
-.money { width: 100%; height: 52px; border: 1.5px solid var(--line2); border-radius: 14px; background: var(--card); padding: 0 40px 0 14px; font-size: 18px; font-weight: 700; text-align: right; transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; appearance: none; }
-.money::placeholder { color: var(--faint); font-weight: 500; font-size: 15px; }
-.money:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
-.money-box .unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; font-weight: 600; pointer-events: none; }
-.field-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; min-height: 18px; }
-.ko { font-size: 13px; font-weight: 700; color: var(--brand); white-space: nowrap; }
-.help { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.money-box { position: relative; margin-top: 0.45rem; }
+.money { width: 100%; height: 3.4rem; border: 2px solid var(--line2); border-radius: 0.8rem; background: var(--card); padding: 0 3.6rem 0 0.9rem; font-size: 1.35rem; font-weight: 800; text-align: right; transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; appearance: none; }
+.money::placeholder { color: var(--faint); font-weight: 600; font-size: 1.05rem; }
+.money:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 22%, transparent); }
+.money-box .unit { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--ink2); font-size: 1.05rem; font-weight: 800; pointer-events: none; }
+.ko { margin-top: 0.35rem; font-size: 1.05rem; font-weight: 800; color: var(--brand); text-align: right; }
+.ko:empty { margin-top: 0; }
+.ko.warnamt { color: var(--bad-ink); }
+.help { font-size: 0.9rem; color: var(--muted); line-height: 1.55; }
 .help b { color: var(--ink2); }
-.where { margin-top: 6px; }
-.where summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.where { margin-top: 0.2rem; }
+.where summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; min-height: 2.6rem; font-size: 0.95rem; font-weight: 700; color: var(--brand); text-decoration: underline; text-underline-offset: 4px; }
 .where summary::-webkit-details-marker { display: none; }
-.where summary:hover { color: var(--brand); }
-.where[open] summary { color: var(--brand); }
-.where div { margin-top: 6px; padding: 10px 12px; border-radius: 12px; background: var(--soft); font-size: 12.5px; color: var(--ink2); line-height: 1.55; }
+.where div { margin-top: 0.2rem; padding: 0.75rem 0.9rem; border-radius: 0.7rem; background: var(--soft); font-size: 0.95rem; color: var(--ink2); line-height: 1.6; border-left: 4px solid var(--brand); }
 
-.toggle-more { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 18px; padding: 14px 16px; border-radius: 14px; border: 1.5px dashed var(--line2); font-size: 14px; font-weight: 700; color: var(--ink2); text-align: left; gap: 10px; }
+.toggle-more { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 1.3rem; min-height: 3.4rem; padding: 0.6rem 1rem; border-radius: 0.8rem; border: 2px solid var(--line2); font-size: 1.02rem; font-weight: 800; color: var(--ink2); text-align: left; gap: 0.6rem; background: var(--card); }
 .toggle-more:hover { border-color: var(--brand); color: var(--brand); }
-.toggle-more[aria-expanded="true"] { border-style: solid; background: var(--soft); }
-.toggle-more .chev { transition: transform .2s; }
-.toggle-more[aria-expanded="true"] .chev { transform: rotate(180deg); }
-.more-body { margin-top: 4px; }
+.toggle-more .state { font-size: 0.88rem; font-weight: 700; color: var(--brand); white-space: nowrap; display: inline-flex; align-items: center; gap: 0.2rem; }
+.toggle-more[aria-expanded="true"] { background: var(--soft); }
+.more-body { margin-top: 0.3rem; }
 
-.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--soft); padding: 4px; border-radius: 14px; gap: 4px; margin-top: 8px; }
-.seg button { min-height: 46px; border-radius: 11px; font-size: 14.5px; font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: background .15s, color .15s, box-shadow .15s; padding: 0 8px; }
-.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(15,23,42,.14); }
-.seg.sm button { min-height: 40px; font-size: 13.5px; }
-.lb-plain { font-size: 14px; font-weight: 700; color: var(--ink2); }
+.lb-plain { display: block; font-size: 1.1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.45rem; }
 
-.sw { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 10px 0; position: relative; }
-.sw input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.sw .track { flex-shrink: 0; width: 46px; height: 28px; border-radius: 999px; background: var(--line2); position: relative; transition: background .15s; margin-top: 1px; }
-.sw .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .18s; }
-.sw input:checked + .track { background: var(--brand); }
-.sw input:checked + .track::after { transform: translateX(18px); }
-.sw input:focus-visible + .track { outline: 3px solid color-mix(in srgb, var(--brand) 55%, transparent); outline-offset: 2px; }
-.sw .t { font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.4; }
-.sw .d { display: block; font-size: 12.5px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+/* 큰 체크 상자 */
+.ck-row { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; padding: 0.7rem 0; position: relative; }
+.ck-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.ck-row .box-ui { flex-shrink: 0; width: 1.8rem; height: 1.8rem; border-radius: 0.45rem; border: 2.5px solid var(--line2); background: var(--card); display: grid; place-items: center; margin-top: 0.05rem; transition: background .15s, border-color .15s; }
+.ck-row .box-ui svg { width: 1.2rem; height: 1.2rem; stroke: #fff; stroke-width: 3.2; fill: none; opacity: 0; }
+.ck-row input:checked + .box-ui { background: var(--brand); border-color: var(--brand); }
+.ck-row input:checked + .box-ui svg { opacity: 1; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ck-row .box-ui svg { stroke: #062421; } }
+.ck-row input:focus-visible + .box-ui { outline: 4px solid #f59e0b; outline-offset: 2px; }
+.ck-row .t { font-size: 1.05rem; font-weight: 700; color: var(--ink); line-height: 1.45; }
+.ck-row .d { display: block; font-size: 0.9rem; font-weight: 500; color: var(--muted); margin-top: 0.15rem; }
 
-.box { margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; }
-.box > summary { list-style: none; cursor: pointer; padding: 14px 16px; font-size: 14px; font-weight: 700; color: var(--ink2); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.box { margin-top: 1.1rem; border: 2px solid var(--line); border-radius: 0.9rem; }
+.box > summary { list-style: none; cursor: pointer; min-height: 3.4rem; padding: 0.6rem 1rem; font-size: 1.02rem; font-weight: 800; color: var(--ink2); display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
 .box > summary::-webkit-details-marker { display: none; }
-.box > summary .chev { transition: transform .2s; color: var(--faint); }
-.box[open] > summary .chev { transform: rotate(180deg); }
-.box > summary .tag { font-size: 11px; font-weight: 700; color: var(--brand-ink); background: var(--brand-soft); padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
-.box-body { padding: 0 16px 16px; }
-.sel { width: 100%; height: 52px; border: 1.5px solid var(--line2); border-radius: 14px; background: var(--card); padding: 0 12px; font-size: 15px; font-weight: 600; margin-top: 8px; }
+.box > summary .state { font-size: 0.88rem; font-weight: 700; color: var(--brand); white-space: nowrap; }
+.box > summary .tag { font-size: 0.8rem; font-weight: 800; color: var(--brand-ink); background: var(--brand-soft); padding: 0.1rem 0.55rem; border-radius: 999px; margin-left: 0.3rem; }
+.box-body { padding: 0 1rem 1rem; }
+.sel { width: 100%; height: 3.4rem; border: 2px solid var(--line2); border-radius: 0.8rem; background: var(--card); padding: 0 0.8rem; font-size: 1rem; font-weight: 700; margin-top: 0.45rem; }
 
-.callout { margin-top: 14px; padding: 12px 14px; border-radius: 14px; font-size: 13px; line-height: 1.55; display: flex; gap: 10px; align-items: flex-start; }
-.callout svg.i { margin-top: 2px; }
+.callout { margin-top: 1rem; padding: 0.8rem 0.95rem; border-radius: 0.8rem; font-size: 0.95rem; line-height: 1.6; display: flex; gap: 0.6rem; align-items: flex-start; }
+.callout svg.i { margin-top: 0.2rem; }
 .callout.info { background: var(--soft); color: var(--ink2); }
-.callout.warn { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
-.est { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--ink2); }
-.est b { color: var(--brand); }
+.callout.warn { background: var(--warn-bg); color: var(--warn-ink); border: 1.5px solid var(--warn-line); }
+.est { margin-top: 0.7rem; font-size: 1rem; font-weight: 700; color: var(--ink2); }
+.est b { color: var(--brand); font-size: 1.1rem; }
+
+.go-result { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; min-height: 3.6rem; border-radius: 0.9rem; background: var(--brand); color: #fff; font-size: 1.15rem; font-weight: 800; text-decoration: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .go-result { color: #062421; } }
+@media (min-width: 1100px) { .go-result { display: none; } }
 
 /* 결과 */
-.result { position: relative; }
-@media (min-width: 1024px) { .result-col { position: sticky; top: 80px; } }
-.result-hero { background: linear-gradient(160deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 70%, #0b3b37) 100%); color: #fff; border: 0; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .result-hero { background: linear-gradient(160deg, #134e4a, #0f2e2c); } }
-.result-hero .lbl { font-size: 14px; font-weight: 600; opacity: .9; display: flex; justify-content: space-between; gap: 8px; }
-.big { margin-top: 4px; font-size: clamp(40px, 11vw, 54px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; }
-.big small { font-size: .45em; font-weight: 700; opacity: .8; margin-left: 4px; }
-.sub { margin-top: 6px; font-size: 14px; opacity: .92; }
+@media (min-width: 1100px) { .result-col { position: sticky; top: 4.6rem; } }
+.result-hero { background: var(--brand); color: #fff; border: 0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .result-hero { background: #0f3f3a; } }
+.result-hero .stage { background: rgba(255,255,255,.18); color: #fff; }
+.result-hero .lbl { margin-top: 0.6rem; font-size: 1.05rem; font-weight: 700; }
+.big { margin-top: 0.1rem; font-size: 2.9rem; font-weight: 800; letter-spacing: -0.035em; line-height: 1.15; }
+@media (min-width: 400px) { .big { font-size: 3.2rem; } }
+.big small { font-size: 0.42em; font-weight: 800; margin-left: 0.2rem; }
+.big-ko { font-size: 1.2rem; font-weight: 800; opacity: .95; }
+.sub { margin-top: 0.5rem; font-size: 1rem; }
 .sub b { font-weight: 800; }
-.bar { margin-top: 18px; height: 12px; border-radius: 999px; background: rgba(255,255,255,.18); overflow: hidden; display: flex; }
+.bar { margin-top: 1rem; height: 0.9rem; border-radius: 999px; background: rgba(255,255,255,.22); overflow: hidden; display: flex; }
 .bar span { display: block; height: 100%; transition: width .3s; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12.5px; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; opacity: .95; }
-.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-.status { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
-.badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.16); }
-.lines { margin-top: 16px; }
-.row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin-top: 0.6rem; font-size: 0.92rem; }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend i { width: 0.8rem; height: 0.8rem; border-radius: 3px; display: inline-block; }
+.status { margin-top: 0.8rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.badge { font-size: 0.88rem; font-weight: 800; padding: 0.2rem 0.7rem; border-radius: 999px; background: rgba(255,255,255,.2); }
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem; padding: 0.75rem 0; border-bottom: 1.5px solid var(--line); font-size: 1.02rem; }
 .row:last-child { border-bottom: 0; }
-.row .k { color: var(--ink2); }
-.row .v { font-weight: 700; text-align: right; white-space: nowrap; }
-.row .k .dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; margin-right: 8px; vertical-align: 0; }
-.row.total .k, .row.total .v { font-weight: 800; color: var(--ink); font-size: 16px; }
+.row .k { color: var(--ink2); font-weight: 600; }
+.row .v { font-weight: 800; text-align: right; white-space: nowrap; }
+.row .k .dot { width: 0.7rem; height: 0.7rem; border-radius: 3px; display: inline-block; margin-right: 0.5rem; }
+.row.total .k, .row.total .v { font-weight: 800; color: var(--ink); font-size: 1.12rem; }
 .row.cut .k, .row.cut .v { color: var(--bad-ink); }
-.formula { font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
-#capNote { margin-top: 14px; }
-.note { padding: 12px 14px; border-radius: 14px; font-size: 13px; line-height: 1.55; }
-.note.warn { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
-.note.bad { background: var(--bad-bg); color: var(--bad-ink); border: 1px solid var(--bad-line); }
-.note.ok { background: var(--ok-bg); color: var(--ok-ink); border: 1px solid var(--ok-line); }
+.formula { font-size: 0.88rem; color: var(--muted); margin-top: 0.1rem; line-height: 1.5; font-weight: 500; }
+#steps .row { align-items: flex-start; }
+#steps .row .v { white-space: normal; max-width: 50%; }
+#capNote { margin-top: 0.9rem; }
+.note { padding: 0.8rem 0.95rem; border-radius: 0.8rem; font-size: 0.95rem; line-height: 1.6; font-weight: 600; }
+.note.warn { background: var(--warn-bg); color: var(--warn-ink); border: 1.5px solid var(--warn-line); }
+.note.bad { background: var(--bad-bg); color: var(--bad-ink); border: 1.5px solid var(--bad-line); }
+.note.ok { background: var(--ok-bg); color: var(--ok-ink); border: 1.5px solid var(--ok-line); }
 
-.acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
-.btn { min-height: 46px; border-radius: 13px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; }
+.acts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
+.btn { min-height: 3.2rem; border-radius: 0.8rem; font-size: 1rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0 0.7rem; text-decoration: none; }
 .btn.pri { background: var(--brand); color: #fff; }
-.btn.pri:hover { filter: brightness(1.06); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.pri { color: #04201d; } }
-.btn.sec { border: 1.5px solid var(--line2); color: var(--ink2); background: var(--card); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.pri { color: #062421; } }
+.btn.sec { border: 2px solid var(--line2); color: var(--ink2); background: var(--card); }
 .btn.sec:hover { border-color: var(--brand); color: var(--brand); }
 
-.steps-box > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 16px; }
+.steps-box > summary { list-style: none; cursor: pointer; min-height: 2.8rem; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; gap: 0.6rem; }
 .steps-box > summary::-webkit-details-marker { display: none; }
-.steps-box > summary .chev { transition: transform .2s; color: var(--faint); }
-.steps-box[open] > summary .chev { transform: rotate(180deg); }
-#steps { margin-top: 10px; }
+.steps-box > summary .state { font-size: 0.88rem; font-weight: 700; color: var(--brand); }
+#steps { margin-top: 0.6rem; }
 
-.tips h4 { margin: 0; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-.tips ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
-.tips li { padding: 12px 14px; border-radius: 14px; background: var(--soft); font-size: 13.5px; line-height: 1.55; color: var(--ink2); }
-.tips li b { color: var(--ink); display: block; margin-bottom: 2px; font-size: 14px; }
-.tips li .law { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
-.fine { font-size: 12.5px; color: var(--muted); line-height: 1.6; padding: 0 4px; }
-.fine p { margin: 0 0 6px; }
+.tips h4, .call h4 { margin: 0; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
+.tips ul { list-style: none; margin: 0.8rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.tips li { padding: 0.85rem 0.95rem; border-radius: 0.8rem; background: var(--soft); font-size: 0.97rem; line-height: 1.6; color: var(--ink2); border-left: 4px solid var(--prop); }
+.tips li b { color: var(--ink); display: block; margin-bottom: 0.15rem; font-size: 1.02rem; }
+.tips li .law { display: block; margin-top: 0.3rem; font-size: 0.85rem; color: var(--muted); }
+.call p { margin: 0.5rem 0 0.8rem; font-size: 0.97rem; color: var(--ink2); }
+.call .btn { width: 100%; font-size: 1.15rem; min-height: 3.5rem; }
+.fine { font-size: 0.9rem; color: var(--muted); line-height: 1.65; padding: 0 0.2rem; }
+.fine p { margin: 0 0 0.5rem; }
 
 /* 복원 배너 / 토스트 */
-.restore { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding: 10px 14px; border-radius: 14px; background: var(--brand-soft); color: var(--brand-ink); font-size: 13.5px; font-weight: 600; }
-.restore button { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
-.toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60; max-width: calc(100% - 32px); text-align: center; }
+.restore { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.8rem; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 0.8rem; background: var(--brand-soft); color: var(--brand-ink); font-size: 1rem; font-weight: 700; border: 1.5px solid color-mix(in srgb, var(--brand) 35%, transparent); }
+.restore button { min-height: 2.6rem; padding: 0 0.9rem; border-radius: 0.6rem; border: 2px solid currentColor; font-weight: 800; white-space: nowrap; }
+.toast { position: fixed; left: 50%; bottom: 6.5rem; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 0.85rem 1.2rem; border-radius: 0.8rem; font-size: 1rem; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60; max-width: calc(100% - 2rem); text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-@media (min-width: 1024px) { .toast { bottom: 32px; } }
+@media (min-width: 1100px) { .toast { bottom: 2rem; } }
 
-/* 모바일 하단 바 */
-.mbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: color-mix(in srgb, var(--card) 94%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: transform .2s; }
+/* 모바일 하단 바: 헤더처럼 고정 크기(px) */
+.mbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--card); border-top: 2px solid var(--line); padding: 9px 14px calc(9px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: transform .2s; box-shadow: 0 -6px 20px -12px rgba(15,23,42,.3); }
 .mbar.away { transform: translateY(110%); }
-.mbar .l { font-size: 12px; color: var(--muted); font-weight: 600; }
-.mbar .n { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); line-height: 1.2; }
-.mbar .n small { font-size: 14px; color: var(--muted); margin-left: 2px; }
-.mbar .btn { min-height: 44px; }
-@media (min-width: 1024px) { .mbar { display: none; } }
+.mbar .l { font-size: 14px; color: var(--muted); font-weight: 700; line-height: 1.3; white-space: nowrap; }
+.mbar .n { font-size: 25px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); line-height: 1.2; white-space: nowrap; }
+.mbar .n small { font-size: 15px; margin-left: 2px; }
+.mbar .btn { min-height: 52px; font-size: 17px; padding: 0 16px; white-space: nowrap; border-radius: 13px; }
+.mbar .btn svg.i { width: 20px; height: 20px; }
+@media (max-width: 340px) { .mbar .n { font-size: 22px; } .mbar .btn { padding: 0 12px; font-size: 16px; } }
+@media (min-width: 1100px) { .mbar { display: none; } }
 
 /* 모달 */
-dialog { border: 0; padding: 0; border-radius: 20px; width: min(720px, calc(100% - 24px)); max-height: 88vh; background: var(--card); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(0,0,0,.45); }
-dialog::backdrop { background: rgba(15,23,42,.55); }
-.dlg-head { position: sticky; top: 0; background: var(--card); display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line); }
-.dlg-head h2 { margin: 0; font-size: 18px; font-weight: 800; }
-.dlg-body { padding: 4px 20px 22px; font-size: 14px; line-height: 1.65; color: var(--ink2); }
-.dlg-body h3 { font-size: 15px; color: var(--ink); margin: 18px 0 6px; }
-.dlg-body ul { margin: 0; padding-left: 20px; }
-.dlg-body li { margin-bottom: 4px; }
-.icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--ink2); }
-.icon-btn:hover { background: var(--soft); }
+dialog { border: 0; padding: 0; border-radius: 1.1rem; width: min(760px, calc(100% - 1.2rem)); max-height: 90vh; background: var(--card); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(0,0,0,.45); }
+dialog::backdrop { background: rgba(15,23,42,.6); }
+.dlg-head { position: sticky; top: 0; background: var(--card); display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; padding: 0.9rem 1.1rem; border-bottom: 2px solid var(--line); }
+.dlg-head h2 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+.dlg-body { padding: 0.2rem 1.1rem 1.3rem; font-size: 0.97rem; line-height: 1.7; color: var(--ink2); }
+.dlg-body h3 { font-size: 1.05rem; color: var(--ink); margin: 1.1rem 0 0.3rem; }
+.dlg-body ul { margin: 0; padding-left: 1.2rem; }
+.dlg-body li { margin-bottom: 0.3rem; }
 
 @media (prefers-reduced-motion: reduce) { *, ::before, ::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 @media print {
-    .top, .mbar, .presets, .acts, .tips, .restore, .toggle-more, .where, .toast { display: none !important; }
+    html { font-size: 14px; }
+    .top, .mbar, .presets, .prefs, .acts, .tips, .call, .restore, .toggle-more, .where, .toast, .go-result { display: none !important; }
     body { background: #fff; color: #000; }
     .wrap { padding: 0; }
-    .grid { grid-template-columns: 1fr 1fr; }
     .card { box-shadow: none; break-inside: avoid; }
-    .result-hero { background: #fff !important; color: #000; border: 1px solid #ccc; }
+    .result-hero { background: #fff !important; color: #000; border: 1.5px solid #999; }
     .result-col { position: static; }
-    .steps-box { display: block; }
 }
 </style>
 </head>
@@ -261,44 +280,61 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
     <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
     <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
 </svg>
 
 <header class="top">
     <div class="top-in">
         <div class="brand">
             <div class="logo"><svg class="i"><use href="#i-home"/></svg></div>
-            <div style="min-width:0">
-                <h1><span class="long">지역가입자 </span>건강보험료 계산기 <b>2026</b></h1>
-                <p>국민건강보험공단 모의계산과 대조 검증한 산식</p>
-            </div>
+            <h1>건강보험료 계산<span class="ki">기</span> <b>2026</b></h1>
         </div>
         <div class="top-actions">
-            <button type="button" class="ghost" onclick="resetAll(true)" aria-label="입력 모두 지우기"><svg class="i"><use href="#i-reset"/></svg><span class="t">처음부터</span></button>
-            <button type="button" class="ghost" onclick="openModal()" aria-label="계산 기준과 출처 보기"><svg class="i"><use href="#i-book"/></svg><span class="t">계산 기준</span></button>
+            <button type="button" class="tbtn" onclick="resetAll(true)"><svg class="i"><use href="#i-reset"/></svg>처음부터</button>
+            <button type="button" class="tbtn" onclick="openModal()" aria-label="계산 기준과 출처 설명"><svg class="i"><use href="#i-book"/></svg>설명</button>
         </div>
     </div>
 </header>
 
 <main class="wrap">
     <div id="restoreBar" class="restore hide" role="status">
-        <span id="restoreMsg">지난번 입력을 불러왔어요.</span>
-        <button type="button" onclick="resetAll(true)">지우고 새로 시작</button>
+        <span id="restoreMsg">지난번에 넣은 금액을 불러왔어요.</span>
+        <button type="button" onclick="resetAll(true)">지우고 새로 하기</button>
     </div>
 
     <section class="intro">
-        <h2>세대의 소득과 재산을 넣으면<br>매달 낼 건강보험료를 계산해 드려요</h2>
-        <p>2026년 기준 · 직장에 다니지 않는 세대(지역가입자)용 · 입력은 이 기기에만 저장됩니다</p>
-        <div class="formula-pill" aria-label="계산식">
-            <span class="term"><span class="dot" style="background:var(--inc)"></span>소득월액 × 7.19%</span>
-            <span class="term"><span class="plus">+</span><span class="dot" style="background:var(--prop)"></span>재산 점수 × 211.5원</span>
-            <span class="term"><span class="plus">+</span><span class="dot" style="background:var(--ltc)"></span>장기요양 13.14%</span>
+        <h2>지역가입자 건강보험료,<br>매달 얼마 내는지 계산해 보세요</h2>
+        <p class="lead">직장에 다니지 않는 세대가 내는 건강보험료를 <b>2026년 기준</b>으로 계산합니다. 소득과 재산을 차례대로 넣으면 바로 결과가 나와요.</p>
+
+        <div class="prefs">
+            <div>
+                <span class="pref-lbl" id="fsLbl">글자 크기</span>
+                <div class="seg" id="fsSeg" role="group" aria-labelledby="fsLbl">
+                    <button type="button" data-fs="m" aria-pressed="true" class="fs-s"><svg class="i ck"><use href="#i-check"/></svg>보통</button>
+                    <button type="button" data-fs="l" aria-pressed="false" class="fs-m"><svg class="i ck"><use href="#i-check"/></svg>크게</button>
+                    <button type="button" data-fs="xl" aria-pressed="false" class="fs-l"><svg class="i ck"><use href="#i-check"/></svg>더 크게</button>
+                </div>
+            </div>
+            <div>
+                <span class="pref-lbl" id="unitLbl">금액 입력 단위</span>
+                <div class="seg" id="unitSeg" role="group" aria-labelledby="unitLbl">
+                    <button type="button" data-unit="man" aria-pressed="true"><svg class="i ck"><use href="#i-check"/></svg>만원</button>
+                    <button type="button" data-unit="won" aria-pressed="false"><svg class="i ck"><use href="#i-check"/></svg>원</button>
+                </div>
+                <p class="pref-hint" id="unitHint">예: 2,400만원이면 <b>2400</b>만 입력하세요.</p>
+            </div>
         </div>
-        <div class="presets" role="group" aria-label="예시 불러오기">
-            <span class="lab">예시로 보기</span>
-            <button type="button" class="chip" data-preset="A">자영업자 <small>사업소득 2,400만 · 주택 과표 3억</small></button>
-            <button type="button" class="chip" data-preset="B">은퇴자 <small>국민연금 2,400만 · 전세 3억</small></button>
-            <button type="button" class="chip" data-preset="C">소득 적음 <small>연 300만 · 과표 8천만</small></button>
+
+        <div class="presets">
+            <h3>처음이라면, 예시부터 눌러 보세요</h3>
+            <div class="preset-grid" role="group" aria-label="예시 불러오기">
+                <button type="button" class="preset" data-preset="A"><b>자영업자</b><span>사업소득 2,400만원 · 집 과세표준 3억원</span></button>
+                <button type="button" class="preset" data-preset="B"><b>연금 받는 은퇴자</b><span>국민연금 2,400만원 · 전세 3억원</span></button>
+                <button type="button" class="preset" data-preset="C"><b>소득이 적은 세대</b><span>소득 300만원 · 집 과세표준 8천만원</span></button>
+            </div>
         </div>
     </section>
 
@@ -307,127 +343,125 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
             <!-- ① 소득 -->
             <section class="card" aria-labelledby="h-inc">
                 <div class="sec-head">
-                    <span class="step-n">1</span>
-                    <div>
-                        <h3 id="h-inc">세대의 1년 소득</h3>
-                        <p>세대원 소득을 모두 <b>더해서</b> 넣으세요. 없는 항목은 비워 두면 됩니다.</p>
-                    </div>
-                    <div class="sec-sum"><span>반영 소득</span><b class="num" id="sumInc">0원</b></div>
+                    <span class="stage">1단계</span>
+                    <h3 id="h-inc">1년 동안 번 돈 (소득)</h3>
+                    <p>함께 사는 가족(세대원)의 소득을 <b>모두 더해서</b> 넣으세요. 해당 없는 칸은 비워 두면 됩니다.</p>
+                    <div class="sec-sum hide"><span>보험료 계산에 쓰는 소득</span><b class="num" id="sumInc">0원</b></div>
                 </div>
 
                 <div class="fields">
                     <div class="field">
-                        <label class="lb" for="biz">사업소득 <span class="rate">100% 반영</span></label>
-                        <div class="money-box"><input id="biz" class="money num" inputmode="numeric" placeholder="예: 2400만" aria-describedby="biz-ko"><span class="unit">원</span></div>
-                        <div class="field-foot"><span class="help">매출이 아니라 경비를 뺀 <b>소득금액</b></span><span class="ko" id="biz-ko" data-ko="biz"></span></div>
-                        <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>어디서 확인하나요?</summary><div>홈택스 → 증명발급 → <b>소득금액증명</b>(종합소득세 신고자용)의 '사업소득금액', 또는 종합소득세 신고서의 소득금액. 주택임대소득도 여기에 넣으세요.</div></details>
+                        <label class="lb" for="biz">사업소득 <span class="rate">전액 반영</span><span class="plain">장사·자영업·프리랜서로 번 돈 (경비를 뺀 금액)</span></label>
+                        <div class="money-box"><input id="biz" class="money num" inputmode="decimal" data-ph-man="예: 2400" data-ph-won="예: 24000000"><span class="unit">만원</span></div>
+                        <div class="ko" data-ko="biz" aria-live="polite"></div>
+                        <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>이 금액은 어디서 보나요?</summary><div>홈택스(국세청)에서 발급하는 <b>소득금액증명</b>의 '사업소득금액'이나, 종합소득세 신고서의 소득금액을 보세요. 매출(번 돈 전체)이 아니라 <b>경비를 뺀 금액</b>입니다. 주택 임대소득도 여기에 넣으세요.</div></details>
                     </div>
                     <div class="field">
-                        <label class="lb" for="labor">근로소득 <span class="rate half">50% 반영</span></label>
-                        <div class="money-box"><input id="labor" class="money num" inputmode="numeric" placeholder="예: 3000만" aria-describedby="labor-ko"><span class="unit">원</span></div>
-                        <div class="field-foot"><span class="help">비과세를 뺀 <b>총급여액</b></span><span class="ko" id="labor-ko" data-ko="labor"></span></div>
-                        <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>어디서 확인하나요?</summary><div>근로소득 원천징수영수증의 <b>총급여(⑯ 계)</b>. 퇴직한 해의 급여라도 그해 소득이면 넣으세요.</div></details>
+                        <label class="lb" for="labor">근로소득 <span class="rate half">절반만 반영</span><span class="plain">회사에서 받은 월급·상여 (1년 합계)</span></label>
+                        <div class="money-box"><input id="labor" class="money num" inputmode="decimal" data-ph-man="예: 3000" data-ph-won="예: 30000000"><span class="unit">만원</span></div>
+                        <div class="ko" data-ko="labor" aria-live="polite"></div>
+                        <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>이 금액은 어디서 보나요?</summary><div>회사에서 주는 <b>근로소득 원천징수영수증</b>의 '총급여' 금액입니다. 식대처럼 세금이 안 붙는 돈은 빼고 넣으세요.</div></details>
                     </div>
                     <div class="field">
-                        <label class="lb" for="pension">연금소득 <span class="rate half">50% 반영</span></label>
-                        <div class="money-box"><input id="pension" class="money num" inputmode="numeric" placeholder="예: 1200만" aria-describedby="pension-ko"><span class="unit">원</span></div>
-                        <div class="field-foot"><span class="help">국민·공무원·군인·사학연금 <b>1년 수령액 전액</b></span><span class="ko" id="pension-ko" data-ko="pension"></span></div>
-                        <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>사적연금은요?</summary><div>연금저축·IRP 같은 사적연금은 법령상 연금소득에 포함되지만, 공단이 현재 부과하지 않는 것으로 보도되고 있습니다. 실제 고지에 가깝게 보려면 <b>공적연금만</b> 넣으세요.</div></details>
+                        <label class="lb" for="pension">연금소득 <span class="rate half">절반만 반영</span><span class="plain">국민연금·공무원연금·군인연금·사학연금 (1년 합계)</span></label>
+                        <div class="money-box"><input id="pension" class="money num" inputmode="decimal" data-ph-man="예: 1200" data-ph-won="예: 12000000"><span class="unit">만원</span></div>
+                        <div class="ko" data-ko="pension" aria-live="polite"></div>
+                        <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>개인연금(연금저축·IRP)은요?</summary><div>연금저축·IRP 같은 개인연금은 법에는 연금소득에 들어가지만, 공단이 지금은 보험료를 매기지 않는다고 보도되고 있어요. 실제 고지서에 가깝게 보려면 <b>국민연금 같은 공적연금만</b> 넣으세요. 월 100만원씩 받으면 1년 1,200만원입니다.</div></details>
                     </div>
                 </div>
 
                 <button type="button" class="toggle-more" id="finToggle" aria-expanded="false" aria-controls="finBody">
-                    <span><svg class="i"><use href="#i-plus"/></svg> 이자·배당·기타소득도 있어요</span>
-                    <svg class="i chev"><use href="#i-chev"/></svg>
+                    <span>예금 이자·주식 배당·기타소득이 있나요?</span>
+                    <span class="state"><span class="st-txt">눌러서 입력</span><svg class="i"><use href="#i-chev"/></svg></span>
                 </button>
                 <div id="finBody" class="more-body hide">
                     <div class="fields two">
                         <div class="field">
-                            <label class="lb" for="interest">이자소득</label>
-                            <div class="money-box"><input id="interest" class="money num" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
-                            <div class="field-foot"><span></span><span class="ko" data-ko="interest"></span></div>
+                            <label class="lb" for="interest">이자소득<span class="plain">예금·적금 이자 (1년 합계)</span></label>
+                            <div class="money-box"><input id="interest" class="money num" inputmode="decimal" data-ph-man="0" data-ph-won="0"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="interest" aria-live="polite"></div>
                         </div>
                         <div class="field">
-                            <label class="lb" for="dividend">배당소득</label>
-                            <div class="money-box"><input id="dividend" class="money num" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
-                            <div class="field-foot"><span></span><span class="ko" data-ko="dividend"></span></div>
+                            <label class="lb" for="dividend">배당소득<span class="plain">주식·펀드 배당 (1년 합계)</span></label>
+                            <div class="money-box"><input id="dividend" class="money num" inputmode="decimal" data-ph-man="0" data-ph-won="0"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="dividend" aria-live="polite"></div>
                         </div>
                         <div class="field">
-                            <label class="lb" for="other">기타소득 <span class="rate">100% 반영</span></label>
-                            <div class="money-box"><input id="other" class="money num" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
-                            <div class="field-foot"><span class="help">경비를 뺀 <b>기타소득금액</b></span><span class="ko" data-ko="other"></span></div>
+                            <label class="lb" for="other">기타소득 <span class="rate">전액 반영</span><span class="plain">강연료·원고료 등 (경비를 뺀 금액)</span></label>
+                            <div class="money-box"><input id="other" class="money num" inputmode="decimal" data-ph-man="0" data-ph-won="0"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="other" aria-live="polite"></div>
                         </div>
                     </div>
-                    <div class="callout info" id="finNote"><svg class="i"><use href="#i-info"/></svg><span>이자·배당 합계가 <b>연 1,000만원 이하</b>면 보험료에 넣지 않고, 넘으면 전액 반영합니다(시행규칙 제44조제1항 단서).</span></div>
+                    <div class="callout info" id="finNote"><svg class="i"><use href="#i-info"/></svg><span>이자와 배당을 합쳐 <b>1년에 1,000만원 이하</b>면 보험료에 넣지 않아요. 1,000만원을 넘으면 전부 넣습니다(시행규칙 제44조제1항 단서).</span></div>
                 </div>
 
-                <div class="callout info"><svg class="i"><use href="#i-info"/></svg><span>1~10월분 보험료는 <b>전전년도</b>, 11~12월분은 <b>전년도</b> 소득으로 매겨요. 2026년 11월분부터는 2025년 소득이 기준입니다.</span></div>
+                <div class="callout info"><svg class="i"><use href="#i-info"/></svg><span><b>몇 년도 소득을 넣나요?</b> 1월~10월에 내는 보험료는 <b>2년 전</b> 소득으로, 11월~12월분은 <b>1년 전</b> 소득으로 매겨요. 2026년 11월분부터는 2025년 소득이 기준입니다.</span></div>
             </section>
 
             <!-- ② 재산 -->
             <section class="card" aria-labelledby="h-prop">
                 <div class="sec-head">
-                    <span class="step-n">2</span>
-                    <div>
-                        <h3 id="h-prop">세대의 재산</h3>
-                        <p>시가가 아니라 <b>재산세 과세표준</b>이 기준이에요. 자동차는 계산하지 않습니다.</p>
-                    </div>
-                    <div class="sec-sum"><span>공제 후 재산</span><b class="num" id="sumProp">0원</b></div>
+                    <span class="stage">2단계</span>
+                    <h3 id="h-prop">가지고 있는 집·땅 (재산)</h3>
+                    <p>집값(시세)이 아니라 <b>재산세 고지서에 적힌 '과세표준'</b>으로 계산해요. 1억원까지는 빼 주고, 자동차는 계산하지 않아요.</p>
+                    <div class="sec-sum hide"><span>1억원을 빼고 남은 재산</span><b class="num" id="sumProp">0원</b></div>
                 </div>
 
-                <div style="margin-top:20px">
-                    <span class="lb-plain" id="homeLbl">사는 집</span>
+                <div style="margin-top:1.3rem">
+                    <span class="lb-plain" id="homeLbl">지금 사는 집은?</span>
                     <div class="seg" id="homeSeg" role="group" aria-labelledby="homeLbl">
-                        <button type="button" data-home="own" aria-pressed="true">내 집이 있어요</button>
-                        <button type="button" data-home="rent" aria-pressed="false">전·월세 살아요 <span class="sr">(무주택)</span></button>
+                        <button type="button" data-home="own" aria-pressed="true"><svg class="i ck"><use href="#i-check"/></svg>내 집(자가)</button>
+                        <button type="button" data-home="rent" aria-pressed="false"><svg class="i ck"><use href="#i-check"/></svg>전세·월세<span class="sr">(무주택)</span></button>
                     </div>
                 </div>
 
                 <!-- 주택 보유 -->
                 <div id="ownBox">
-                    <div style="margin-top:18px">
-                        <span class="lb-plain" id="taxLbl">주택 금액, 어떻게 넣을까요?</span>
-                        <div class="seg sm" id="taxSeg" role="group" aria-labelledby="taxLbl">
-                            <button type="button" data-tax="base" aria-pressed="true">과세표준 (정확)</button>
-                            <button type="button" data-tax="price" aria-pressed="false">공시가격 (추정)</button>
+                    <div style="margin-top:1.2rem">
+                        <span class="lb-plain" id="taxLbl">집 금액은 무엇으로 넣을까요?</span>
+                        <div class="seg" id="taxSeg" role="group" aria-labelledby="taxLbl">
+                            <button type="button" data-tax="base" aria-pressed="true"><svg class="i ck"><use href="#i-check"/></svg>과세표준 (정확)</button>
+                            <button type="button" data-tax="price" aria-pressed="false"><svg class="i ck"><use href="#i-check"/></svg>공시가격 (대략)</button>
                         </div>
                     </div>
                     <div id="baseBox" class="fields">
                         <div class="field">
-                            <label class="lb" for="houseBase">주택 재산세 과세표준 <span class="help" style="font-weight:500">(여러 채면 합계)</span></label>
-                            <div class="money-box"><input id="houseBase" class="money num" inputmode="numeric" placeholder="예: 2억" aria-describedby="houseBase-ko"><span class="unit">원</span></div>
-                            <div class="field-foot"><span class="help">1억원까지는 공제돼요</span><span class="ko" id="houseBase-ko" data-ko="houseBase"></span></div>
-                            <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>어디서 확인하나요?</summary><div>7·9월 <b>재산세 납세고지서</b>의 '과세표준', 또는 위택스·정부24의 <b>지방세 세목별 과세증명서</b>. 과세표준상한제(지방세법 제110조제3항)가 적용된 값이라 공시가격으로 계산한 값보다 낮을 수 있어요.</div></details>
+                            <label class="lb" for="houseBase">집 재산세 과세표준<span class="plain">집이 여러 채면 모두 더한 금액</span></label>
+                            <div class="money-box"><input id="houseBase" class="money num" inputmode="decimal" data-ph-man="예: 20000" data-ph-won="예: 200000000"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="houseBase" aria-live="polite"></div>
+                            <details class="where"><summary><svg class="i"><use href="#i-q"/></svg>이 금액은 어디서 보나요?</summary><div>7월·9월에 오는 <b>재산세 납세고지서</b>의 '과세표준' 칸이에요. 고지서가 없으면 위택스나 정부24에서 <b>지방세 세목별 과세증명서</b>를 떼면 나옵니다. 공시가격보다 낮은 금액이에요.</div></details>
                         </div>
                     </div>
                     <div id="priceBox" class="hide">
                         <div class="fields">
                             <div class="field">
-                                <label class="lb" for="housePrice">주택 공시가격 <span class="help" style="font-weight:500">(여러 채면 합계)</span></label>
-                                <div class="money-box"><input id="housePrice" class="money num" inputmode="numeric" placeholder="예: 5억" aria-describedby="housePrice-ko"><span class="unit">원</span></div>
-                                <div class="field-foot"><span class="help">부동산공시가격알리미에서 확인</span><span class="ko" id="housePrice-ko" data-ko="housePrice"></span></div>
+                                <label class="lb" for="housePrice">집 공시가격<span class="plain">집이 여러 채면 모두 더한 금액</span></label>
+                                <div class="money-box"><input id="housePrice" class="money num" inputmode="decimal" data-ph-man="예: 50000" data-ph-won="예: 500000000"><span class="unit">만원</span></div>
+                                <div class="ko" data-ko="housePrice" aria-live="polite"></div>
+                                <p class="help">'부동산 공시가격 알리미' 누리집에서 주소로 찾을 수 있어요.</p>
                             </div>
                         </div>
-                        <label class="sw"><input type="checkbox" id="oneHouse" checked><span class="track"></span><span class="t">1세대 1주택이에요<span class="d">공정시장가액비율 2026년 43~45% 적용 (아니면 60%)</span></span></label>
-                        <p class="est">추정 과세표준 <b id="estBase" class="num">0원</b></p>
-                        <div class="callout warn"><svg class="i"><use href="#i-warn"/></svg><span>공시가격 × 공정시장가액비율(지방세법 시행령 제109조)로 <b>추정</b>한 값이에요. 과세표준상한제 때문에 실제보다 클 수 있으니, 정확히 보려면 <b>재산세 고지서·과세증명서의 과세표준</b>을 넣으세요.</span></div>
+                        <label class="ck-row"><input type="checkbox" id="oneHouse" checked><span class="box-ui"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><span class="t">우리 세대는 집이 한 채예요 (1세대 1주택)<span class="d">한 채면 공시가격의 43~45%, 아니면 60%로 계산해요</span></span></label>
+                        <p class="est">대략 계산한 과세표준: <b id="estBase" class="num">0원</b></p>
+                        <div class="callout warn"><svg class="i"><use href="#i-warn"/></svg><span>공시가격으로 <b>대략</b> 계산한 값이라 실제보다 클 수 있어요(과세표준상한제, 지방세법 제110조제3항). 정확히 보려면 <b>재산세 고지서의 과세표준</b>을 넣으세요.</span></div>
                     </div>
 
                     <details class="box" id="ownLoanDet">
-                        <summary><span>주택담보대출 공제 <span class="help" style="font-weight:500">(1세대 1주택)</span><span class="tag hide" id="ownLoanTag">적용 중</span></span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+                        <summary><span>집 살 때 받은 대출이 있나요? <span class="tag hide" id="ownLoanTag">빼는 중</span></span><span class="state">눌러서 확인</span></summary>
                         <div class="box-body">
-                            <label class="sw"><input type="checkbox" id="ownLoanOn"><span class="track"></span><span class="t">요건을 갖춰 공단에 통보했어요<span class="d">실거주 목적, 주택 취득일 전후 3개월 안에 받은 주택담보대출 등 (시행령 제42조의2)</span></span></label>
+                            <p class="help" style="margin:0 0 0.3rem">한 채만 가진 세대가 <b>집을 사면서 받은 주택담보대출</b>은 공단에 알리면 일부를 재산에서 빼 줘요(최대 5,000만원).</p>
+                            <label class="ck-row"><input type="checkbox" id="ownLoanOn"><span class="box-ui"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><span class="t">공단에 대출 사실을 알렸어요 (또는 알릴 예정)<span class="d">실제로 사는 집, 집을 산 날 앞뒤 3개월 안에 받은 대출 (시행령 제42조의2)</span></span></label>
                             <div id="ownLoanBox" class="hide">
-                                <div class="fields two" style="margin-top:6px">
+                                <div class="fields two" style="margin-top:0.3rem">
                                     <div class="field">
-                                        <label class="lb" for="ownLoan">대출 잔액</label>
-                                        <div class="money-box"><input id="ownLoan" class="money num" inputmode="numeric" placeholder="예: 1억"><span class="unit">원</span></div>
-                                        <div class="field-foot"><span class="help">갚은 금액은 빼고</span><span class="ko" data-ko="ownLoan"></span></div>
+                                        <label class="lb" for="ownLoan">남은 대출금<span class="plain">갚은 금액은 빼고</span></label>
+                                        <div class="money-box"><input id="ownLoan" class="money num" inputmode="decimal" data-ph-man="예: 10000" data-ph-won="예: 100000000"><span class="unit">만원</span></div>
+                                        <div class="ko" data-ko="ownLoan" aria-live="polite"></div>
                                     </div>
                                     <div class="field">
-                                        <label class="lb" for="loanRatio">공정시장가액비율</label>
+                                        <label class="lb" for="loanRatio">공정시장가액비율<span class="plain">모르면 '자동' 그대로 두세요</span></label>
                                         <select id="loanRatio" class="sel">
-                                            <option value="auto">자동 (1주택 특례 구간)</option>
+                                            <option value="auto">자동 (한 채 기준)</option>
                                             <option value="0.43">43% (공시가 3억 이하)</option>
                                             <option value="0.44">44% (3억 초과~6억)</option>
                                             <option value="0.45">45% (6억 초과)</option>
@@ -435,7 +469,7 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
                                         </select>
                                     </div>
                                 </div>
-                                <p class="help" style="margin-top:10px">공제액 = 대출 잔액 × 공정시장가액비율 (주택 과세표준과 <b>5,000만원</b> 중 작은 금액까지). 주택 과세표준이 <b>기준시가 6억원 × 비율</b> 이하여야 해요(시행령 제42조의2제2항, 소득세법 제52조제5항).</p>
+                                <p class="help" style="margin-top:0.7rem">빼 주는 금액 = 남은 대출금 × 공정시장가액비율 (집 과세표준과 <b>5,000만원</b> 중 작은 금액까지). 집 과세표준이 <b>기준시가 6억원 × 비율</b> 이하여야 해요(시행령 제42조의2제2항, 소득세법 제52조제5항).</p>
                             </div>
                         </div>
                     </details>
@@ -446,98 +480,106 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
                     <div class="fields two">
                         <div class="field">
                             <label class="lb" for="deposit">보증금</label>
-                            <div class="money-box"><input id="deposit" class="money num" inputmode="numeric" placeholder="예: 3억"><span class="unit">원</span></div>
-                            <div class="field-foot"><span></span><span class="ko" data-ko="deposit"></span></div>
+                            <div class="money-box"><input id="deposit" class="money num" inputmode="decimal" data-ph-man="예: 30000" data-ph-won="예: 300000000"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="deposit" aria-live="polite"></div>
                         </div>
                         <div class="field">
-                            <label class="lb" for="rent">월세</label>
-                            <div class="money-box"><input id="rent" class="money num" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
-                            <div class="field-foot"><span></span><span class="ko" data-ko="rent"></span></div>
+                            <label class="lb" for="rent">월세<span class="plain">없으면 비워 두세요</span></label>
+                            <div class="money-box"><input id="rent" class="money num" inputmode="decimal" data-ph-man="예: 50" data-ph-won="예: 500000"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="rent" aria-live="polite"></div>
                         </div>
                     </div>
-                    <p class="est">재산 평가액 <b id="rentEvalOut" class="num">0원</b> <span class="help">= (보증금 + 월세 × 40) × 30%</span></p>
+                    <p class="est">재산으로 보는 금액: <b id="rentEvalOut" class="num">0원</b><br><span class="help">(보증금 + 월세 × 40) × 30%</span></p>
                     <details class="box" id="rentLoanDet">
-                        <summary><span>전세자금대출 공제 <span class="help" style="font-weight:500">(1세대 무주택)</span><span class="tag hide" id="rentLoanTag">적용 중</span></span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+                        <summary><span>전세자금대출을 받았나요? <span class="tag hide" id="rentLoanTag">빼는 중</span></span><span class="state">눌러서 확인</span></summary>
                         <div class="box-body">
-                            <label class="sw"><input type="checkbox" id="rentLoanOn"><span class="track"></span><span class="t">요건을 갖춰 공단에 통보했어요<span class="d">입주일·전입일 중 빠른 날 전후 3개월 안에 받은 보증금담보대출 등 (시행령 제42조의2)</span></span></label>
+                            <p class="help" style="margin:0 0 0.3rem">집이 없는 세대가 <b>보증금을 내려고 받은 대출</b>은 공단에 알리면 대출금의 30%를 재산에서 빼 줘요.</p>
+                            <label class="ck-row"><input type="checkbox" id="rentLoanOn"><span class="box-ui"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><span class="t">공단에 대출 사실을 알렸어요 (또는 알릴 예정)<span class="d">입주일·전입일 중 빠른 날 앞뒤 3개월 안에 받은 대출 (시행령 제42조의2)</span></span></label>
                             <div id="rentLoanBox" class="hide">
-                                <div class="field" style="margin-top:6px; max-width:360px">
-                                    <label class="lb" for="rentLoan">대출 잔액</label>
-                                    <div class="money-box"><input id="rentLoan" class="money num" inputmode="numeric" placeholder="예: 2억"><span class="unit">원</span></div>
-                                    <div class="field-foot"><span class="help">갚은 금액은 빼고</span><span class="ko" data-ko="rentLoan"></span></div>
+                                <div class="field" style="margin-top:0.3rem; max-width:24rem">
+                                    <label class="lb" for="rentLoan">남은 대출금<span class="plain">갚은 금액은 빼고</span></label>
+                                    <div class="money-box"><input id="rentLoan" class="money num" inputmode="decimal" data-ph-man="예: 20000" data-ph-won="예: 200000000"><span class="unit">만원</span></div>
+                                    <div class="ko" data-ko="rentLoan" aria-live="polite"></div>
                                 </div>
-                                <p class="help" style="margin-top:10px">공제액 = 대출 잔액 × 30% (보증금의 30%까지). (보증금 + 월세 × 40)이 <b>6억원 이하</b>인 주택이어야 해요.</p>
+                                <p class="help" style="margin-top:0.7rem">빼 주는 금액 = 남은 대출금 × 30% (보증금의 30%까지). (보증금 + 월세 × 40)이 <b>6억원 이하</b>인 집이어야 해요.</p>
                             </div>
                         </div>
                     </details>
-                    <p class="help" style="margin-top:12px">계약 갱신으로 10% 넘게 오른 부분은 그 계약기간 동안 빼 주는데(시행규칙 별표 8), 이 계산기에는 반영하지 않았어요.</p>
+                    <p class="help" style="margin-top:0.9rem">계약을 갱신하면서 10% 넘게 오른 부분은 그 계약기간 동안 빼 주는데(시행규칙 별표 8), 이 계산기에는 넣지 않았어요.</p>
                 </div>
 
                 <button type="button" class="toggle-more" id="etcToggle" aria-expanded="false" aria-controls="etcBody">
-                    <span><svg class="i"><use href="#i-plus"/></svg> 주택 말고 토지·상가·건물도 있어요</span>
-                    <svg class="i chev"><use href="#i-chev"/></svg>
+                    <span>집 말고 땅·상가·건물도 있나요?</span>
+                    <span class="state"><span class="st-txt">눌러서 입력</span><svg class="i"><use href="#i-chev"/></svg></span>
                 </button>
                 <div id="etcBody" class="more-body hide">
                     <div class="fields">
                         <div class="field">
-                            <label class="lb" for="etcBase">토지·건축물·선박·항공기 과세표준 합계</label>
-                            <div class="money-box"><input id="etcBase" class="money num" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
-                            <div class="field-foot"><span class="help">상가, 주거용이 아닌 오피스텔, 나대지, 농지 등</span><span class="ko" data-ko="etcBase"></span></div>
+                            <label class="lb" for="etcBase">땅·상가·건물 과세표준 합계<span class="plain">상가, 사무실용 오피스텔, 빈 땅, 농지, 선박 등</span></label>
+                            <div class="money-box"><input id="etcBase" class="money num" inputmode="decimal" data-ph-man="0" data-ph-won="0"><span class="unit">만원</span></div>
+                            <div class="ko" data-ko="etcBase" aria-live="polite"></div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ③ 옵션 -->
-            <section class="card" aria-label="옵션">
-                <label class="sw" style="padding:0"><input type="checkbox" id="ltcOn" checked><span class="track"></span><span class="t">장기요양보험료도 함께 보기<span class="d">건강보험료와 함께 고지돼요 · 건강보험료 × 0.9448 ÷ 7.19</span></span></label>
+            <section class="card" aria-label="장기요양보험료 포함 여부">
+                <label class="ck-row" style="padding:0"><input type="checkbox" id="ltcOn" checked><span class="box-ui"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><span class="t">장기요양보험료도 더해서 보기<span class="d">건강보험료 고지서에 함께 나오는 금액이에요 (건강보험료의 약 13%)</span></span></label>
             </section>
+
+            <a href="#resultCol" class="go-result">결과 보기 <svg class="i"><use href="#i-down"/></svg></a>
         </div>
 
         <!-- 결과 -->
         <aside class="col result-col" id="resultCol" aria-label="계산 결과">
             <section class="card result-hero" id="resultCard">
-                <div class="lbl"><span>매달 낼 보험료 <span id="totalSub">(건강 + 장기요양)</span></span><span>2026년</span></div>
+                <span class="stage">3단계 · 결과</span>
+                <div class="lbl">매달 내실 보험료 <span id="totalSub">(건강 + 장기요양)</span></div>
                 <div class="big num" aria-live="polite" aria-atomic="true"><span id="total">0</span><small>원</small></div>
+                <div class="big-ko" id="totalKo"></div>
                 <div class="sub">1년이면 약 <b class="num" id="yearTotal">0원</b></div>
-                <div class="bar" aria-hidden="true"><span id="barInc" style="background:#5eead4;width:0"></span><span id="barProp" style="background:#fcd34d;width:0"></span><span id="barLtc" style="background:#cbd5e1;width:0"></span></div>
-                <div class="legend" aria-hidden="true">
-                    <span><i style="background:#5eead4"></i>소득분 <b class="num" id="pInc">0%</b></span>
-                    <span><i style="background:#fcd34d"></i>재산분 <b class="num" id="pProp">0%</b></span>
-                    <span id="ltcLegend"><i style="background:#cbd5e1"></i>장기요양 <b class="num" id="pLtc">0%</b></span>
+                <div class="bar" aria-hidden="true"><span id="barInc" style="background:#5eead4;width:0"></span><span id="barProp" style="background:#fcd34d;width:0"></span><span id="barLtc" style="background:#e2e8f0;width:0"></span></div>
+                <div class="legend">
+                    <span><i style="background:#5eead4"></i>소득 몫 <b class="num" id="pInc">0%</b></span>
+                    <span><i style="background:#fcd34d"></i>재산 몫 <b class="num" id="pProp">0%</b></span>
+                    <span id="ltcLegend"><i style="background:#e2e8f0"></i>장기요양 <b class="num" id="pLtc">0%</b></span>
                 </div>
                 <div class="status" id="statusBadges"></div>
             </section>
 
             <section class="card">
-                <div class="lines">
-                    <div class="row" style="padding-top:0"><span class="k"><span class="dot" style="background:var(--inc)"></span>소득보험료</span><span class="v num" id="rInc">0원</span></div>
-                    <div class="row"><span class="k"><span class="dot" style="background:var(--prop)"></span>재산보험료</span><span class="v num" id="rProp">0원</span></div>
-                    <div class="row cut hide" id="rCapRow"><span class="k">상한 적용</span><span class="v num" id="rCap">0원</span></div>
-                    <div class="row total"><span class="k">건강보험료</span><span class="v num" id="rHealth">0원</span></div>
-                    <div class="row" id="rLtcRow"><span class="k"><span class="dot" style="background:var(--ltc)"></span>장기요양보험료</span><span class="v num" id="rLtc">0원</span></div>
-                </div>
+                <div class="row" style="padding-top:0"><span class="k"><span class="dot" style="background:var(--inc)"></span>소득으로 내는 보험료</span><span class="v num" id="rInc">0원</span></div>
+                <div class="row"><span class="k"><span class="dot" style="background:var(--prop)"></span>재산으로 내는 보험료</span><span class="v num" id="rProp">0원</span></div>
+                <div class="row cut hide" id="rCapRow"><span class="k">최고 금액(상한) 적용</span><span class="v num" id="rCap">0원</span></div>
+                <div class="row total"><span class="k">건강보험료</span><span class="v num" id="rHealth">0원</span></div>
+                <div class="row" id="rLtcRow"><span class="k"><span class="dot" style="background:var(--ltc)"></span>장기요양보험료</span><span class="v num" id="rLtc">0원</span></div>
                 <div id="capNote" class="hide"></div>
                 <div class="acts">
                     <button type="button" class="btn pri" onclick="copyResult()"><svg class="i"><use href="#i-copy"/></svg>결과 복사</button>
-                    <button type="button" class="btn sec" onclick="copyLink()"><svg class="i"><use href="#i-link"/></svg>링크 복사</button>
+                    <button type="button" class="btn sec" onclick="copyLink()"><svg class="i"><use href="#i-link"/></svg>링크 보내기</button>
                 </div>
             </section>
 
             <section class="card tips" id="tipsCard" aria-labelledby="h-tips">
-                <h4 id="h-tips"><svg class="i" style="color:var(--prop)"><use href="#i-bulb"/></svg>확인해 볼 만한 것</h4>
+                <h4 id="h-tips"><svg class="i" style="color:var(--prop)"><use href="#i-bulb"/></svg>꼭 확인해 보세요</h4>
                 <ul id="tips"></ul>
             </section>
 
+            <section class="card call" aria-labelledby="h-call">
+                <h4 id="h-call"><svg class="i" style="color:var(--brand)"><use href="#i-phone"/></svg>잘 모르겠으면 전화로 물어보세요</h4>
+                <p>국민건강보험공단 고객센터에서 내 보험료와 줄이는 방법을 안내받을 수 있어요.</p>
+                <a class="btn pri" href="tel:1577-1000"><svg class="i"><use href="#i-phone"/></svg>1577-1000 전화 걸기</a>
+            </section>
+
             <details class="card steps-box" id="stepsBox">
-                <summary>계산 과정 자세히 <svg class="i chev"><use href="#i-chev"/></svg></summary>
+                <summary>어떻게 계산했는지 보기 <span class="state">눌러서 펼치기</span></summary>
                 <div id="steps"></div>
-                <button type="button" class="btn sec" style="width:100%;margin-top:12px" onclick="window.print()"><svg class="i"><use href="#i-print"/></svg>인쇄 / PDF 저장</button>
+                <button type="button" class="btn sec" style="width:100%;margin-top:0.8rem" onclick="window.print()"><svg class="i"><use href="#i-print"/></svg>인쇄하기</button>
             </details>
 
             <div class="fine">
-                <p>안내용 <b>추정치</b>입니다. 국민건강보험공단 모의계산(2026년 기준)과 하한·상한 경계를 포함한 14건을 대조해 모두 일치했습니다(소득월액 280,000원 초과 약 280,389원 이하 구간은 [미확인]). 공단 모의계산도 경감·한시적 감액이 반영되지 않은 예상 보험료입니다.</p>
-                <p><b>반영하지 않은 것:</b> 65세 이상·장애인·농어촌 등 경감, 전자고지·자동이체 감액, 전월세 갱신 시 10% 초과분 제외, 피부양자 해당 여부. 실제 금액은 공단 고지서로 확인하세요.</p>
+                <p>이 금액은 안내용 <b>추정치</b>입니다. 국민건강보험공단 모의계산(2026년 기준)과 하한·상한 경계를 포함한 14건을 대조해 모두 일치했습니다(소득월액 280,000원 초과 약 280,389원 이하 구간은 [미확인]). 공단 모의계산도 경감·한시적 감액이 반영되지 않은 예상 보험료입니다.</p>
+                <p><b>계산에 넣지 않은 것:</b> 65세 이상·장애인·농어촌 등 경감, 전자고지·자동이체 감액, 전월세 갱신 시 10% 초과분 제외, 피부양자 해당 여부. 실제 금액은 공단 고지서로 확인하세요.</p>
             </div>
         </aside>
     </form>
@@ -545,10 +587,10 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
 
 <div class="mbar" id="mobileBar">
     <div>
-        <div class="l">매달 낼 보험료</div>
+        <div class="l">매달 내실 보험료</div>
         <div class="n num"><span id="mTotal">0</span><small>원</small></div>
     </div>
-    <a href="#resultCol" class="btn pri" style="text-decoration:none">결과 보기<svg class="i"><use href="#i-up"/></svg></a>
+    <a href="#resultCol" class="btn pri">결과 보기 <svg class="i"><use href="#i-down"/></svg></a>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -556,7 +598,7 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
 <dialog id="modal" aria-labelledby="modalTitle">
     <div class="dlg-head">
         <h2 id="modalTitle">계산 기준과 출처</h2>
-        <button type="button" class="icon-btn" onclick="closeModal()" aria-label="닫기"><svg class="i"><use href="#i-x"/></svg></button>
+        <button type="button" class="btn sec" onclick="closeModal()" style="min-height:2.8rem"><svg class="i"><use href="#i-x"/></svg>닫기</button>
     </div>
     <div class="dlg-body">
         <h3>기본 구조</h3>
@@ -596,7 +638,7 @@ dialog::backdrop { background: rgba(15,23,42,.55); }
             <li>상한 경계: 사업소득 7억 6,000만원(5,152,030원), 7억 6,634만원(5,195,010원), 7억 6,635만원(5,195,080원), 8억원과 7억 6,000만원 + 과표 2억(상한 4,591,740원 + 장기요양 603,370원)이 공단 모의계산과 일치합니다. 상한은 소득분 + 재산분 합계에 적용하고, 장기요양보험료는 상한 적용 후 건강보험료로 계산합니다.</li>
             <li>[미확인] 소득월액 280,000원 초과 약 280,389원 이하 구간: 정률 소득분이 하한보다 작아지는데, 공단 입력이 만원 단위라 확인하지 못했습니다. 계산기는 시행규칙 제44조제3항과 월 하한(고시 제2025-222호 제3조제2호)에 따라 건강보험료가 20,160원 밑으로 내려가지 않게 했습니다.</li>
         </ul>
-        <p class="help" style="margin-top:16px">법령은 2026. 10. 25. 국가법령정보 현행 조문 기준으로 확인했습니다. 이 계산기는 상담 참고용이며, 실제 보험료는 국민건강보험공단 결정에 따릅니다.</p>
+        <p class="help" style="margin-top:1rem">법령은 2026. 10. 25. 국가법령정보 현행 조문 기준으로 확인했습니다. 이 계산기는 상담 참고용이며, 실제 보험료는 국민건강보험공단 결정에 따릅니다.</p>
     </div>
 </dialog>
 
@@ -612,6 +654,7 @@ const LOW_INCOME_MONTH = 280000;       // 시행규칙 제44조제3항 단서
 const OWN_LOAN_CAP = 50000000;         // 시행령 제42조의2제3항제1호
 const HOUSE_PRICE_LIMIT = 600000000;   // 시행령 제42조의2제2항 → 소득세법 제52조제5항 기준시가 6억원
 const MAX_MONEY = 1e13;                // 입력 상한(오타 방지)
+const BIG_WARN = 1e10;                 // 100억원 이상이면 단위 확인 안내
 
 // 시행령 별표 4 제3호: [상한(만원), 점수]
 const GRADES = [
@@ -625,26 +668,31 @@ const GRADES = [
 
 const MONEY_IDS = ['biz','labor','pension','other','interest','dividend','houseBase','housePrice','ownLoan','deposit','rent','rentLoan','etcBase'];
 const CHECK_IDS = ['oneHouse','ownLoanOn','rentLoanOn','ltcOn'];
-const STORE_KEY = 'jiyeok-hi-calc-v2';
-const st = { home: 'own', tax: 'base' };
+const STORE_KEY = 'jiyeok-hi-calc-v3';
+const PREF_KEY = 'jiyeok-hi-pref';
+const st = { home: 'own', tax: 'base', unit: 'man', fs: 'm' };
 const $ = (id) => document.getElementById(id);
 const f10 = (v) => Math.floor(v / 10 + 1e-9) * 10;
 const won = (n) => Math.round(n).toLocaleString('ko-KR') + '원';
 
-// ===== 금액 입력: 숫자 또는 '2억 5천만', '2400만', '1.5억' =====
+// ===== 금액 읽기: 만원/원 단위 숫자, 또는 '2억 5천만', '2400만', '1.5억' =====
 function parseSmall(t) {
     if (!t) return 0;
     if (/^\d+(\.\d+)?$/.test(t)) return Number(t);
-    let v = 0, m; const re = /(\d+(?:\.\d+)?)?(천|백|십)/g; let used = '';
-    while ((m = re.exec(t))) { v += (m[1] ? Number(m[1]) : 1) * ({ 천: 1000, 백: 100, 십: 10 })[m[2]]; used += m[0]; }
+    let v = 0, m; const re = /(\d+(?:\.\d+)?)?(천|백|십)/g;
+    while ((m = re.exec(t))) v += (m[1] ? Number(m[1]) : 1) * ({ 천: 1000, 백: 100, 십: 10 })[m[2]];
     const rest = t.replace(/(\d+(?:\.\d+)?)?(천|백|십)/g, '');
     if (rest && /^\d+(\.\d+)?$/.test(rest)) v += Number(rest);
     return v;
 }
-function parseMoney(s) {
+// 한글 단위가 있으면 그대로(절대 금액), 없으면 단위 설정(만원/원)에 따라 읽는다
+function parseMoney(s, unit) {
     s = String(s || '').replace(/[,\s원]/g, '');
     if (!s) return 0;
-    if (/^\d+$/.test(s)) return Math.min(MAX_MONEY, Number(s));
+    if (/^\d+(\.\d+)?$/.test(s)) {
+        const n = Number(s) * ((unit || st.unit) === 'man' ? 1e4 : 1);
+        return Math.min(MAX_MONEY, Math.floor(n + 1e-6));
+    }
     let total = 0;
     let parts = s.split('억');
     if (parts.length > 1) {
@@ -658,7 +706,7 @@ function parseMoney(s) {
     return Math.min(MAX_MONEY, Math.floor(total)) || 0;
 }
 const val = (id) => parseMoney($(id).value);
-const hasUnit = (s) => /[억만천백십.]/.test(s);
+const hasKoUnit = (s) => /[억만천백십]/.test(s);
 
 function koMoney(n) {
     if (!n) return '';
@@ -671,9 +719,15 @@ function koMoney(n) {
 }
 function shortWon(n) {
     n = Math.round(n);
-    if (n >= 1e8) { const e = n / 1e8; return (Math.round(e * 100) / 100).toLocaleString('ko-KR') + '억원'; }
+    if (n >= 1e8) return (Math.round(n / 1e6) / 100).toLocaleString('ko-KR') + '억원';
     if (n >= 1e4) return Math.floor(n / 1e4).toLocaleString('ko-KR') + '만원';
     return n.toLocaleString('ko-KR') + '원';
+}
+// 원 금액을 입력칸 표시 문자열로
+function display(n) {
+    if (!n) return '';
+    if (st.unit === 'man') return (n / 1e4).toLocaleString('ko-KR', { maximumFractionDigits: 4 });
+    return n.toLocaleString('ko-KR');
 }
 
 function gradeOf(amount) {
@@ -808,8 +862,9 @@ function render() {
     $('rCap').textContent = '− ' + won(capCut);
     $('rCapRow').classList.toggle('hide', capCut <= 0);
     $('total').textContent = r.total.toLocaleString('ko-KR');
+    $('totalKo').textContent = '(' + koMoney(r.total) + ')';
     $('mTotal').textContent = r.total.toLocaleString('ko-KR');
-    $('yearTotal').textContent = won(r.total * 12);
+    $('yearTotal').textContent = shortWon(r.total * 12) + ' (' + won(r.total * 12) + ')';
     $('rInc').textContent = won(incShow);
     $('rProp').textContent = won(propShow);
     $('rHealth').textContent = won(r.health);
@@ -831,10 +886,10 @@ function render() {
     $('pLtc').textContent = pct(r.ltc) + '%';
 
     const badges = [];
-    if (r.capped) badges.push('월 상한 적용');
-    else if (r.low) badges.push('소득분 최저 20,160원');
-    if (!r.g) badges.push('재산보험료 없음');
-    if (r.loanDeduct) badges.push('대출 공제 ' + shortWon(r.loanDeduct));
+    if (r.capped) badges.push('최고 금액(상한) 적용');
+    else if (r.low) badges.push('소득 몫은 최저 금액');
+    if (!r.g) badges.push('재산 몫 없음');
+    if (r.loanDeduct) badges.push('대출 ' + shortWon(r.loanDeduct) + ' 빼 줌');
     $('statusBadges').innerHTML = badges.map(b => `<span class="badge">${b}</span>`).join('');
 
     const note = $('capNote');
@@ -854,35 +909,46 @@ function render() {
 function renderTips(i, o, r) {
     const tips = [];
     const anyIncome = i.biz + i.labor + i.pension + i.other + i.interest + i.dividend > 0;
-    if (anyIncome && !r.low) tips.push({ t: '올해 소득이 크게 줄었나요?', d: '보험료는 1~2년 전 소득으로 매겨져요. 폐업·퇴직 등으로 소득이 줄었다면 증빙을 내고 지금 소득으로 조정해 달라고 신청할 수 있어요. 나중에 확정 소득으로 정산합니다.', law: '국민건강보험법 시행령 제41조의2' });
-    if (i.labor > 0) tips.push({ t: '최근 퇴직했나요? 임의계속가입과 비교해 보세요', d: '직장 자격을 1년 이상 유지했다면, 지역보험료를 처음 고지받은 날부터 그 납부기한에서 2개월이 지나기 전까지 신청해 직장가입자 자격을 일정 기간 유지할 수 있어요(보험료는 본인이 전액 부담).', law: '국민건강보험법 제110조' });
-    if (o.home === 'own' && !o.ownLoanOn && r.houseBase > BASIC_DEDUCT) tips.push({ t: '집을 살 때 받은 주택담보대출이 있나요?', d: '1세대 1주택이고 취득일 전후 3개월 안에 받은 대출이라면, 공단에 통보해 대출액 일부(최대 5,000만원)를 재산에서 뺄 수 있어요. 위 "주택담보대출 공제"에서 미리 계산해 보세요.', law: '국민건강보험법 제72조제1항 단서, 시행령 제42조의2' });
-    if (o.home === 'rent' && !o.rentLoanOn && r.rentEval > 0) tips.push({ t: '전세자금대출을 받았나요?', d: '1세대 무주택이고 입주·전입 전후 3개월 안에 받은 보증금담보대출이라면, 공단에 통보해 대출액의 30%를 재산에서 뺄 수 있어요.', law: '국민건강보험법 제72조제1항 단서, 시행령 제42조의2' });
-    if (o.home === 'own' && o.tax === 'price' && i.housePrice) tips.push({ t: '고지서의 과세표준으로 다시 넣어 보세요', d: '공시가격으로 추정한 과세표준은 과세표준상한제 때문에 실제보다 클 수 있어요. 재산세 고지서나 지방세 세목별 과세증명서의 과세표준이 정확합니다.', law: '지방세법 제110조제3항' });
-    if (r.fin > 0 && r.fin <= FIN_THRESHOLD) tips.push({ t: '이자·배당은 지금 반영되지 않아요', d: `이자·배당 합계 ${won(r.fin)}은 연 1,000만원 이하라 보험료에 넣지 않았어요. 1,000만원을 넘으면 전액이 반영됩니다.`, law: '국민건강보험법 시행규칙 제44조제1항 단서' });
-    if (r.low && !r.gapZone && anyIncome) tips.push({ t: '소득분은 최저 금액이에요', d: '반영 소득이 연 336만원(월 28만원) 이하라 소득분은 최저 20,160원으로 계산했어요.', law: '국민건강보험법 시행규칙 제44조제3항' });
-    tips.push({ t: '65세 이상·장애인·농어촌 거주 세대라면', d: '보험료 경감 대상일 수 있어요. 이 계산기에는 경감을 넣지 않았으니 공단에 확인하세요.', law: '국민건강보험법 제75조' });
-    $('tips').innerHTML = tips.slice(0, 4).map(x => `<li><b>${x.t}</b>${x.d}<span class="law">${x.law}</span></li>`).join('');
+    if (anyIncome && !r.low) tips.push({ t: '올해 소득이 크게 줄었나요?', d: '보험료는 1~2년 전 소득으로 매겨져요. 가게를 닫았거나 퇴직해서 소득이 줄었다면, 서류를 내고 지금 소득으로 다시 계산해 달라고 공단에 신청(조정신청)할 수 있어요. 나중에 확정된 소득으로 정산합니다.', law: '국민건강보험법 시행령 제41조의2' });
+    if (i.labor > 0) tips.push({ t: '최근에 회사를 그만두셨나요?', d: '회사에서 1년 이상 건강보험에 가입했다면 "임의계속가입"을 신청해 일정 기간 직장 보험료 수준으로 낼 수 있어요(본인이 전액 부담). 지역보험료를 처음 받은 날부터 그 납부기한이 지나고 2개월 안에 신청해야 해요.', law: '국민건강보험법 제110조' });
+    if (o.home === 'own' && !o.ownLoanOn && r.houseBase > BASIC_DEDUCT) tips.push({ t: '집을 살 때 대출을 받으셨나요?', d: '집이 한 채이고, 집을 산 날 앞뒤 3개월 안에 받은 주택담보대출이라면 공단에 알려 재산에서 일부(최대 5,000만원)를 뺄 수 있어요. 위 "집 살 때 받은 대출" 칸에서 미리 계산해 보세요.', law: '국민건강보험법 제72조제1항 단서, 시행령 제42조의2' });
+    if (o.home === 'rent' && !o.rentLoanOn && r.rentEval > 0) tips.push({ t: '전세자금대출을 받으셨나요?', d: '집이 없고, 입주·전입 앞뒤 3개월 안에 받은 보증금 대출이라면 공단에 알려 대출금의 30%를 재산에서 뺄 수 있어요.', law: '국민건강보험법 제72조제1항 단서, 시행령 제42조의2' });
+    if (o.home === 'own' && o.tax === 'price' && i.housePrice) tips.push({ t: '재산세 고지서 금액으로 다시 넣어 보세요', d: '공시가격으로 대략 계산한 값은 실제 과세표준보다 클 수 있어요. 재산세 고지서나 과세증명서의 "과세표준"을 넣으면 더 정확합니다.', law: '지방세법 제110조제3항' });
+    if (r.fin > 0 && r.fin <= FIN_THRESHOLD) tips.push({ t: '이자·배당은 지금 계산에 안 들어가요', d: `이자와 배당 합계 ${won(r.fin)}은 1년 1,000만원 이하라 보험료에 넣지 않았어요. 1,000만원을 넘으면 전부 들어갑니다.`, law: '국민건강보험법 시행규칙 제44조제1항 단서' });
+    if (r.low && !r.gapZone && anyIncome) tips.push({ t: '소득 몫은 가장 낮은 금액이에요', d: '계산에 쓰는 소득이 1년 336만원(한 달 28만원) 이하라, 소득 몫은 최저 금액인 20,160원으로 계산했어요.', law: '국민건강보험법 시행규칙 제44조제3항' });
+    tips.push({ t: '65세 이상이거나 장애인·농어촌 세대인가요?', d: '보험료를 깎아 주는 대상일 수 있어요. 이 계산기에는 넣지 않았으니 공단(1577-1000)에 물어보세요.', law: '국민건강보험법 제75조' });
+    $('tips').innerHTML = tips.slice(0, 4).map(x => `<li><b>${x.t}</b>${x.d}<span class="law">근거: ${x.law}</span></li>`).join('');
 }
 
 // ===== 입력 처리 =====
-function fmtInput(el, keepUnits) {
+function fmtInput(el, typing) {
     const raw = el.value;
     const n = parseMoney(raw);
-    if (!(keepUnits && hasUnit(raw))) {
+    if (!(typing && (hasKoUnit(raw) || /\.$|\.\d*0$/.test(raw)))) {
         // 커서 위치를 숫자 개수 기준으로 지켜 준다
-        const pos = el.selectionStart, digitsBefore = pos == null ? null : raw.slice(0, pos).replace(/\D/g, '').length;
-        el.value = n ? n.toLocaleString('ko-KR') : '';
+        const pos = el.selectionStart, digitsBefore = pos == null ? null : raw.slice(0, pos).replace(/[^\d.]/g, '').length;
+        el.value = typing && !hasKoUnit(raw) ? formatTyped(raw) : display(n);
         if (digitsBefore != null && document.activeElement === el) {
             let c = 0, p = 0;
-            while (p < el.value.length && c < digitsBefore) { if (/\d/.test(el.value[p])) c++; p++; }
+            while (p < el.value.length && c < digitsBefore) { if (/[\d.]/.test(el.value[p])) c++; p++; }
             try { el.setSelectionRange(p, p); } catch (e) {}
         }
     }
     const ko = document.querySelector(`[data-ko="${el.id}"]`);
-    if (ko) ko.textContent = koMoney(n);
+    if (ko) {
+        ko.textContent = n ? '= ' + koMoney(n) + (n >= BIG_WARN ? '  · 금액이 맞는지 확인하세요' : '') : '';
+        ko.classList.toggle('warnamt', n >= BIG_WARN);
+    }
 }
-function setMoney(id, n) { $(id).value = n ? String(n) : ''; fmtInput($(id)); }
+// 입력 중에는 사용자가 친 숫자 그대로 콤마만 넣는다(소수점 유지)
+function formatTyped(raw) {
+    const s = raw.replace(/[^\d.]/g, '');
+    if (!s) return '';
+    const [a, ...b] = s.split('.');
+    const head = a ? Number(a).toLocaleString('ko-KR') : '0';
+    return b.length ? head + '.' + b.join('') : head;
+}
+function setMoney(id, n) { $(id).value = display(n); fmtInput($(id)); }
 
 function setSeg(segId, attr, value) {
     $(segId).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset[attr] === value ? 'true' : 'false'));
@@ -899,24 +965,47 @@ function setTax(v) {
 }
 function setMore(btnId, bodyId, open) {
     $(btnId).setAttribute('aria-expanded', open ? 'true' : 'false');
+    $(btnId).querySelector('.st-txt').textContent = open ? '접기' : '눌러서 입력';
+    $(btnId).querySelector('.state svg').style.transform = open ? 'rotate(180deg)' : '';
     $(bodyId).classList.toggle('hide', !open);
 }
+function setUnit(u, keep) {
+    const vals = {}; MONEY_IDS.forEach(k => vals[k] = val(k));   // 바꾸기 전 단위로 읽어 둔다
+    st.unit = u; setSeg('unitSeg', 'unit', u);
+    document.querySelectorAll('.money-box .unit').forEach(s => s.textContent = u === 'man' ? '만원' : '원');
+    document.querySelectorAll('.money').forEach(el => el.placeholder = el.dataset[u === 'man' ? 'phMan' : 'phWon'] || '');
+    $('unitHint').innerHTML = u === 'man' ? '예: 2,400만원이면 <b>2400</b>만 입력하세요.' : '예: 2,400만원이면 <b>24000000</b>을 입력하세요.';
+    if (keep !== false) MONEY_IDS.forEach(k => setMoney(k, vals[k]));
+    savePref();
+}
+function setFs(f) {
+    st.fs = f; setSeg('fsSeg', 'fs', f);
+    document.documentElement.setAttribute('data-fs', f);
+    savePref();
+}
+function savePref() { try { localStorage.setItem(PREF_KEY, JSON.stringify({ unit: st.unit, fs: st.fs })); } catch (e) {} }
 
 document.querySelectorAll('.money').forEach(el => {
     el.addEventListener('input', () => { fmtInput(el, true); render(); });
     el.addEventListener('blur', () => { fmtInput(el); });
-    el.addEventListener('focus', () => { setTimeout(() => { try { el.select(); } catch (e) {} }, 0); });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
 });
 $('homeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { setHome(b.dataset.home); render(); } });
 $('taxSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { setTax(b.dataset.tax); render(); } });
+$('unitSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.unit !== st.unit) { setUnit(b.dataset.unit); toast(b.dataset.unit === 'man' ? '이제 만원 단위로 입력해요' : '이제 원 단위로 입력해요'); } });
+$('fsSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setFs(b.dataset.fs); });
 $('finToggle').addEventListener('click', () => setMore('finToggle', 'finBody', $('finToggle').getAttribute('aria-expanded') !== 'true'));
 $('etcToggle').addEventListener('click', () => setMore('etcToggle', 'etcBody', $('etcToggle').getAttribute('aria-expanded') !== 'true'));
 ['oneHouse','ltcOn','loanRatio'].forEach(id => $(id).addEventListener('change', render));
 $('ownLoanOn').addEventListener('change', () => { $('ownLoanBox').classList.toggle('hide', !$('ownLoanOn').checked); render(); });
 $('rentLoanOn').addEventListener('change', () => { $('rentLoanBox').classList.toggle('hide', !$('rentLoanOn').checked); render(); });
+['ownLoanDet','rentLoanDet','stepsBox'].forEach(id => $(id).addEventListener('toggle', () => {
+    const s = $(id).querySelector('summary .state'); if (s) s.textContent = $(id).open ? '접기' : (id === 'stepsBox' ? '눌러서 펼치기' : '눌러서 확인');
+}));
 
 function resetAll(user) {
+    // 사용자가 누른 경우에는 지우기 전에 먼저 묻는다(취소하면 아무것도 바꾸지 않음)
+    if (user && !confirm('넣은 금액을 모두 지울까요?')) return;
     MONEY_IDS.forEach(id => setMoney(id, 0));
     ['ownLoanOn','rentLoanOn'].forEach(id => { $(id).checked = false; });
     $('ownLoanBox').classList.add('hide'); $('rentLoanBox').classList.add('hide');
@@ -925,7 +1014,12 @@ function resetAll(user) {
     setHome('own'); setTax('base');
     setMore('finToggle', 'finBody', false); setMore('etcToggle', 'etcBody', false);
     $('restoreBar').classList.add('hide');
-    if (user) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} history.replaceState(null, '', location.pathname); toast('입력을 모두 지웠어요'); }
+    if (user) {
+        try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+        history.replaceState(null, '', location.pathname);
+        toast('넣은 금액을 모두 지웠어요');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     render();
 }
 
@@ -940,8 +1034,8 @@ document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('clic
     setHome(p.home);
     Object.keys(p).forEach(k => { if (k !== 'home') setMoney(k, p[k]); });
     render();
-    toast(b.firstChild.textContent.trim() + ' 예시를 불러왔어요');
-    if (window.innerWidth < 1024) $('resultCol').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    toast(b.querySelector('b').textContent + ' 예시를 불러왔어요');
+    if (window.innerWidth < 1100) $('resultCol').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 }));
 
 // ===== 저장·공유 =====
@@ -975,10 +1069,10 @@ function decodeState(t) { try { return JSON.parse(decodeURIComponent(escape(atob
 
 function toast(msg) {
     const t = $('toast'); t.textContent = msg; t.classList.add('show');
-    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3200);
 }
 function copyText(text, okMsg) {
-    const fallback = () => { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove(); toast(ok ? okMsg : '복사하지 못했어요. 직접 선택해 복사해 주세요.'); };
+    const fallback = () => { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove(); toast(ok ? okMsg : '복사하지 못했어요. 직접 선택해서 복사해 주세요.'); };
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => toast(okMsg), fallback);
     else fallback();
 }
@@ -986,12 +1080,15 @@ function copyResult() {
     const d = window.__last; if (!d) return;
     const text = ['[지역가입자 건강보험료 계산 결과 · 2026년 기준]']
         .concat(d.steps.map(s => `- ${s.k}: ${s.v} (${s.f})`))
-        .concat([`= 매달 예상 납부액 ${won(d.total)}`, '※ 안내용 추정치. 경감·감액 미반영. 실제 금액은 국민건강보험공단 고지 기준.']).join('\n');
-    copyText(text, '계산 결과를 복사했어요');
+        .concat([`= 매달 예상 납부액 ${won(d.total)} (${koMoney(d.total)})`, '※ 안내용 추정치. 경감·감액 미반영. 실제 금액은 국민건강보험공단 고지 기준.']).join('\n');
+    copyText(text, '계산 결과를 복사했어요. 문자나 카톡에 붙여 넣으세요.');
 }
-function copyLink() {
+async function copyLink() {
     const url = location.href.split('#')[0] + '#s=' + encodeState();
-    copyText(url, '지금 입력이 담긴 링크를 복사했어요');
+    if (navigator.share && /Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+        try { await navigator.share({ title: '건강보험료 계산 결과', text: '지역가입자 건강보험료 계산 결과', url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    copyText(url, '링크를 복사했어요. 받는 분이 열면 같은 결과가 보여요.');
 }
 
 function openModal() { const m = $('modal'); if (m.showModal) m.showModal(); else m.setAttribute('open', ''); }
@@ -1003,8 +1100,12 @@ if ('IntersectionObserver' in window) {
     new IntersectionObserver(es => es.forEach(e => $('mobileBar').classList.toggle('away', e.isIntersecting)), { threshold: 0.25 }).observe($('resultCard'));
 }
 
-// ===== 시작: 링크 → 저장값 → 빈 화면 =====
+// ===== 시작: 보기 설정 → 링크 → 저장값 → 빈 화면 =====
 (function init() {
+    let pref = null;
+    try { pref = JSON.parse(localStorage.getItem(PREF_KEY) || 'null'); } catch (e) {}
+    setFs(pref && ['m','l','xl'].includes(pref.fs) ? pref.fs : 'm');
+    setUnit(pref && pref.unit === 'won' ? 'won' : 'man', false);
     let restored = false, from = '';
     const m = location.hash.match(/^#s=([A-Za-z0-9+/]+)/);
     if (m) { restored = applySnapshot(decodeState(m[1])); from = 'link'; }
@@ -1015,7 +1116,7 @@ if ('IntersectionObserver' in window) {
     }
     if (!restored) render();
     else {
-        $('restoreMsg').textContent = from === 'link' ? '공유받은 링크의 입력값을 불러왔어요.' : '지난번 입력을 불러왔어요.';
+        $('restoreMsg').textContent = from === 'link' ? '보내 주신 링크의 금액을 불러왔어요.' : '지난번에 넣은 금액을 불러왔어요.';
         $('restoreBar').classList.remove('hide');
     }
     saveReady = true;

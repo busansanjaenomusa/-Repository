@@ -260,6 +260,7 @@
                     <div class="mt-5">
                         <div class="row"><span class="k">소득보험료</span><span class="v num" id="rInc">0원</span></div>
                         <div class="row"><span class="k">재산보험료</span><span class="v num" id="rProp">0원</span></div>
+                        <div class="row hide" id="rCapRow"><span class="k text-rose-700">상한 적용</span><span class="v num text-rose-700" id="rCap">0원</span></div>
                         <div class="row"><span class="k font-bold text-slate-800">건강보험료</span><span class="v num text-teal-700" id="rHealth">0원</span></div>
                         <div class="row" id="rLtcRow"><span class="k">장기요양보험료</span><span class="v num" id="rLtc">0원</span></div>
                     </div>
@@ -276,7 +277,7 @@
                 </section>
 
                 <section class="text-xs leading-relaxed text-slate-500 px-1">
-                    <p>안내용 <b>추정치</b>입니다. 국민건강보험공단 모의계산(2026년 기준)과 예시 5건을 대조해 일치했습니다. 공단 모의계산도 경감·한시적 감액이 반영되지 않은 예상 보험료입니다.</p>
+                    <p>안내용 <b>추정치</b>입니다. 국민건강보험공단 모의계산(2026년 기준)과 하한·상한 경계를 포함한 14건을 대조해 모두 일치했습니다(소득월액 280,000원 초과 약 280,389원 이하 구간은 [미확인]). 공단 모의계산도 경감·한시적 감액이 반영되지 않은 예상 보험료입니다.</p>
                     <p class="mt-1"><b>반영하지 않은 것:</b> 65세 이상·장애인·농어촌 등 경감, 전자고지·자동이체 감액, 전월세 갱신 시 10% 초과분 제외, 피부양자 해당 여부. 실제 금액은 공단 고지서로 확인하세요.</p>
                 </section>
             </aside>
@@ -332,8 +333,10 @@
                         <li>2026년 지역가입자 월별 보험료 상한 4,591,740원, 하한 20,160원(보건복지부 고시 제2025-222호).</li>
                         <li>장기요양보험료 = 건강보험료 × (0.9448% ÷ 7.19%) ≈ 13.14%(2026년 장기요양보험료율, 언론 보도 기준).</li>
                         <li>끝수 처리: 국민건강보험법 제107조와 국고금 관리법 제47조제1항에 따라 10원 미만을 계산하지 않습니다. 순서는 공단 모의계산과 같게 했습니다. ① 소득분·재산분은 각각 원 미만 버림 → ② 합한 건강보험료에서 10원 미만 절사 → ③ 장기요양보험료 = 건강보험료 × 0.9448 ÷ 7.19, 10원 미만 절사.</li>
-                        <li>2026년 기준 공단 모의계산과 대조해 일치한 예: 사업소득 2,400만원·주택 과표 1.5억 → 226,820원 / 사업소득 2,401만원·과표 1.5억 → 226,890원 / 연금 또는 근로 1,200만원·과표 2.5억 → 168,690원 / 소득 0원·과표 1.5억 → 86,930원 (건강+장기요양).</li>
-                        <li>[미확인] 공단 모의계산으로 대조하지 못한 구간: 소득 0원·재산 0원(계산기는 시행규칙 제44조제3항과 고시 제2025-222호에 따라 20,160원 + 장기요양 2,640원 = 22,800원), 소득월액 28만원 경계(연 336만원 근처), 상한 4,591,740원 경계.</li>
+                        <li>2026년 기준 공단 모의계산과 대조해 일치한 예(건강+장기요양): 사업소득 2,400만원·주택 과표 1.5억 → 226,820원 / 2,401만원·과표 1.5억 → 226,890원 / 연금 또는 근로 1,200만원·과표 2.5억 → 168,690원 / 소득 0원·과표 1.5억 → 86,930원 / 소득 0원·재산 0원 → 22,800원.</li>
+                        <li>연 336만원 경계: 사업소득 335만·336만원(하한 20,160원 → 22,800원), 337만원(22,840원), 338만원(22,910원)이 공단 모의계산과 일치합니다.</li>
+                        <li>상한 경계: 사업소득 7억 6,000만원(5,152,030원), 7억 6,634만원(5,195,010원), 7억 6,635만원(5,195,080원), 8억원과 7억 6,000만원 + 과표 2억(상한 4,591,740원 + 장기요양 603,370원)이 공단 모의계산과 일치합니다. 상한은 소득분 + 재산분 합계에 적용하고, 장기요양보험료는 상한 적용 후 건강보험료로 계산합니다.</li>
+                        <li>[미확인] 소득월액 280,000원 초과 약 280,389원 이하 구간: 정률 소득분이 하한보다 작아지는데, 공단 입력이 만원 단위라 확인하지 못했습니다. 계산기는 시행규칙 제44조제3항과 월 하한(고시 제2025-222호 제3조제2호)에 따라 건강보험료가 20,160원 밑으로 내려가지 않게 했습니다.</li>
                         <li>과세표준상한제: 주택 과세표준은 과세표준상한액을 넘을 수 없습니다(지방세법 제110조제3항). 건강보험은 재산세 과세표준을 쓰므로 상한제가 적용된 값이 기준이 된다고 보았습니다. 다만 이는 법 구조에 따른 해석이며, 공단 문서에서 이를 명시한 곳은 찾지 못했습니다.</li>
                     </ul>
                 </div>
@@ -477,16 +480,23 @@
         const rawHealth = incPrem + propPrem;
         let health = f10(Math.min(CAP, Math.max(FLOOR, rawHealth)));
         const capped = rawHealth > CAP;
+        // 소득월액 28만원 초과인데 정률 소득분이 하한(20,160원)보다 작은 구간: 공단 처리 미확인
+        const gapZone = !low && incPrem < FLOOR;
+        const floored = rawHealth < FLOOR;
         const ltcOn = $('ltcOn').checked;
         const ltc = ltcOn ? f10(health * LTC_NUM / LTC_DEN) : 0;
         const total = health + ltc;
-        steps.push({ k: '건강보험료', v: won(health), f: capped ? `상한 ${won(CAP)} 적용` : `${won(incPrem)} + ${won(propPrem)} = ${won(rawHealth)} → 10원 미만 절사` });
+        const sumLine = `${won(incPrem)} + ${won(propPrem)} = ${won(rawHealth)}`;
+        steps.push({ k: '건강보험료', v: won(health), f: capped ? `${sumLine} → 상한 ${won(CAP)} 적용` : floored ? `${sumLine} → 월 하한 ${won(FLOOR)} 적용 [미확인 구간]` : `${sumLine} → 10원 미만 절사` });
         if (ltcOn) steps.push({ k: '장기요양보험료', v: won(ltc), f: `${won(health)} × 0.9448 ÷ 7.19 (10원 미만 절사)` });
 
         // 화면 반영
-        // 막대·내역은 상한 적용 전 비율로 나눠 보여 준다
-        const incShow = capped ? health * incPrem / rawHealth : incPrem;
-        const propShow = capped ? health * propPrem / rawHealth : propPrem;
+        // 내역은 공단 모의계산 화면처럼 항목별 금액(각각 상한 이내)을 그대로 보여 주고, 상한에 걸리면 깎인 금액을 따로 표시
+        const incShow = Math.min(incPrem, CAP);
+        const propShow = Math.min(propPrem, CAP);
+        const capCut = capped ? incShow + propShow - CAP : 0;
+        $('rCap').textContent = '− ' + won(capCut);
+        $('rCapRow').classList.toggle('hide', capCut <= 0);
         $('total').textContent = total.toLocaleString('ko-KR');
         $('mTotal').textContent = total.toLocaleString('ko-KR');
         $('yearTotal').textContent = won(total * 12);
@@ -497,9 +507,12 @@
         $('rLtcRow').classList.toggle('hide', !ltcOn);
         $('ltcLegend').classList.toggle('hide', !ltcOn);
         $('totalSub').textContent = ltcOn ? '(건강 + 장기요양)' : '(건강보험료만)';
-        const sum = incShow + propShow + ltc || 1;
-        $('barInc').style.width = (incShow / sum * 100) + '%';
-        $('barProp').style.width = (propShow / sum * 100) + '%';
+        // 막대는 실제 납부액 기준이라 상한에 걸리면 소득분·재산분을 비율대로 줄인다
+        const incBar = capped ? health * incPrem / rawHealth : incPrem;
+        const propBar = capped ? health * propPrem / rawHealth : propPrem;
+        const sum = incBar + propBar + ltc || 1;
+        $('barInc').style.width = (incBar / sum * 100) + '%';
+        $('barProp').style.width = (propBar / sum * 100) + '%';
         $('barLtc').style.width = (ltc / sum * 100) + '%';
 
         const note = $('capNote');
@@ -508,7 +521,10 @@
             note.textContent = loanMsg;
         } else if (capped) {
             note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-rose-50 border border-rose-200 text-rose-800';
-            note.textContent = `계산액 ${won(rawHealth)}이 월 상한 ${won(CAP)}을 넘어 상한액을 적용했습니다.`;
+            note.textContent = `소득분 + 재산분 ${won(rawHealth)}이 월 상한 ${won(CAP)}을 넘어 상한액을 적용했습니다. 장기요양보험료는 상한이 적용된 건강보험료를 기준으로 계산합니다.`;
+        } else if (gapZone) {
+            note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-amber-50 border border-amber-200 text-amber-900';
+            note.textContent = `[미확인] 소득월액이 28만원을 막 넘어(280,000원 초과 약 280,389원 이하) 정률 소득분(${won(incPrem)})이 하한 ${won(FLOOR)}보다 작은 구간입니다. 시행규칙 제44조제3항과 월 하한(고시 제2025-222호)에 따라 건강보험료가 ${won(FLOOR)} 밑으로 내려가지 않게 했지만, 공단 모의계산은 만원 단위로만 입력할 수 있어 이 구간을 확인하지 못했습니다.`;
         } else if (low && !g) {
             note.className = 'mt-3 text-xs leading-relaxed rounded-xl p-3 bg-teal-50 border border-teal-200 text-teal-800';
             note.textContent = `소득월액 28만원 이하, 공제 후 재산 0원이라 최저보험료 ${won(FLOOR)}이 적용됩니다.`;

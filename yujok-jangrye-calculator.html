@@ -85,7 +85,8 @@
         <!-- 1단계 평균임금 -->
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7">
           <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">1단계: 돌아가신 분의 평균임금</h2>
-          <p class="text-slate-600 mb-5">사망한 날(직업병은 진단 확정일) 전 3개월 동안 받은 임금으로 계산합니다.</p>
+          <p class="text-slate-600 mb-2"><strong>사망의 원인이 된 사고가 발생한 날</strong>(질병은 <strong>진단으로 발병이 확정된 날</strong>) 전 3개월 동안 받은 임금으로 계산합니다. 사망한 날이 기준이 아닙니다 (근로기준법 시행령 제52조).</p>
+          <p class="text-sm text-slate-500 mb-5">사고·진단일로부터 1년이 지난 뒤 사망했다면 평균임금이 매년 증감되므로(산재보험법 제36조 제3항) 공단이 증감한 금액을 '직접 입력'으로 넣으세요.</p>
 
           <div class="grid grid-cols-2 gap-2 mb-5" role="radiogroup">
             <label class="cursor-pointer">
@@ -100,7 +101,7 @@
 
           <div id="wage-months" class="space-y-4">
             <div>
-              <label for="wage3m" class="block font-bold text-slate-800 mb-1">사망 전 3개월 동안 받은 임금 총액 (세전)</label>
+              <label for="wage3m" class="block font-bold text-slate-800 mb-1">사고(진단) 전 3개월 동안 받은 임금 총액 (세전)</label>
               <div class="relative">
                 <input id="wage3m" type="text" inputmode="numeric" placeholder="예: 10,500,000" class="money w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">원</span>
@@ -113,7 +114,7 @@
                 <input id="days3m" type="number" min="1" max="92" value="92" class="w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">일</span>
               </div>
-              <p class="text-sm text-slate-500 mt-1">보통 89~92일입니다. 사망일 직전 3개월의 실제 날짜 수를 넣으면 정확합니다.</p>
+              <p class="text-sm text-slate-500 mt-1">보통 89~92일입니다. 사고(진단)일 직전 3개월의 실제 날짜 수를 넣으면 정확합니다.</p>
             </div>
             <details class="rounded-2xl border border-slate-200 bg-slate-50">
               <summary class="cursor-pointer px-4 py-3 font-bold text-slate-700 flex items-center justify-between">
@@ -122,11 +123,11 @@
               </summary>
               <div class="px-4 pb-4 space-y-3">
                 <div>
-                  <label for="bonusYear" class="block font-semibold text-slate-700 mb-1">사망 전 1년간 받은 상여금 총액</label>
+                  <label for="bonusYear" class="block font-semibold text-slate-700 mb-1">사고(진단) 전 1년간 받은 상여금 총액</label>
                   <input id="bonusYear" type="text" inputmode="numeric" placeholder="0" class="money w-full text-lg font-bold border-2 border-slate-300 rounded-xl px-4 py-2.5 focus:border-brand-500 focus:outline-none">
                 </div>
                 <div>
-                  <label for="annualLeaveYear" class="block font-semibold text-slate-700 mb-1">사망 전 1년간 받은 연차휴가수당</label>
+                  <label for="annualLeaveYear" class="block font-semibold text-slate-700 mb-1">사고(진단) 전 1년간 받은 연차휴가수당</label>
                   <input id="annualLeaveYear" type="text" inputmode="numeric" placeholder="0" class="money w-full text-lg font-bold border-2 border-slate-300 rounded-xl px-4 py-2.5 focus:border-brand-500 focus:outline-none">
                 </div>
                 <p class="text-sm text-slate-500">고용노동부 평균임금 산정 실무에 따라 1년분의 3/12을 3개월 임금총액에 더합니다. 포함 여부는 지급 근거(단체협약·취업규칙 등)에 따라 달라질 수 있습니다.</p>
@@ -140,7 +141,7 @@
               <input id="dailyDirect" type="text" inputmode="numeric" placeholder="예: 115,000" class="money w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">원</span>
             </div>
-            <p class="text-sm text-slate-500 mt-1">근로복지공단 결정서나 평균임금 산정내역서의 금액을 넣으세요.</p>
+            <p class="text-sm text-slate-500 mt-1">근로복지공단 결정서나 평균임금 산정내역서의 금액(증감 반영액)을 넣으세요.</p>
           </div>
 
           <details class="mt-4 rounded-2xl border border-slate-200 bg-slate-50">
@@ -406,7 +407,7 @@
         <ul class="list-disc pl-5 space-y-1">
           <li><strong>진폐로 인한 사망</strong>: 유족보상연금 대신 진폐유족연금(법 제91조의4)이 적용되어 계산 방식이 다릅니다.</li>
           <li><strong>평균임금 특례</strong>: 직업병(시행령 제25조), 일용근로자 통상근로계수(시행령 제23조·제24조), 근로형태 특이자 등은 공단 산정액을 직접 입력하세요.</li>
-          <li><strong>평균임금 증감</strong>: 사유 발생 1년 후부터 매년 임금·물가 변동률에 따라 연금액이 바뀝니다 (법 제36조 제3항).</li>
+          <li><strong>평균임금 증감</strong>: 평균임금 산정사유 발생일(사고일·진단 확정일)부터 1년이 지나면 매년 임금·물가 변동률에 따라 평균임금이 증감되어 연금액도 바뀝니다 (법 제36조 제3항). 사고·진단 후 1년이 지나 사망한 경우에는 증감된 평균임금을 직접 입력해야 합니다.</li>
           <li><strong>민사 손해배상</strong>: 사업주에 대한 손해배상에서는 같은 사유로 받은 산재 보험급여가 공제됩니다(법 제80조). 초과 손해 계산은 별도로 필요합니다.</li>
         </ul>
       </div>
@@ -491,11 +492,11 @@
       const steps = [];
       if (radio('wageMode') === 'months') {
         const total = parseMoney($('wage3m'));
-        const days = Math.max(1, count('days3m'));
+        const days = count('days3m');
         const bonus = parseMoney($('bonusYear'));
         const leave = parseMoney($('annualLeaveYear'));
         const extra = Math.floor(bonus * 3 / 12) + Math.floor(leave * 3 / 12);
-        if (total <= 0) return null;
+        if (total <= 0 || days <= 0) return null;
         raw = (total + extra) / days;
         steps.push(`평균임금 = (3개월 임금 ${won(total)}${extra > 0 ? ` + 상여금·연차수당 3/12 ${won(extra)}` : ''}) ÷ ${days}일 = <strong>${fmt(raw)}원</strong> (근로기준법 제2조 제1항 제6호)`);
       } else {
@@ -532,6 +533,9 @@
       }
 
       const steps = [...wage.steps];
+      if (new Date() > new Date(2026, 11, 31, 23, 59, 59)) {
+        warn.push('이 계산기의 최고·최저 보상기준 금액과 장례비 최고·최저금액은 2026. 12. 31.까지 유효한 고시 값입니다. 사고(진단) 연도에 맞는 고시 금액인지 확인하세요.');
+      }
       const W_raw = wage.raw;
 
       // 유족급여용 평균임금: 최고·최저 보상기준 금액 모두 적용 (법 제36조 제7항 본문)

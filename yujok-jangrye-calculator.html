@@ -260,11 +260,11 @@
             <div class="mt-5 pt-4 border-t border-white/20 grid grid-cols-2 gap-3">
               <div>
                 <p class="text-brand-100 text-sm">장례비</p>
-                <p class="text-xl font-black" id="res-funeral">-</p>
+                <p class="text-lg sm:text-xl font-black break-all" id="res-funeral">-</p>
               </div>
               <div>
                 <p class="text-brand-100 text-sm" id="res-first-label">처음 받는 일시금 합계</p>
-                <p class="text-xl font-black" id="res-first">-</p>
+                <p class="text-lg sm:text-xl font-black break-all" id="res-first">-</p>
               </div>
             </div>
           </div>
@@ -408,7 +408,7 @@
           <li><strong>진폐로 인한 사망</strong>: 유족보상연금 대신 진폐유족연금(법 제91조의4)이 적용되어 계산 방식이 다릅니다.</li>
           <li><strong>평균임금 특례</strong>: 직업병(시행령 제25조), 일용근로자 통상근로계수(시행령 제23조·제24조), 근로형태 특이자 등은 공단 산정액을 직접 입력하세요.</li>
           <li><strong>평균임금 증감</strong>: 평균임금 산정사유 발생일(사고일·진단 확정일)부터 1년이 지나면 매년 임금·물가 변동률에 따라 평균임금이 증감되어 연금액도 바뀝니다 (법 제36조 제3항). 사고·진단 후 1년이 지나 사망한 경우에는 증감된 평균임금을 직접 입력해야 합니다.</li>
-          <li><strong>민사 손해배상</strong>: 사업주에 대한 손해배상에서는 같은 사유로 받은 산재 보험급여가 공제됩니다(법 제80조). 초과 손해 계산은 별도로 필요합니다.</li>
+          <li><strong>민사 손해배상</strong>: 유족이 같은 사유로 보험급여를 받으면 사업주는 그 금액 한도에서 민법상 손해배상 책임을 면하며, 유족보상연금을 받고 있는 사람은 유족보상일시금(1,300일분)을 받은 것으로 봅니다(법 제80조 제2항). 이를 넘는 손해(초과 손해)는 별도로 계산해야 합니다.</li>
         </ul>
       </div>
     </section>
@@ -448,6 +448,8 @@
 
     const fmt = n => Math.floor(n).toLocaleString('ko-KR');
     const won = n => fmt(n) + '원';
+    // 평균임금처럼 원 미만이 생길 수 있는 값: 계산에 쓴 값을 소수 둘째 자리까지 그대로 표시
+    const wonW = n => n.toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '원';
     const manwon = n => {
       const v = Math.floor(n);
       if (v >= 100000000) {
@@ -498,7 +500,7 @@
         const extra = Math.floor(bonus * 3 / 12) + Math.floor(leave * 3 / 12);
         if (total <= 0 || days <= 0) return null;
         raw = (total + extra) / days;
-        steps.push(`평균임금 = (3개월 임금 ${won(total)}${extra > 0 ? ` + 상여금·연차수당 3/12 ${won(extra)}` : ''}) ÷ ${days}일 = <strong>${fmt(raw)}원</strong> (근로기준법 제2조 제1항 제6호)`);
+        steps.push(`평균임금 = (3개월 임금 ${won(total)}${extra > 0 ? ` + 상여금·연차수당 3/12 ${won(extra)}` : ''}) ÷ ${days}일 = <strong>${wonW(raw)}</strong> (근로기준법 제2조 제1항 제6호)`);
       } else {
         raw = parseMoney($('dailyDirect'));
         if (raw <= 0) return null;
@@ -565,15 +567,15 @@
         const pct = SURVIVOR.BASE_PCT + addPct;
         const baseYear = W * 365;
         const annual = Math.floor(baseYear * pct / 100);
-        steps.push(`급여기초연액 = ${won(W)} × 365 = ${won(baseYear)}`);
+        steps.push(`급여기초연액 = ${wonW(W)} × 365 = ${wonW(baseYear)}`);
         steps.push(`연금 수급자격자 ${qualified}명 → 기본 47% + 가산 ${addPct}%${qualified * 5 > 20 ? ' (한도 20%)' : ''} = <strong>${pct}%</strong> (별표 3)`);
-        steps.push(`유족보상연금 연액 = ${won(baseYear)} × ${pct}% = <strong>${won(annual)}</strong> → 월 ${won(annual / 12)} (법 제70조 제3항)`);
+        steps.push(`유족보상연금 연액 = ${wonW(baseYear)} × ${pct}% = <strong>${won(annual)}</strong> → 월 ${won(annual / 12)} (법 제70조 제3항)`);
 
         const lumpHalf = Math.floor(W * SURVIVOR.LUMP_DAYS * 0.5);
         if (split) {
           const halfAnnual = Math.floor(annual / 2);
           firstLump = lumpHalf;
-          steps.push(`50% 일시금 선택: 일시금 ${won(W)} × 650일 = <strong>${won(lumpHalf)}</strong>, 연금은 50% 감액 → 연 ${won(halfAnnual)} (법 제62조 제3항)`);
+          steps.push(`50% 일시금 선택: 일시금 ${wonW(W)} × 650일 = <strong>${won(lumpHalf)}</strong>, 연금은 50% 감액 → 연 ${won(halfAnnual)} (법 제62조 제3항)`);
           headlineLabel = '유족보상연금 (50% 감액, 매월)';
           headline = won(halfAnnual / 12);
           headlineSub = `연 ${manwon(halfAnnual)} + 처음에 일시금 ${manwon(lumpHalf)}`;
@@ -618,7 +620,7 @@
         $('res-compare-box').classList.add('hidden');
         const lump = Math.floor(W * SURVIVOR.LUMP_DAYS);
         firstLump = lump;
-        steps.push(`사망 당시 연금 수급자격자가 없음 → 유족보상일시금 = ${won(W)} × 1,300일 = <strong>${won(lump)}</strong> (법 제62조 제2항, 별표 3)`);
+        steps.push(`사망 당시 연금 수급자격자가 없음 → 유족보상일시금 = ${wonW(W)} × 1,300일 = <strong>${won(lump)}</strong> (법 제62조 제2항, 별표 3)`);
         if (split) warn.push('연금 수급자격자가 없어 50% 일시금 선택은 적용되지 않습니다.');
 
         const five = ['child', 'parent', 'grandchild', 'grandparent'];
@@ -634,7 +636,7 @@
         }
         headlineLabel = '유족보상일시금';
         headline = won(lump);
-        headlineSub = `평균임금 ${won(W)} × 1,300일분`;
+        headlineSub = `평균임금 ${wonW(W)} × 1,300일분`;
         if (found) {
           const share = Math.floor(lump / found.n);
           recipientHtml = `<p><strong class="text-brand-700">수급권자: ${found.label}</strong> (제65조 제1항 제${found.rank}호)</p>
@@ -656,7 +658,7 @@
         let note = '';
         if (funeral120 > STATUTORY_2026.FUNERAL_MAX) note = ` → 최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 적용`;
         else if (funeral120 < STATUTORY_2026.FUNERAL_MIN) note = ` → 최저금액 ${won(STATUTORY_2026.FUNERAL_MIN)} 적용`;
-        steps.push(`장례비 = 평균임금 ${won(W_raw)} × 120일 = ${won(funeral120)}${note} → <strong>${won(funeral)}</strong> (법 제71조, 고시 제2025-85호)`);
+        steps.push(`장례비 = 평균임금 ${wonW(W_raw)} × 120일 = ${won(funeral120)}${note} → <strong>${won(funeral)}</strong> (법 제71조, 고시 제2025-85호)`);
       } else {
         const actual = parseMoney($('funeralActual'));
         funeral = Math.min(actual, funeral120, STATUTORY_2026.FUNERAL_MAX);
@@ -681,8 +683,8 @@
       $('res-headline-label').textContent = headlineLabel;
       $('res-headline').textContent = headline;
       $('res-headline-sub').textContent = headlineSub;
-      $('res-funeral').textContent = manwon(funeralShown) + ($('funeralPrepaid').checked ? ' (잔액)' : '');
-      $('res-first').textContent = manwon(firstLump + funeralShown);
+      $('res-funeral').textContent = won(funeralShown) + ($('funeralPrepaid').checked ? ' (잔액)' : '');
+      $('res-first').textContent = won(firstLump + funeralShown);
       $('res-first-label').textContent = qualified > 0 && !split ? '처음 받는 일시금 (장례비)' : '처음 받는 일시금 합계';
       $('res-recipient').innerHTML = recipientHtml;
       resSteps.innerHTML = steps.map(s => `<li>${s}</li>`).join('');

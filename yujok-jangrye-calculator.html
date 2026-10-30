@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>산재 유족급여·장례비 계산기</title>
+  <meta name="description" content="업무상 사망 시 산재보험 유족보상연금·유족보상일시금·장례비 예상액을 2026년 법령·고시 기준으로 계산합니다.">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for clean icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa',
+              500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary { list-style: none; }
+    .stepper button { min-width: 44px; min-height: 44px; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff !important; color: #000 !important; }
+      .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased pb-12">
+
+  <header class="bg-white border-b border-slate-300 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 text-white flex items-center justify-center text-2xl shadow-md">
+          <i class="fa-solid fa-hand-holding-heart"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">산재 유족급여·장례비 계산기</h1>
+          <p class="text-sm text-slate-500">2026년 법령·고용노동부 고시 기준 모의계산</p>
+        </div>
+      </div>
+      <button onclick="window.print()" class="no-print hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 font-semibold text-slate-700">
+        <i class="fa-solid fa-print"></i> 인쇄
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1">
+
+    <!-- Tabs -->
+    <nav class="no-print flex gap-1 border-b border-slate-300 mb-6 overflow-x-auto">
+      <button id="tab-btn-calc" onclick="switchTab('calc')" class="min-h-[50px] py-3 px-4 border-b-4 border-brand-600 text-brand-700 font-bold whitespace-nowrap text-base sm:text-lg">
+        <i class="fa-solid fa-calculator mr-1"></i> 계산하기
+      </button>
+      <button id="tab-btn-guide" onclick="switchTab('guide')" class="min-h-[50px] py-3 px-4 border-b-4 border-transparent text-slate-600 hover:text-slate-900 font-bold whitespace-nowrap text-base sm:text-lg">
+        <i class="fa-solid fa-book-open mr-1"></i> 법령 기준·신청 안내
+      </button>
+    </nav>
+
+    <!-- ===================== 계산 탭 ===================== -->
+    <section id="tab-calc" class="grid lg:grid-cols-5 gap-6">
+
+      <!-- 입력 -->
+      <div class="lg:col-span-3 space-y-6">
+
+        <!-- 1단계 평균임금 -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7">
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">1단계: 돌아가신 분의 평균임금</h2>
+          <p class="text-slate-600 mb-5">사망한 날(직업병은 진단 확정일) 전 3개월 동안 받은 임금으로 계산합니다.</p>
+
+          <div class="grid grid-cols-2 gap-2 mb-5" role="radiogroup">
+            <label class="cursor-pointer">
+              <input type="radio" name="wageMode" value="months" class="peer sr-only" checked>
+              <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">3개월 임금으로 계산</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="wageMode" value="daily" class="peer sr-only">
+              <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">1일 평균임금 직접 입력</div>
+            </label>
+          </div>
+
+          <div id="wage-months" class="space-y-4">
+            <div>
+              <label for="wage3m" class="block font-bold text-slate-800 mb-1">사망 전 3개월 동안 받은 임금 총액 (세전)</label>
+              <div class="relative">
+                <input id="wage3m" type="text" inputmode="numeric" placeholder="예: 10,500,000" class="money w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">원</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-1">기본급·각종 수당·연장근로수당 등 3개월치 합계. 월급만 안다면 월급 × 3을 넣으세요.</p>
+            </div>
+            <div>
+              <label for="days3m" class="block font-bold text-slate-800 mb-1">그 3개월의 달력상 총 일수</label>
+              <div class="relative">
+                <input id="days3m" type="number" min="1" max="92" value="92" class="w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">일</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-1">보통 89~92일입니다. 사망일 직전 3개월의 실제 날짜 수를 넣으면 정확합니다.</p>
+            </div>
+            <details class="rounded-2xl border border-slate-200 bg-slate-50">
+              <summary class="cursor-pointer px-4 py-3 font-bold text-slate-700 flex items-center justify-between">
+                상여금·연차수당이 있었다면 (선택)
+                <i class="fa-solid fa-chevron-down text-slate-400"></i>
+              </summary>
+              <div class="px-4 pb-4 space-y-3">
+                <div>
+                  <label for="bonusYear" class="block font-semibold text-slate-700 mb-1">사망 전 1년간 받은 상여금 총액</label>
+                  <input id="bonusYear" type="text" inputmode="numeric" placeholder="0" class="money w-full text-lg font-bold border-2 border-slate-300 rounded-xl px-4 py-2.5 focus:border-brand-500 focus:outline-none">
+                </div>
+                <div>
+                  <label for="annualLeaveYear" class="block font-semibold text-slate-700 mb-1">사망 전 1년간 받은 연차휴가수당</label>
+                  <input id="annualLeaveYear" type="text" inputmode="numeric" placeholder="0" class="money w-full text-lg font-bold border-2 border-slate-300 rounded-xl px-4 py-2.5 focus:border-brand-500 focus:outline-none">
+                </div>
+                <p class="text-sm text-slate-500">고용노동부 평균임금 산정 실무에 따라 1년분의 3/12을 3개월 임금총액에 더합니다. 포함 여부는 지급 근거(단체협약·취업규칙 등)에 따라 달라질 수 있습니다.</p>
+              </div>
+            </details>
+          </div>
+
+          <div id="wage-daily" class="hidden">
+            <label for="dailyDirect" class="block font-bold text-slate-800 mb-1">1일 평균임금</label>
+            <div class="relative">
+              <input id="dailyDirect" type="text" inputmode="numeric" placeholder="예: 115,000" class="money w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">원</span>
+            </div>
+            <p class="text-sm text-slate-500 mt-1">근로복지공단 결정서나 평균임금 산정내역서의 금액을 넣으세요.</p>
+          </div>
+
+          <details class="mt-4 rounded-2xl border border-slate-200 bg-slate-50">
+            <summary class="cursor-pointer px-4 py-3 font-bold text-slate-700 flex items-center justify-between">
+              1일 통상임금과 비교하기 (선택)
+              <i class="fa-solid fa-chevron-down text-slate-400"></i>
+            </summary>
+            <div class="px-4 pb-4">
+              <label for="ordinaryDaily" class="block font-semibold text-slate-700 mb-1">1일 통상임금</label>
+              <input id="ordinaryDaily" type="text" inputmode="numeric" placeholder="0" class="money w-full text-lg font-bold border-2 border-slate-300 rounded-xl px-4 py-2.5 focus:border-brand-500 focus:outline-none">
+              <p class="text-sm text-slate-500 mt-1">평균임금이 통상임금보다 적으면 통상임금을 평균임금으로 합니다(근로기준법 제2조 제2항).</p>
+            </div>
+          </details>
+        </div>
+
+        <!-- 2단계 유족 -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7">
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">2단계: 남은 가족(유족)</h2>
+          <p class="text-slate-600 mb-4">가족마다 <strong>사망 당시 생계를 같이 했는지</strong>와 <strong>나이·장애 요건</strong>에 따라 연금을 받을 수 있는지가 갈립니다.</p>
+
+          <div class="rounded-2xl bg-brand-50 border border-brand-200 p-4 mb-5 text-[15px] text-slate-700 space-y-1">
+            <p><strong>생계를 같이 했다</strong> = 같은 세대에 살며 고인의 소득으로 생활했거나, 학업·취업·요양 등으로 따로 살았어도 고인의 소득으로 생활한 경우, 또는 고인이 정기적으로 보내 준 돈으로 생활한 경우 (시행령 제61조)</p>
+            <p><strong>연금 요건</strong> = 부모·조부모 60세 이상 / 자녀·손자녀 25세 미만 / 형제자매 19세 미만 또는 60세 이상 / 그 밖에 장애인복지법상 장애인으로 고용노동부령이 정한 장애 정도에 해당 (법 제63조 제1항)</p>
+          </div>
+
+          <!-- 배우자 -->
+          <div class="mb-5">
+            <p class="font-bold text-slate-800 mb-2">배우자 <span class="text-sm font-medium text-slate-500">(사실혼 배우자 포함, 나이 요건 없음)</span></p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" role="radiogroup">
+              <label class="cursor-pointer">
+                <input type="radio" name="spouse" value="none" class="peer sr-only">
+                <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">없음</div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="spouse" value="A" class="peer sr-only" checked>
+                <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">생계를 같이 함</div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="spouse" value="C" class="peer sr-only">
+                <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">생계를 같이 안 함</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 가족 표 -->
+          <div class="overflow-x-auto -mx-1">
+            <table class="w-full text-[15px] border-separate border-spacing-y-2 min-w-[560px]">
+              <thead>
+                <tr class="text-slate-600 text-sm">
+                  <th class="text-left font-bold px-1">가족</th>
+                  <th class="font-bold px-1 text-brand-700">생계 같이 함<br><span class="font-medium">+ 나이·장애 요건 충족</span></th>
+                  <th class="font-bold px-1">생계 같이 함<br><span class="font-medium">요건 미충족</span></th>
+                  <th class="font-bold px-1">생계를<br>같이 안 함</th>
+                </tr>
+              </thead>
+              <tbody id="family-rows"></tbody>
+            </table>
+          </div>
+
+          <label class="mt-4 flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 cursor-pointer">
+            <input id="splitOption" type="checkbox" class="mt-1 w-6 h-6 accent-brand-600">
+            <span><strong>연금 일부를 일시금으로 받기</strong> (유족보상일시금의 50%를 먼저 받고, 연금은 50%만 받음 — 법 제62조 제3항)</span>
+          </label>
+
+          <details class="mt-3 rounded-2xl border border-slate-200 bg-slate-50">
+            <summary class="cursor-pointer px-4 py-3 font-bold text-slate-700 flex items-center justify-between">
+              연금 누적액을 몇 년까지 볼까요? (선택)
+              <i class="fa-solid fa-chevron-down text-slate-400"></i>
+            </summary>
+            <div class="px-4 pb-4">
+              <label for="years" class="block font-semibold text-slate-700 mb-1">비교 기간</label>
+              <div class="relative">
+                <input id="years" type="number" min="1" max="60" value="10" class="w-full text-lg font-bold border-2 border-slate-300 rounded-xl px-4 py-2.5 pr-12 focus:border-brand-500 focus:outline-none">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">년</span>
+              </div>
+              <p class="text-sm text-slate-500 mt-1">평균임금 증감(법 제36조 제3항)과 수급자격 변동(자녀 25세 도달 등)은 반영하지 않은 단순 누적액입니다.</p>
+            </div>
+          </details>
+        </div>
+
+        <!-- 3단계 장례비 -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7">
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">3단계: 장례를 치른 사람</h2>
+          <p class="text-slate-600 mb-4">장례비는 장례를 지낸 사람에게 지급됩니다 (법 제71조).</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4" role="radiogroup">
+            <label class="cursor-pointer">
+              <input type="radio" name="funeralBy" value="family" class="peer sr-only" checked>
+              <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">유족이 장례를 치름</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="funeralBy" value="other" class="peer sr-only">
+              <div class="peer-checked:bg-brand-600 peer-checked:text-white peer-checked:border-brand-600 border-2 border-slate-300 rounded-2xl px-3 py-3 text-center font-bold">유족이 아닌 사람이 치름</div>
+            </label>
+          </div>
+          <div id="funeral-actual-wrap" class="hidden mb-4">
+            <label for="funeralActual" class="block font-bold text-slate-800 mb-1">실제 들어간 장례 비용</label>
+            <div class="relative">
+              <input id="funeralActual" type="text" inputmode="numeric" placeholder="예: 12,000,000" class="money w-full text-xl font-bold border-2 border-slate-300 rounded-2xl px-4 py-3 pr-12 focus:border-brand-500 focus:outline-none">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">원</span>
+            </div>
+          </div>
+          <label class="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 cursor-pointer">
+            <input id="funeralPrepaid" type="checkbox" class="mt-1 w-6 h-6 accent-brand-600">
+            <span><strong>장례비 선지급을 이미 받았음</strong> (업무상 사망 추정 시 장례 전 최저금액 선지급 — 법 제71조 제3항·제4항)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 결과 -->
+      <aside class="lg:col-span-2">
+        <div class="lg:sticky lg:top-24 space-y-4">
+          <div class="rounded-3xl bg-gradient-to-br from-brand-800 to-brand-600 text-white p-6 shadow-lg">
+            <p class="text-brand-100 font-semibold" id="res-headline-label">예상 유족급여</p>
+            <p class="text-4xl font-black tracking-tight mt-1" id="res-headline">-</p>
+            <p class="text-brand-100 mt-1" id="res-headline-sub">평균임금을 입력해 주세요</p>
+            <div class="mt-5 pt-4 border-t border-white/20 grid grid-cols-2 gap-3">
+              <div>
+                <p class="text-brand-100 text-sm">장례비</p>
+                <p class="text-xl font-black" id="res-funeral">-</p>
+              </div>
+              <div>
+                <p class="text-brand-100 text-sm" id="res-first-label">처음 받는 일시금 합계</p>
+                <p class="text-xl font-black" id="res-first">-</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5" id="res-recipient-box">
+            <h3 class="font-black text-slate-900 mb-2"><i class="fa-solid fa-user-check text-brand-600 mr-1"></i> 받을 사람</h3>
+            <div id="res-recipient" class="text-slate-700 text-[15px] space-y-1">-</div>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
+            <h3 class="font-black text-slate-900 mb-2"><i class="fa-solid fa-list-check text-brand-600 mr-1"></i> 계산 과정</h3>
+            <ol id="res-steps" class="text-slate-700 text-[15px] space-y-2 list-decimal pl-5">
+              <li>평균임금을 입력하면 계산 과정이 표시됩니다.</li>
+            </ol>
+          </div>
+
+          <div id="res-compare-box" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 hidden">
+            <h3 class="font-black text-slate-900 mb-2"><i class="fa-solid fa-scale-balanced text-brand-600 mr-1"></i> 연금 전액 vs 50% 일시금 선택</h3>
+            <div id="res-compare" class="text-slate-700 text-[15px] space-y-2"></div>
+          </div>
+
+          <div id="res-warn" class="space-y-2"></div>
+
+          <p class="text-sm text-slate-500 leading-relaxed">
+            ※ 이 계산은 2026년 법령·고시를 기준으로 한 모의계산입니다. 실제 지급액은 근로복지공단의 평균임금 산정, 유족 자격 조사·결정에 따릅니다. 원 미만은 버려 표시했으며 공단의 끝수 처리와 다를 수 있습니다.
+          </p>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ===================== 안내 탭 ===================== -->
+    <section id="tab-guide" class="hidden space-y-6">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7">
+        <h2 class="text-2xl font-black text-slate-900 mb-4">2026년 적용 금액</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-[15px] border-collapse min-w-[520px]">
+            <thead>
+              <tr class="bg-slate-100">
+                <th class="p-2.5 border border-slate-300 text-left">구분</th>
+                <th class="p-2.5 border border-slate-300 text-right">금액</th>
+                <th class="p-2.5 border border-slate-300 text-left">근거</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="p-2.5 border border-slate-300">최고 보상기준 금액(1일)</td><td class="p-2.5 border border-slate-300 text-right font-bold">268,299원</td><td class="p-2.5 border border-slate-300 text-sm">고용노동부고시 제2025-84호 (2026. 1. 1.~12. 31.)</td></tr>
+              <tr><td class="p-2.5 border border-slate-300">최저 보상기준 금액(1일)</td><td class="p-2.5 border border-slate-300 text-right font-bold">82,560원</td><td class="p-2.5 border border-slate-300 text-sm">고용노동부고시 제2025-84호</td></tr>
+              <tr><td class="p-2.5 border border-slate-300">장례비 최고금액</td><td class="p-2.5 border border-slate-300 text-right font-bold">19,279,760원</td><td class="p-2.5 border border-slate-300 text-sm">고용노동부고시 제2025-85호 (2026. 1. 1.~12. 31.)</td></tr>
+              <tr><td class="p-2.5 border border-slate-300">장례비 최저금액</td><td class="p-2.5 border border-slate-300 text-right font-bold">13,943,000원</td><td class="p-2.5 border border-slate-300 text-sm">고용노동부고시 제2025-85호</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-slate-500 mt-3">최고·최저 보상기준 금액은 유족급여에 적용되지만 <strong>장례비에는 적용되지 않습니다</strong>(법 제36조 제7항 괄호). 장례비에는 별도의 장례비 최고·최저금액이 적용됩니다(법 제71조 제2항, 시행령 제66조).</p>
+      </div>
+
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-4">
+        <h2 class="text-2xl font-black text-slate-900">유족급여 계산 기준 (법 제62조, 별표 3)</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-[15px] border-collapse min-w-[520px]">
+            <thead>
+              <tr class="bg-slate-100">
+                <th class="p-2.5 border border-slate-300 text-left">종류</th>
+                <th class="p-2.5 border border-slate-300 text-left">금액</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="p-2.5 border border-slate-300 font-bold">유족보상연금</td>
+                <td class="p-2.5 border border-slate-300">급여기초연액(평균임금 × 365)의 <strong>47%</strong>(기본금액) + 수급권자 및 생계를 같이 하던 수급자격자 <strong>1인당 5%</strong>(가산금액, 합산 최대 <strong>20%</strong>)<br><span class="text-sm text-slate-500">→ 1명 52%, 2명 57%, 3명 62%, 4명 이상 67%</span></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 border border-slate-300 font-bold">유족보상일시금</td>
+                <td class="p-2.5 border border-slate-300">평균임금의 <strong>1,300일분</strong> — 사망 당시 연금 수급자격자가 한 명도 없을 때만 지급</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 border border-slate-300 font-bold">50% 일시금 선택</td>
+                <td class="p-2.5 border border-slate-300">연금 수급자격자가 원하면 일시금의 50%(650일분)를 받고 연금은 50% 감액 (법 제62조 제3항)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 border border-slate-300 font-bold">차액 일시금</td>
+                <td class="p-2.5 border border-slate-300">연금 수급자가 자격을 잃고 다른 수급자격자가 없을 때, 이미 받은 연금이 1,300일분에 못 미치면 그 차액을 일시금으로 지급 (법 제62조 제4항)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="list-disc pl-5 text-slate-700 space-y-1">
+          <li>연금은 지급사유가 생긴 달의 다음 달 첫날부터 지급되며, 연액을 12로 나누어 매달 25일에 지급합니다 (법 제70조).</li>
+          <li>사망 당시 대한민국 국민이 아닌 사람으로서 외국에 거주하던 유족은 연금 수급자격자에서 제외됩니다 (법 제63조 제1항).</li>
+          <li>사망 당시 태아였던 자녀는 출생한 때부터 생계를 같이 하던 유족으로 봅니다 (법 제63조 제2항).</li>
+        </ul>
+      </div>
+
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-4">
+        <h2 class="text-2xl font-black text-slate-900">누가 받는가 — 수급 순위</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-brand-200 bg-brand-50 p-4">
+            <h3 class="font-black text-brand-800 mb-2">유족보상연금 (법 제63조 제3항)</h3>
+            <p class="text-slate-700">수급자격자 중 <strong>배우자 → 자녀 → 부모 → 손자녀 → 조부모 → 형제자매</strong> 순서로 수급권자가 됩니다. 수급권자가 자격을 잃으면 같은 순위자, 없으면 다음 순위자에게 권리가 넘어갑니다(법 제64조 제2항).</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h3 class="font-black text-slate-800 mb-2">유족보상일시금 (법 제65조)</h3>
+            <ol class="list-decimal pl-5 text-slate-700 space-y-1">
+              <li>생계를 같이 하던 배우자·자녀·부모·손자녀·조부모</li>
+              <li>생계를 같이 하지 않던 배우자·자녀·부모·손자녀·조부모, 또는 생계를 같이 하던 형제자매</li>
+              <li>형제자매</li>
+            </ol>
+            <p class="text-sm text-slate-600 mt-2">각 호 안에서는 적힌 순서대로이며, 같은 순위가 2명 이상이면 똑같이 나눕니다. 부모·조부모는 양부모 쪽이 선순위이고, 고인이 유언으로 지정했다면 그에 따릅니다(같은 조 제2항·제4항).</p>
+          </div>
+        </div>
+        <h3 class="font-black text-slate-900">연금 수급자격을 잃는 경우 (법 제64조 제1항)</h3>
+        <ul class="list-disc pl-5 text-slate-700 space-y-1">
+          <li>사망, 배우자의 재혼(사실혼 포함), 고인과의 친족 관계 종료</li>
+          <li>자녀·손자녀가 25세가 된 때, 형제자매가 19세가 된 때</li>
+          <li>장애로 자격을 얻은 사람의 장애 상태가 해소된 경우</li>
+          <li>국적 상실 후 외국 거주, 외국인 수급자격자의 외국 거주 목적 출국</li>
+        </ul>
+        <p class="text-slate-700">수급권자가 3개월 이상 행방불명이면 같은 순위자(없으면 다음 순위자)의 신청으로 그 사람의 연금 지급을 정지하고 다른 사람에게 지급합니다(법 제64조 제3항, 시행령 제62조).</p>
+      </div>
+
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-3">
+        <h2 class="text-2xl font-black text-slate-900">장례비 (법 제71조)</h2>
+        <ul class="list-disc pl-5 text-slate-700 space-y-1">
+          <li>평균임금의 <strong>120일분</strong>을 장례를 지낸 유족에게 지급합니다.</li>
+          <li>유족이 아닌 사람이 장례를 지냈다면 120일분 범위에서 <strong>실제 든 비용</strong>을 그 사람에게 지급합니다.</li>
+          <li>계산액이 장례비 최고금액을 넘거나 최저금액에 못 미치면 최고·최저금액을 장례비로 합니다.</li>
+          <li>업무상 사망으로 추정되면 장례 전이라도 유족 청구로 <strong>최저금액을 미리 지급</strong>할 수 있고, 나중에 확정되는 장례비에서 뺍니다.</li>
+        </ul>
+      </div>
+
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-3">
+        <h2 class="text-2xl font-black text-slate-900">청구 기한과 신청 방법</h2>
+        <ul class="list-disc pl-5 text-slate-700 space-y-1">
+          <li><strong>소멸시효 5년</strong>: 유족급여·장례비를 받을 권리는 5년간 행사하지 않으면 소멸합니다 (법 제112조 제1항 단서).</li>
+          <li>근로복지공단 관할 지사에 유족급여·장례비 청구서를 제출합니다. 통상 사망진단서(시체검안서), 가족관계 증명서류, 생계를 같이 했음을 보여 주는 자료(주민등록표, 송금 내역 등), 장례비 영수증(유족이 아닌 사람이 장례를 치른 경우) 등이 필요합니다. 정확한 구비서류는 공단 지사에 확인하세요.</li>
+          <li>공단 결정에 이의가 있으면 결정을 안 날부터 90일 이내에 심사청구를 할 수 있습니다 (법 제103조).</li>
+        </ul>
+      </div>
+
+      <div class="rounded-3xl border border-amber-300 bg-amber-50 p-5 sm:p-7 space-y-2 text-slate-700">
+        <h2 class="text-xl font-black text-amber-900"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 이 계산기가 다루지 않는 것</h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>진폐로 인한 사망</strong>: 유족보상연금 대신 진폐유족연금(법 제91조의4)이 적용되어 계산 방식이 다릅니다.</li>
+          <li><strong>평균임금 특례</strong>: 직업병(시행령 제25조), 일용근로자 통상근로계수(시행령 제23조·제24조), 근로형태 특이자 등은 공단 산정액을 직접 입력하세요.</li>
+          <li><strong>평균임금 증감</strong>: 사유 발생 1년 후부터 매년 임금·물가 변동률에 따라 연금액이 바뀝니다 (법 제36조 제3항).</li>
+          <li><strong>민사 손해배상</strong>: 사업주에 대한 손해배상에서는 같은 사유로 받은 산재 보험급여가 공제됩니다(법 제80조). 초과 손해 계산은 별도로 필요합니다.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="max-w-6xl w-full mx-auto px-4 sm:px-6 text-sm text-slate-500 space-y-1">
+    <p>근거: 산업재해보상보험법(법률 제21375호, 2026. 7. 1. 시행) 제5조·제36조·제62조~제65조·제70조·제71조·제112조, 별표 3 / 같은 법 시행령 제61조·제62조·제66조 / 근로기준법 제2조 / 고용노동부고시 제2025-84호·제2025-85호. 2026. 10. 국가법령정보센터 원문 대조.</p>
+    <p>2027. 3. 30. 시행 예정인 개정법(법률 제22025호)의 제63조·제71조는 현행과 같은 문언임을 확인했습니다.</p>
+  </footer>
+
+  <script>
+    // [확정 기준] 고용노동부고시 제2025-84호·제2025-85호 (2026. 1. 1. ~ 2026. 12. 31.)
+    const STATUTORY_2026 = {
+      MAX_DAILY: 268299,        // 1일 최고 보상기준 금액 (유족급여에 적용, 장례비에는 미적용: 법 제36조 제7항)
+      MIN_DAILY: 82560,         // 1일 최저 보상기준 금액
+      FUNERAL_MAX: 19279760,    // 장례비 최고금액
+      FUNERAL_MIN: 13943000     // 장례비 최저금액
+    };
+
+    // [산재보험법 별표 3] 유족급여 — 2026. 10. 법령 원문 대조 완료
+    const SURVIVOR = {
+      BASE_PCT: 47,             // 기본금액: 급여기초연액의 47/100
+      ADD_PCT: 5,               // 가산금액: 1인당 5/100
+      ADD_CAP_PCT: 20,          // 가산금액 합산 한도 20/100
+      LUMP_DAYS: 1300,          // 유족보상일시금 1,300일분
+      FUNERAL_DAYS: 120         // 장례비 120일분 (법 제71조 제1항)
+    };
+
+    // 연금 수급권 순위 (법 제63조 제3항): 배우자는 별도 입력
+    const FAMILY = [
+      { key: 'child',       label: '자녀',     req: '25세 미만' },
+      { key: 'parent',      label: '부모',     req: '60세 이상' },
+      { key: 'grandchild',  label: '손자녀',   req: '25세 미만' },
+      { key: 'grandparent', label: '조부모',   req: '60세 이상' },
+      { key: 'sibling',     label: '형제자매', req: '19세 미만·60세 이상' }
+    ];
+
+    const fmt = n => Math.floor(n).toLocaleString('ko-KR');
+    const won = n => fmt(n) + '원';
+    const manwon = n => {
+      const v = Math.floor(n);
+      if (v >= 100000000) {
+        const eok = Math.floor(v / 100000000);
+        const man = Math.floor((v % 100000000) / 10000);
+        return man > 0 ? `${eok}억 ${man.toLocaleString('ko-KR')}만원` : `${eok}억원`;
+      }
+      if (v >= 10000) return `${Math.floor(v / 10000).toLocaleString('ko-KR')}만원`;
+      return won(v);
+    };
+    const parseMoney = el => Number(String(el.value).replace(/[^0-9]/g, '')) || 0;
+    const $ = id => document.getElementById(id);
+    const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
+
+    function buildFamilyRows() {
+      const tbody = $('family-rows');
+      tbody.innerHTML = FAMILY.map(f => `
+        <tr class="bg-slate-50">
+          <td class="rounded-l-xl px-3 py-2 font-bold text-slate-800">${f.label}<br><span class="text-xs font-medium text-slate-500">${f.req} 또는 장애</span></td>
+          ${['A', 'B', 'C'].map((col, i) => `
+            <td class="px-1 py-2 ${i === 2 ? 'rounded-r-xl' : ''}">
+              <div class="stepper flex items-center justify-center gap-1">
+                <button type="button" aria-label="${f.label} 줄이기" data-step="-1" data-target="${f.key}${col}" class="rounded-lg bg-white border border-slate-300 font-bold text-lg">−</button>
+                <input id="${f.key}${col}" type="number" min="0" max="20" value="0" aria-label="${f.label}" class="w-12 text-center text-lg font-bold border-2 ${col === 'A' ? 'border-brand-300' : 'border-slate-300'} rounded-lg py-1.5 focus:border-brand-500 focus:outline-none">
+                <button type="button" aria-label="${f.label} 늘리기" data-step="1" data-target="${f.key}${col}" class="rounded-lg bg-white border border-slate-300 font-bold text-lg">+</button>
+              </div>
+            </td>`).join('')}
+        </tr>`).join('');
+      tbody.querySelectorAll('button[data-step]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const input = $(btn.dataset.target);
+          input.value = Math.max(0, Math.min(20, (Number(input.value) || 0) + Number(btn.dataset.step)));
+          calculate();
+        });
+      });
+    }
+
+    const count = id => Math.max(0, Math.floor(Number($(id).value) || 0));
+
+    function getAverageWage() {
+      let raw = 0;
+      const steps = [];
+      if (radio('wageMode') === 'months') {
+        const total = parseMoney($('wage3m'));
+        const days = Math.max(1, count('days3m'));
+        const bonus = parseMoney($('bonusYear'));
+        const leave = parseMoney($('annualLeaveYear'));
+        const extra = Math.floor(bonus * 3 / 12) + Math.floor(leave * 3 / 12);
+        if (total <= 0) return null;
+        raw = (total + extra) / days;
+        steps.push(`평균임금 = (3개월 임금 ${won(total)}${extra > 0 ? ` + 상여금·연차수당 3/12 ${won(extra)}` : ''}) ÷ ${days}일 = <strong>${fmt(raw)}원</strong> (근로기준법 제2조 제1항 제6호)`);
+      } else {
+        raw = parseMoney($('dailyDirect'));
+        if (raw <= 0) return null;
+        steps.push(`1일 평균임금(직접 입력) = <strong>${won(raw)}</strong>`);
+      }
+      const ordinary = parseMoney($('ordinaryDaily'));
+      if (ordinary > raw) {
+        steps.push(`평균임금이 1일 통상임금보다 적어 통상임금 <strong>${won(ordinary)}</strong>을 평균임금으로 함 (근로기준법 제2조 제2항)`);
+        raw = ordinary;
+      }
+      return { raw, steps };
+    }
+
+    function calculate() {
+      const resSteps = $('res-steps');
+      const warn = [];
+      const wage = getAverageWage();
+
+      $('funeral-actual-wrap').classList.toggle('hidden', radio('funeralBy') !== 'other');
+
+      if (!wage) {
+        $('res-headline-label').textContent = '예상 유족급여';
+        $('res-headline').textContent = '-';
+        $('res-headline-sub').textContent = '평균임금을 입력해 주세요';
+        $('res-funeral').textContent = '-';
+        $('res-first').textContent = '-';
+        $('res-recipient').innerHTML = '-';
+        resSteps.innerHTML = '<li>평균임금을 입력하면 계산 과정이 표시됩니다.</li>';
+        $('res-compare-box').classList.add('hidden');
+        $('res-warn').innerHTML = '';
+        return;
+      }
+
+      const steps = [...wage.steps];
+      const W_raw = wage.raw;
+
+      // 유족급여용 평균임금: 최고·최저 보상기준 금액 모두 적용 (법 제36조 제7항 본문)
+      let W = W_raw;
+      if (W > STATUTORY_2026.MAX_DAILY) {
+        W = STATUTORY_2026.MAX_DAILY;
+        steps.push(`최고 보상기준 금액 초과 → 유족급여는 <strong>${won(W)}</strong> 기준 (법 제36조 제7항, 고시 제2025-84호)`);
+      } else if (W < STATUTORY_2026.MIN_DAILY) {
+        W = STATUTORY_2026.MIN_DAILY;
+        steps.push(`최저 보상기준 금액 미달 → 유족급여는 <strong>${won(W)}</strong> 기준 (법 제36조 제7항, 고시 제2025-84호)`);
+      }
+
+      // 수급자격자 집계
+      const spouse = radio('spouse');
+      const A = {}, B = {}, C = {};
+      FAMILY.forEach(f => { A[f.key] = count(f.key + 'A'); B[f.key] = count(f.key + 'B'); C[f.key] = count(f.key + 'C'); });
+      const qualified = (spouse === 'A' ? 1 : 0) + FAMILY.reduce((s, f) => s + A[f.key], 0);
+
+      let headlineLabel, headline, headlineSub, firstLump = 0, recipientHtml;
+      const split = $('splitOption').checked;
+      const years = Math.max(1, Math.min(60, count('years') || 10));
+
+      if (qualified > 0) {
+        // 유족보상연금 (별표 3)
+        // 부동소수점 오차를 피하려고 백분율 정수로 계산
+        const addPct = Math.min(qualified * SURVIVOR.ADD_PCT, SURVIVOR.ADD_CAP_PCT);
+        const pct = SURVIVOR.BASE_PCT + addPct;
+        const baseYear = W * 365;
+        const annual = Math.floor(baseYear * pct / 100);
+        steps.push(`급여기초연액 = ${won(W)} × 365 = ${won(baseYear)}`);
+        steps.push(`연금 수급자격자 ${qualified}명 → 기본 47% + 가산 ${addPct}%${qualified * 5 > 20 ? ' (한도 20%)' : ''} = <strong>${pct}%</strong> (별표 3)`);
+        steps.push(`유족보상연금 연액 = ${won(baseYear)} × ${pct}% = <strong>${won(annual)}</strong> → 월 ${won(annual / 12)} (법 제70조 제3항)`);
+
+        const lumpHalf = Math.floor(W * SURVIVOR.LUMP_DAYS * 0.5);
+        if (split) {
+          const halfAnnual = Math.floor(annual / 2);
+          firstLump = lumpHalf;
+          steps.push(`50% 일시금 선택: 일시금 ${won(W)} × 650일 = <strong>${won(lumpHalf)}</strong>, 연금은 50% 감액 → 연 ${won(halfAnnual)} (법 제62조 제3항)`);
+          headlineLabel = '유족보상연금 (50% 감액, 매월)';
+          headline = won(halfAnnual / 12);
+          headlineSub = `연 ${manwon(halfAnnual)} + 처음에 일시금 ${manwon(lumpHalf)}`;
+        } else {
+          headlineLabel = '유족보상연금 (매월)';
+          headline = won(annual / 12);
+          headlineSub = `연 ${manwon(annual)} · 급여기초연액의 ${pct}%`;
+        }
+
+        // 연금 전액 vs 50% 일시금 비교
+        const breakEvenFull = (W * SURVIVOR.LUMP_DAYS) / annual;
+        const breakEvenSplit = lumpHalf / (annual / 2);
+        const cumFull = annual * years;
+        const cumSplit = lumpHalf + Math.floor(annual / 2) * years;
+        $('res-compare').innerHTML = `
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="rounded-xl ${split ? 'bg-slate-50' : 'bg-brand-50 border border-brand-200'} p-3">
+              <p class="text-sm text-slate-500">연금 전액</p>
+              <p class="font-black">${years}년 누적 ${manwon(cumFull)}</p>
+            </div>
+            <div class="rounded-xl ${split ? 'bg-brand-50 border border-brand-200' : 'bg-slate-50'} p-3">
+              <p class="text-sm text-slate-500">50% 일시금 + 50% 연금</p>
+              <p class="font-black">${years}년 누적 ${manwon(cumSplit)}</p>
+            </div>
+          </div>
+          <p>두 방식의 누적액은 약 <strong>${breakEvenSplit.toFixed(1)}년</strong>이 지나면 같아지고, 그 뒤로는 연금 전액이 더 많습니다.</p>
+          <p class="text-sm text-slate-500">연금 전액의 누적액이 1,300일분(${manwon(W * SURVIVOR.LUMP_DAYS)})에 이르는 데는 약 ${breakEvenFull.toFixed(1)}년이 걸립니다. 그 전에 수급자격자가 모두 없어지면 차액을 일시금으로 받습니다(법 제62조 제4항). 평균임금 증감과 수급자격 변동은 반영하지 않았습니다.</p>`;
+        $('res-compare-box').classList.remove('hidden');
+
+        // 수급권자 (법 제63조 제3항)
+        const order = [{ label: '배우자', n: spouse === 'A' ? 1 : 0 }, ...FAMILY.map(f => ({ label: f.label, n: A[f.key] }))];
+        const first = order.find(o => o.n > 0);
+        const others = qualified - 1;
+        recipientHtml = `<p><strong class="text-brand-700">수급권자: ${first.label}</strong>${first.n > 1 ? ` (같은 순위 ${first.n}명)` : ''}</p>
+          <p>연금 수급자격자 총 ${qualified}명${others > 0 ? ` — 수급권자 외 ${others}명은 가산금액에 반영되고, 수급권자가 자격을 잃으면 다음 순위로 권리가 넘어갑니다(법 제64조 제2항).` : ''}</p>`;
+        if (first.n > 1) warn.push('같은 순위의 수급권자가 여러 명일 때 연금을 어떻게 나누어 지급하는지는 이 계산기에서 다루지 않습니다. 근로복지공단에 확인하세요.');
+        if (FAMILY.some(f => A[f.key] > 0 && (f.key === 'child' || f.key === 'grandchild' || f.key === 'sibling'))) {
+          warn.push('자녀·손자녀가 25세, 형제자매가 19세가 되면 수급자격을 잃어 가산금액이 줄어듭니다(법 제64조 제1항). 위 누적액은 이 변동을 반영하지 않았습니다.');
+        }
+      } else {
+        // 유족보상일시금 (수급자격자 없음) — 수급 순위 법 제65조 제1항
+        $('res-compare-box').classList.add('hidden');
+        const lump = Math.floor(W * SURVIVOR.LUMP_DAYS);
+        firstLump = lump;
+        steps.push(`사망 당시 연금 수급자격자가 없음 → 유족보상일시금 = ${won(W)} × 1,300일 = <strong>${won(lump)}</strong> (법 제62조 제2항, 별표 3)`);
+        if (split) warn.push('연금 수급자격자가 없어 50% 일시금 선택은 적용되지 않습니다.');
+
+        const five = ['child', 'parent', 'grandchild', 'grandparent'];
+        const ranks = [
+          { rank: 1, list: [{ label: '생계를 같이 하던 배우자', n: 0 }, ...five.map(k => ({ label: `생계를 같이 하던 ${FAMILY.find(f => f.key === k).label}`, n: A[k] + B[k] }))] },
+          { rank: 2, list: [{ label: '생계를 같이 하지 않던 배우자', n: spouse === 'C' ? 1 : 0 }, ...five.map(k => ({ label: `생계를 같이 하지 않던 ${FAMILY.find(f => f.key === k).label}`, n: C[k] })), { label: '생계를 같이 하던 형제자매', n: A.sibling + B.sibling }] },
+          { rank: 3, list: [{ label: '형제자매', n: C.sibling }] }
+        ];
+        let found = null;
+        for (const r of ranks) {
+          const hit = r.list.find(x => x.n > 0);
+          if (hit) { found = { rank: r.rank, ...hit }; break; }
+        }
+        headlineLabel = '유족보상일시금';
+        headline = won(lump);
+        headlineSub = `평균임금 ${won(W)} × 1,300일분`;
+        if (found) {
+          const share = Math.floor(lump / found.n);
+          recipientHtml = `<p><strong class="text-brand-700">수급권자: ${found.label}</strong> (제65조 제1항 제${found.rank}호)</p>
+            ${found.n > 1 ? `<p>같은 순위 ${found.n}명이 똑같이 나눔 → 1인당 <strong>${won(share)}</strong></p>` : ''}
+            <p class="text-sm text-slate-500">고인의 유언으로 수급자를 지정했다면 그에 따릅니다(같은 조 제4항).</p>`;
+        } else {
+          recipientHtml = '<p>입력된 유족이 없습니다. 유족이 없으면 유족급여는 지급되지 않으며, 장례비는 장례를 지낸 사람에게 실제 비용 범위에서 지급됩니다.</p>';
+          headline = '해당 유족 없음';
+          headlineSub = '유족 정보를 입력해 주세요';
+          firstLump = 0;
+        }
+      }
+
+      // 장례비 (법 제71조) — 최고·최저 보상기준 금액이 아닌 장례비 최고·최저금액 적용
+      const funeral120 = Math.floor(W_raw * SURVIVOR.FUNERAL_DAYS);
+      let funeral;
+      if (radio('funeralBy') === 'family') {
+        funeral = Math.min(Math.max(funeral120, STATUTORY_2026.FUNERAL_MIN), STATUTORY_2026.FUNERAL_MAX);
+        let note = '';
+        if (funeral120 > STATUTORY_2026.FUNERAL_MAX) note = ` → 최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 적용`;
+        else if (funeral120 < STATUTORY_2026.FUNERAL_MIN) note = ` → 최저금액 ${won(STATUTORY_2026.FUNERAL_MIN)} 적용`;
+        steps.push(`장례비 = 평균임금 ${won(W_raw)} × 120일 = ${won(funeral120)}${note} → <strong>${won(funeral)}</strong> (법 제71조, 고시 제2025-85호)`);
+      } else {
+        const actual = parseMoney($('funeralActual'));
+        funeral = Math.min(actual, funeral120, STATUTORY_2026.FUNERAL_MAX);
+        steps.push(`장례비 = 실제 비용 ${won(actual)}과 120일분 ${won(funeral120)} 중 적은 금액${funeral120 > STATUTORY_2026.FUNERAL_MAX ? `(최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 한도)` : ''} → <strong>${won(funeral)}</strong> (법 제71조 제1항 단서)`);
+        if (actual > 0 && funeral < STATUTORY_2026.FUNERAL_MIN) {
+          warn.push(`유족이 아닌 사람이 장례를 치르고 계산액이 장례비 최저금액(${won(STATUTORY_2026.FUNERAL_MIN)})보다 적을 때 최저금액까지 올려 지급하는지는 법문만으로 확정하기 어려워 반영하지 않았습니다. 근로복지공단에 확인하세요.`);
+        }
+        if (actual <= 0) warn.push('유족이 아닌 사람이 장례를 치른 경우 실제 장례 비용을 입력해야 장례비가 계산됩니다.');
+      }
+      let funeralShown = funeral;
+      if ($('funeralPrepaid').checked) {
+        const remain = Math.max(0, funeral - STATUTORY_2026.FUNERAL_MIN);
+        steps.push(`선지급 장례비 ${won(STATUTORY_2026.FUNERAL_MIN)}을 뺀 나머지 = <strong>${won(remain)}</strong> (법 제71조 제4항)`);
+        funeralShown = remain;
+        if (funeral < STATUTORY_2026.FUNERAL_MIN) warn.push('확정 장례비가 선지급액보다 적습니다. 차액 처리는 근로복지공단에 확인하세요.');
+      }
+      if (W_raw > STATUTORY_2026.MAX_DAILY || W_raw < STATUTORY_2026.MIN_DAILY) {
+        warn.push('장례비는 최고·최저 보상기준 금액을 적용하지 않은 실제 평균임금으로 계산했습니다(법 제36조 제7항 괄호).');
+      }
+
+      // 출력
+      $('res-headline-label').textContent = headlineLabel;
+      $('res-headline').textContent = headline;
+      $('res-headline-sub').textContent = headlineSub;
+      $('res-funeral').textContent = manwon(funeralShown) + ($('funeralPrepaid').checked ? ' (잔액)' : '');
+      $('res-first').textContent = manwon(firstLump + funeralShown);
+      $('res-first-label').textContent = qualified > 0 && !split ? '처음 받는 일시금 (장례비)' : '처음 받는 일시금 합계';
+      $('res-recipient').innerHTML = recipientHtml;
+      resSteps.innerHTML = steps.map(s => `<li>${s}</li>`).join('');
+      $('res-warn').innerHTML = warn.map(w => `
+        <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-[15px] text-amber-900">
+          <i class="fa-solid fa-circle-info mr-1"></i> ${w}
+        </div>`).join('');
+    }
+
+    function switchTab(tab) {
+      ['calc', 'guide'].forEach(t => {
+        $('tab-' + t).classList.toggle('hidden', t !== tab);
+        const btn = $('tab-btn-' + t);
+        btn.classList.toggle('border-brand-600', t === tab);
+        btn.classList.toggle('text-brand-700', t === tab);
+        btn.classList.toggle('border-transparent', t !== tab);
+        btn.classList.toggle('text-slate-600', t !== tab);
+      });
+    }
+
+    function init() {
+      buildFamilyRows();
+      document.querySelectorAll('.money').forEach(el => {
+        el.addEventListener('input', () => {
+          const n = parseMoney(el);
+          el.value = n > 0 ? n.toLocaleString('ko-KR') : '';
+        });
+      });
+      document.querySelectorAll('input[name="wageMode"]').forEach(el => el.addEventListener('change', () => {
+        const months = radio('wageMode') === 'months';
+        $('wage-months').classList.toggle('hidden', !months);
+        $('wage-daily').classList.toggle('hidden', months);
+      }));
+      document.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', calculate);
+        el.addEventListener('change', calculate);
+      });
+      calculate();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -308,11 +308,11 @@
               <div class="field" id="f-daily" hidden>
                 <label class="lbl" for="dailyDirect">1일 평균임금</label>
                 <div class="input-wrap">
-                  <input id="dailyDirect" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 115,000" aria-describedby="daily-r">
+                  <input id="dailyDirect" class="input money-dec num" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 115,000.25" aria-describedby="daily-r">
                   <span class="unit">원</span>
                 </div>
                 <p class="reading" id="daily-r" aria-live="polite"></p>
-                <p class="hint">근로복지공단 결정서·평균임금 산정내역서의 금액(증감 반영액)을 넣으세요.</p>
+                <p class="hint">근로복지공단 결정서·평균임금 산정내역서의 금액(증감 반영액)을 넣으세요. 소수점 둘째 자리까지 넣을 수 있습니다.</p>
               </div>
 
               <div class="grid-2" id="f-dates">
@@ -425,11 +425,11 @@
                   <span class="unit">원</span>
                 </div>
                 <p class="reading" id="actual-r" aria-live="polite"></p>
-                <p class="hint">평균임금 120일분 범위에서 실제 쓴 비용만 지급되며, 장례비 최저금액까지 올려 주지는 않습니다(공단 실무 기준). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용입니다(근로복지공단 보상업무처리규정 제44조 제3항).</p>
+                <p class="hint">평균임금 120일분 범위에서 실제 쓴 비용을 지급하고, 장례비 최고금액(19,279,760원)을 넘을 수 없습니다(법 제71조 제1항 단서·제2항). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용입니다(근로복지공단 보상업무처리규정 제44조 제3항). 유족이 아닌 사람이 받는 경우는 유족이 행방불명인 경우 등으로 한정됩니다(같은 조 제2항).</p>
               </div>
-              <label class="toggle-row">
+              <label class="toggle-row" id="f-prepaid">
                 <input id="funeralPrepaid" type="checkbox">
-                <span><strong>장례비 선지급을 이미 받았어요</strong><br><span class="muted small">업무상 사망으로 추정되면 장례 전에 최저금액을 먼저 받을 수 있습니다 (법 제71조 제3항·제4항)</span></span>
+                <span><strong>장례비 선지급을 이미 받았어요</strong><br><span class="muted small">업무상 사망으로 추정되면 장례 전에 장례비 최저금액(13,943,000원)을 먼저 받을 수 있습니다 (법 제71조 제3항, 시행령 제66조의2)</span></span>
               </label>
             </div>
           </section>
@@ -477,7 +477,7 @@
             <button type="button" class="btn" id="btn-reset">처음부터</button>
           </div>
 
-          <p class="disclaimer">이 계산은 2026년 법령·고시를 기준으로 한 모의계산입니다. 실제 지급액은 근로복지공단의 평균임금 산정, 유족 자격 조사·결정에 따릅니다. 원 미만은 버려 표시했으며 공단의 끝수 처리와 다를 수 있습니다.</p>
+          <p class="disclaimer">이 계산은 2026년 법령·고시를 기준으로 한 모의계산입니다. 실제 지급액은 근로복지공단의 평균임금 산정, 유족 자격 조사·결정에 따릅니다. 평균임금은 소수점 셋째 자리에서 반올림했습니다(근로복지공단 보상업무처리규정 제76조 제1항). 연금·일시금·장례비의 원 미만은 정한 규정이 없어 버려 표시했으며, 공단의 처리와 다를 수 있습니다.</p>
         </aside>
       </div>
     </section>
@@ -560,7 +560,8 @@
         <ul>
           <li>평균임금의 <strong>120일분</strong>을 장례를 지낸 유족에게 지급합니다.</li>
           <li>계산액이 장례비 최고금액을 넘거나 최저금액에 못 미치면 최고·최저금액을 장례비로 합니다 (같은 조 제2항).</li>
-          <li>유족이 아닌 사람이 장례를 지냈다면 120일분 범위에서 <strong>실제 든 비용</strong>을 그 사람에게 지급합니다(같은 조 제1항 단서). 이때는 최저금액까지 올려 주지 않습니다(공단 실무). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용입니다(근로복지공단 보상업무처리규정 제44조 제3항). 이 경우에도 최고금액이 적용되는지는 확인되지 않았습니다.</li>
+          <li>유족이 아닌 사람이 장례를 지냈다면 120일분 범위에서 <strong>실제 든 비용</strong>을 그 사람에게 지급합니다(같은 조 제1항 단서). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용이며, 유족이 아닌 사람이 받는 경우는 유족의 행방불명 등으로 한정됩니다(근로복지공단 보상업무처리규정 제44조 제2항·제3항). 제2항이 "제1항에 따른 장례비"라고 정하므로 최고금액은 이 경우에도 적용됩니다. 실제 비용이 최저금액보다 적을 때 최저금액까지 올려 지급하는지는 행정해석이 확인되지 않아, 계산기는 실제 비용으로 계산합니다.</li>
+          <li>선지급액은 최저금액이고 유족의 확정 장례비는 항상 최저금액 이상이므로, 나중에는 차액만 추가로 받습니다. 업무상 재해로 인정되지 않으면 선지급액 전액을 돌려줘야 합니다(법 제84조, 보상업무처리규정 제44조의2 제2항).</li>
           <li>업무상 사망으로 추정되면 장례 전이라도 유족 청구로 <strong>최저금액을 미리 지급</strong>할 수 있고, 나중에 확정되는 장례비에서 뺍니다.</li>
         </ul>
       </div>
@@ -587,7 +588,7 @@
   </main>
 
   <footer>
-    <p>근거: 산업재해보상보험법(법률 제21375호, 2026. 7. 1. 시행) 제5조·제36조·제62조~제65조·제70조·제71조·제80조·제103조·제112조, 별표 3 / 같은 법 시행령 제23조~제25조·제60조~제62조·제66조 / 대법원 2023. 10. 12. 선고 2023다247405 판결 / 근로복지공단 보상업무처리규정 제44조 제3항 / 근로기준법 제2조, 같은 법 시행령 제52조 / 고용노동부고시 제2025-84호·제2025-85호. 2026. 10. 국가법령정보센터 원문 대조.</p>
+    <p>근거: 산업재해보상보험법(법률 제21375호, 2026. 7. 1. 시행) 제5조·제36조·제62조~제65조·제70조·제71조·제80조·제84조·제103조·제112조, 별표 3 / 같은 법 시행령 제23조~제25조·제60조~제62조·제66조·제66조의2 / 대법원 2023. 10. 12. 선고 2023다247405 판결 / 근로복지공단 보상업무처리규정(2023. 7. 1. 시행본) 제44조·제44조의2·제76조 / 근로기준법 제2조, 같은 법 시행령 제52조 / 고용노동부고시 제2025-84호·제2025-85호. 2026. 10. 국가법령정보센터 원문 대조.</p>
     <p>2027. 3. 30. 시행 예정인 개정법(법률 제22025호)의 제63조·제71조는 현행과 같은 문언임을 확인했습니다.</p>
   </footer>
 
@@ -638,6 +639,9 @@
     // 평균임금처럼 원 미만이 생길 수 있는 값: 계산에 쓴 값을 소수 둘째 자리까지 그대로 표시
     const wonW = n => n.toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '원';
     const parseMoney = el => Number(String(el.value).replace(/[^0-9]/g, '')) || 0;
+    const parseDecimal = el => Number(String(el.value).replace(/[^0-9.]/g, '')) || 0;
+    // 평균임금은 소수점 셋째 자리에서 반올림 (근로복지공단 보상업무처리규정 제76조 제1항)
+    const round2 = n => Math.round(n * 100) / 100;
     const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
     const readKorean = n => {
       const v = Math.floor(n);
@@ -817,11 +821,11 @@
         const leave = parseMoney($('annualLeaveYear'));
         const extra = Math.floor(bonus * 3 / 12) + Math.floor(leave * 3 / 12);
         if (total <= 0 || days <= 0) return null;
-        raw = (total + extra) / days;
+        raw = round2((total + extra) / days);
         const totalText = mode === 'month' ? `월급 ${won(total / 3)} × 3개월 = ${won(total)}` : `3개월 임금 ${won(total)}`;
         steps.push(`평균임금 = (${totalText}${extra > 0 ? ` + 상여금·연차수당 3/12 ${won(extra)}` : ''}) ÷ ${days}일 = <strong>${wonW(raw)}</strong> (근로기준법 제2조 제1항 제6호)`);
       } else {
-        raw = parseMoney($('dailyDirect'));
+        raw = round2(parseDecimal($('dailyDirect')));
         if (raw <= 0) return null;
         steps.push(`1일 평균임금(직접 입력) = <strong>${won(raw)}</strong>`);
       }
@@ -841,6 +845,8 @@
       const wage = getAverageWage();
       const funeralBy = radio('funeralBy');
       $('f-actual').hidden = funeralBy !== 'other';
+      // 선지급은 유족이 청구하는 것이므로 유족이 장례를 치른 경우에만 묻는다 (법 제71조 제3항)
+      $('f-prepaid').hidden = funeralBy !== 'family';
       $('years-out').textContent = $('years').value;
 
       // 단계 표시: 입력이 끝난 단계는 초록색
@@ -980,21 +986,22 @@
         steps.push(`장례비 = 평균임금 ${wonW(W_raw)} × 120일 = ${won(funeral120)}${note} → <strong>${won(funeral)}</strong> (법 제71조, 고시 제2025-85호)`);
       } else {
         const actual = parseMoney($('funeralActual'));
-        // 공단 실무: 120일분 범위의 실제 비용만 지급하고 최저금액으로 올리지 않음
+        // 최고금액은 단서에도 적용(법 제71조 제2항 "제1항에 따른 장례비"), 최저금액으로 올리지는 않음(공단 안내 기준)
         const uncapped = Math.min(actual, funeral120);
         funeral = Math.min(uncapped, STATUTORY_2026.FUNERAL_MAX);
-        steps.push(`장례비 = 실제 비용 ${won(actual)}과 120일분 ${won(funeral120)} 중 적은 금액${uncapped > STATUTORY_2026.FUNERAL_MAX ? `(최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 한도)` : ''} → <strong>${won(funeral)}</strong> (법 제71조 제1항 단서, 공단 실무 기준: 최저금액 미적용)`);
-        if (uncapped > STATUTORY_2026.FUNERAL_MAX) {
-          warn.push(`유족이 아닌 사람이 장례를 치른 경우에도 장례비 최고금액(${won(STATUTORY_2026.FUNERAL_MAX)})이 적용되는지는 확인되지 않았습니다. 최고금액을 적용했으며, 적용하지 않으면 ${won(uncapped)}입니다. 근로복지공단에 확인하세요.`);
+        steps.push(`장례비 = 실제 비용 ${won(actual)}과 120일분 ${won(funeral120)} 중 적은 금액${uncapped > STATUTORY_2026.FUNERAL_MAX ? ` → 최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 적용` : ''} → <strong>${won(funeral)}</strong> (법 제71조 제1항 단서·제2항)`);
+        if (actual > 0 && funeral < STATUTORY_2026.FUNERAL_MIN) {
+          warn.push(`실제 비용이 장례비 최저금액(${won(STATUTORY_2026.FUNERAL_MIN)})보다 적어 실제 비용으로 계산했습니다(공단 안내 기준). 이 경우 최저금액까지 올려 지급하는지를 다룬 행정해석·업무지침은 확인되지 않았습니다.`);
         }
         if (actual <= 0) warn.push('유족이 아닌 사람이 장례를 치른 경우 3단계에 실제 장례 비용을 넣어야 장례비가 계산됩니다.');
       }
-      const prepaid = $('funeralPrepaid').checked;
+      const prepaid = funeralBy === 'family' && $('funeralPrepaid').checked;
       let funeralShown = funeral;
       if (prepaid) {
-        funeralShown = Math.max(0, funeral - STATUTORY_2026.FUNERAL_MIN);
+        // 유족 장례비는 최저금액 이상(법 제71조 제2항)이고 선지급액은 최저금액(시행령 제66조의2)이므로 잔액은 0 이상
+        funeralShown = funeral - STATUTORY_2026.FUNERAL_MIN;
         steps.push(`선지급 장례비 ${won(STATUTORY_2026.FUNERAL_MIN)}을 뺀 나머지 = <strong>${won(funeralShown)}</strong> (법 제71조 제4항)`);
-        if (funeral < STATUTORY_2026.FUNERAL_MIN) warn.push('확정 장례비가 선지급액보다 적습니다. 차액 처리는 근로복지공단에 확인하세요.');
+        warn.push('업무상 재해로 인정되지 않으면 미리 받은 장례비 전액을 돌려줘야 합니다(법 제84조, 근로복지공단 보상업무처리규정 제44조의2 제2항).');
       }
       if (W_raw > STATUTORY_2026.MAX_DAILY || W_raw < STATUTORY_2026.MIN_DAILY) {
         warn.push('장례비는 최고·최저 보상기준 금액을 적용하지 않은 실제 평균임금으로 계산했습니다(법 제36조 제7항 괄호).');
@@ -1051,6 +1058,16 @@
 
     /* ---------- 입력 이벤트 ---------- */
     const readings = { monthly: 'monthly-r', wage3m: 'wage3m-r', dailyDirect: 'daily-r', funeralActual: 'actual-r' };
+    // 1일 평균임금: 소수점 둘째 자리까지 입력 허용
+    $('dailyDirect').addEventListener('input', () => {
+      const el = $('dailyDirect');
+      const [intPart, ...rest] = el.value.replace(/[^0-9.]/g, '').split('.');
+      const n = Number(intPart) || 0;
+      const dec = rest.length ? '.' + rest.join('').slice(0, 2) : '';
+      el.value = intPart === '' && !dec ? '' : n.toLocaleString('ko-KR') + dec;
+      $('daily-r').textContent = n > 0 ? readKorean(n) : '';
+      calculate();
+    });
     document.querySelectorAll('.money').forEach(el => {
       el.addEventListener('input', () => {
         const n = parseMoney(el);
@@ -1117,7 +1134,7 @@
     $('btn-print').addEventListener('click', () => { $('r-steps-card').open = true; window.print(); });
     $('btn-reset').addEventListener('click', () => {
       if (!confirm('입력한 내용을 모두 지우고 처음부터 할까요?')) return;
-      document.querySelectorAll('.money, input[type=date]').forEach(el => { el.value = ''; });
+      document.querySelectorAll('.money, .money-dec, input[type=date]').forEach(el => { el.value = ''; });
       Object.values(readings).forEach(id => { $(id).textContent = ''; });
       $('days3m').value = 92; $('years').value = 10;
       $('wm-month').checked = true; $('fb-family').checked = true;

@@ -425,6 +425,7 @@
                   <span class="unit">원</span>
                 </div>
                 <p class="reading" id="actual-r" aria-live="polite"></p>
+                <p class="hint">평균임금 120일분 범위에서 실제 쓴 비용만 지급되며, 장례비 최저금액까지 올려 주지는 않습니다(공단 실무 기준). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용입니다(근로복지공단 보상업무처리규정 제44조 제3항).</p>
               </div>
               <label class="toggle-row">
                 <input id="funeralPrepaid" type="checkbox">
@@ -550,6 +551,7 @@
           <li>장애로 자격을 얻은 사람의 장애 상태가 해소된 경우</li>
           <li>국적 상실 후 외국 거주, 외국인 수급자격자의 외국 거주 목적 출국</li>
         </ul>
+        <p style="margin-top:8px">같은 순위 연금 수급권자가 2명 이상이면 그중 1명을 청구·수령 대표자로 선임할 수 있습니다(시행령 제60조). 같은 순위자에게 똑같이 나누어 지급하는 제65조 제1항은 유족보상일시금(제62조 제2항·제4항)에 관한 규정이며 연금에는 적용되지 않습니다(대법원 2023. 10. 12. 선고 2023다247405 판결).</p>
         <p style="margin-top:8px">수급권자가 3개월 이상 행방불명이면 같은 순위자(없으면 다음 순위자)의 신청으로 그 사람의 연금 지급을 정지하고 다른 사람에게 지급합니다(법 제64조 제3항, 시행령 제62조).</p>
       </div>
 
@@ -557,8 +559,8 @@
         <h2>장례비 (법 제71조)</h2>
         <ul>
           <li>평균임금의 <strong>120일분</strong>을 장례를 지낸 유족에게 지급합니다.</li>
-          <li>유족이 아닌 사람이 장례를 지냈다면 120일분 범위에서 <strong>실제 든 비용</strong>을 그 사람에게 지급합니다.</li>
-          <li>계산액이 장례비 최고금액을 넘거나 최저금액에 못 미치면 최고·최저금액을 장례비로 합니다.</li>
+          <li>계산액이 장례비 최고금액을 넘거나 최저금액에 못 미치면 최고·최저금액을 장례비로 합니다 (같은 조 제2항).</li>
+          <li>유족이 아닌 사람이 장례를 지냈다면 120일분 범위에서 <strong>실제 든 비용</strong>을 그 사람에게 지급합니다(같은 조 제1항 단서). 이때는 최저금액까지 올려 주지 않습니다(공단 실무). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용입니다(근로복지공단 보상업무처리규정 제44조 제3항). 이 경우에도 최고금액이 적용되는지는 확인되지 않았습니다.</li>
           <li>업무상 사망으로 추정되면 장례 전이라도 유족 청구로 <strong>최저금액을 미리 지급</strong>할 수 있고, 나중에 확정되는 장례비에서 뺍니다.</li>
         </ul>
       </div>
@@ -585,7 +587,7 @@
   </main>
 
   <footer>
-    <p>근거: 산업재해보상보험법(법률 제21375호, 2026. 7. 1. 시행) 제5조·제36조·제62조~제65조·제70조·제71조·제80조·제103조·제112조, 별표 3 / 같은 법 시행령 제23조~제25조·제61조·제62조·제66조 / 근로기준법 제2조, 같은 법 시행령 제52조 / 고용노동부고시 제2025-84호·제2025-85호. 2026. 10. 국가법령정보센터 원문 대조.</p>
+    <p>근거: 산업재해보상보험법(법률 제21375호, 2026. 7. 1. 시행) 제5조·제36조·제62조~제65조·제70조·제71조·제80조·제103조·제112조, 별표 3 / 같은 법 시행령 제23조~제25조·제60조~제62조·제66조 / 대법원 2023. 10. 12. 선고 2023다247405 판결 / 근로복지공단 보상업무처리규정 제44조 제3항 / 근로기준법 제2조, 같은 법 시행령 제52조 / 고용노동부고시 제2025-84호·제2025-85호. 2026. 10. 국가법령정보센터 원문 대조.</p>
     <p>2027. 3. 30. 시행 예정인 개정법(법률 제22025호)의 제63조·제71조는 현행과 같은 문언임을 확인했습니다.</p>
   </footer>
 
@@ -931,7 +933,7 @@
         const others = qualified - 1;
         whoHtml = `<p><strong style="color:var(--brand)">수급권자: ${REL[firstRel].label}</strong>${sameRank > 1 ? ` (같은 순위 ${sameRank}명)` : ''}</p>
           <p class="small">연금 수급자격자 총 ${qualified}명${others > 0 ? ` — 수급권자 외 ${others}명도 가산금액(1인당 5%)에 반영됩니다. 수급권자가 자격을 잃으면 다음 순위로 권리가 넘어갑니다(법 제64조 제2항).` : ''}</p>`;
-        if (sameRank > 1) warn.push('같은 순위의 수급권자가 여러 명일 때 연금을 어떻게 나누어 지급하는지는 이 계산기에서 다루지 않습니다. 근로복지공단에 확인하세요.');
+        if (sameRank > 1) warn.push(`같은 순위 수급권자가 ${sameRank}명입니다. 이들 중 1명을 연금 청구·수령 대표자로 선임할 수 있고, 선임하면 공단에 신고해야 합니다(시행령 제60조). 일시금처럼 똑같이 나눈다는 제65조 제1항은 연금에는 적용되지 않으며(대법원 2023. 10. 12. 선고 2023다247405 판결), 연금을 나누어 지급하는 방식은 확인되지 않아 표시한 금액은 연금 총액입니다.`);
         const young = qualifiedPeople.filter(p => ['child', 'grandchild', 'sibling'].includes(p.rel) && !p.disabled && p.age !== '');
         if (young.length) {
           const soonest = young.map(p => (p.rel === 'sibling' ? 19 : 25) - Number(p.age)).filter(n => n > 0).sort((a, b) => a - b)[0];
@@ -978,10 +980,12 @@
         steps.push(`장례비 = 평균임금 ${wonW(W_raw)} × 120일 = ${won(funeral120)}${note} → <strong>${won(funeral)}</strong> (법 제71조, 고시 제2025-85호)`);
       } else {
         const actual = parseMoney($('funeralActual'));
-        funeral = Math.min(actual, funeral120, STATUTORY_2026.FUNERAL_MAX);
-        steps.push(`장례비 = 실제 비용 ${won(actual)}과 120일분 ${won(funeral120)} 중 적은 금액${funeral120 > STATUTORY_2026.FUNERAL_MAX ? `(최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 한도)` : ''} → <strong>${won(funeral)}</strong> (법 제71조 제1항 단서)`);
-        if (actual > 0 && funeral < STATUTORY_2026.FUNERAL_MIN) {
-          warn.push(`유족이 아닌 사람이 장례를 치르고 계산액이 장례비 최저금액(${won(STATUTORY_2026.FUNERAL_MIN)})보다 적을 때 최저금액까지 올려 지급하는지는 법문만으로 확정하기 어려워 반영하지 않았습니다. 근로복지공단에 확인하세요.`);
+        // 공단 실무: 120일분 범위의 실제 비용만 지급하고 최저금액으로 올리지 않음
+        const uncapped = Math.min(actual, funeral120);
+        funeral = Math.min(uncapped, STATUTORY_2026.FUNERAL_MAX);
+        steps.push(`장례비 = 실제 비용 ${won(actual)}과 120일분 ${won(funeral120)} 중 적은 금액${uncapped > STATUTORY_2026.FUNERAL_MAX ? `(최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 한도)` : ''} → <strong>${won(funeral)}</strong> (법 제71조 제1항 단서, 공단 실무 기준: 최저금액 미적용)`);
+        if (uncapped > STATUTORY_2026.FUNERAL_MAX) {
+          warn.push(`유족이 아닌 사람이 장례를 치른 경우에도 장례비 최고금액(${won(STATUTORY_2026.FUNERAL_MAX)})이 적용되는지는 확인되지 않았습니다. 최고금액을 적용했으며, 적용하지 않으면 ${won(uncapped)}입니다. 근로복지공단에 확인하세요.`);
         }
         if (actual <= 0) warn.push('유족이 아닌 사람이 장례를 치른 경우 3단계에 실제 장례 비용을 넣어야 장례비가 계산됩니다.');
       }

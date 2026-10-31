@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>산재 유족급여·장례비 계산기</title>
+  <meta name="description" content="업무상 사망 시 산재보험 유족보상연금·유족보상일시금·장례비 예상액을 2026년 법령·고시 기준으로 계산합니다.">
+  <meta name="theme-color" content="#1d4ed8">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <style>
+    /* 외부 CSS 프레임워크 없이 동작하도록 직접 작성한 스타일 (CDN이 막혀도 화면이 깨지지 않음) */
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --line: #e2e8f0;
+      --line-strong: #cbd5e1;
+      --ink: #0f172a;
+      --ink-2: #334155;
+      --ink-3: #64748b;
+      --brand: #1d4ed8;
+      --brand-strong: #1e3a8a;
+      --brand-soft: #eff6ff;
+      --brand-line: #bfdbfe;
+      --ok: #047857;
+      --ok-soft: #ecfdf5;
+      --ok-line: #a7f3d0;
+      --no: #64748b;
+      --no-soft: #f8fafc;
+      --warn: #92400e;
+      --warn-soft: #fffbeb;
+      --warn-line: #fcd34d;
+      --danger: #b91c1c;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 16px rgba(15, 23, 42, .04);
+      --base: 17px;
+    }
+    html.large { --base: 20px; }
+    * { box-sizing: border-box; }
+    html { font-size: var(--base); -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink-2);
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+      line-height: 1.6;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    h1, h2, h3 { color: var(--ink); line-height: 1.3; margin: 0; }
+    p { margin: 0; }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid #60a5fa; outline-offset: 2px; border-radius: 8px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    .muted { color: var(--ink-3); }
+    .small { font-size: .85rem; }
+    .num { font-variant-numeric: tabular-nums; }
+    [hidden] { display: none !important; }
+    input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    /* 머리글 */
+    .topbar { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
+    .topbar-in { max-width: 1160px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+    .logo { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, var(--brand-strong), var(--brand)); display: grid; place-items: center; flex: none; }
+    .logo svg { width: 24px; height: 24px; }
+    .title { font-size: 1.15rem; font-weight: 800; letter-spacing: -.01em; }
+    .subtitle { font-size: .8rem; color: var(--ink-3); }
+    .topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+    .icon-btn { white-space: nowrap; min-height: 44px; padding: 0 14px; border: 1px solid var(--line-strong); background: var(--card); border-radius: 12px; font-weight: 700; font-size: .85rem; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+    .icon-btn[aria-pressed="true"] { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .icon-btn:hover { border-color: var(--brand); }
+
+    @media (max-width: 639px) {
+      .title { font-size: 1rem; }
+      .subtitle { display: none; }
+      .logo { width: 38px; height: 38px; border-radius: 12px; }
+      .topbar-in { padding: 10px 16px; }
+      .seg.modes { grid-template-columns: 1fr; }
+      .seg.modes label { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; gap: 12px; min-height: 52px; }
+    }
+    .tabs { max-width: 1160px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; }
+    .tab { min-height: 48px; padding: 0 16px; background: none; border: 0; border-bottom: 3px solid transparent; font-weight: 800; color: var(--ink-3); }
+    .tab[aria-selected="true"] { color: var(--brand); border-bottom-color: var(--brand); }
+
+    /* 본문 배치 */
+    main { max-width: 1160px; margin: 0 auto; padding: 20px 16px 120px; }
+    .layout { display: grid; gap: 20px; }
+    @media (min-width: 1024px) {
+      .layout { grid-template-columns: minmax(0, 1fr) 420px; align-items: start; }
+      .result-col { position: sticky; top: 88px; }
+    }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; }
+    @media (min-width: 640px) { .card { padding: 28px; } }
+    .stack > * + * { margin-top: 16px; }
+    .stack-sm > * + * { margin-top: 10px; }
+
+    .step-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
+    .step-no { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: .95rem; }
+    .step-no.done { background: var(--ok); }
+    .step-title { font-size: 1.3rem; font-weight: 800; }
+    .step-desc { color: var(--ink-3); margin-top: 2px; }
+
+    /* 선택 버튼 묶음 */
+    .seg { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    .seg input { position: absolute; opacity: 0; pointer-events: none; }
+    .seg label { display: flex; flex-direction: column; justify-content: center; min-height: 56px; padding: 10px 14px; border: 2px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--card); font-weight: 700; cursor: pointer; text-align: center; transition: border-color .15s, background .15s; }
+    .seg label small { font-weight: 500; color: var(--ink-3); font-size: .78rem; }
+    .seg input:checked + label { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-strong); box-shadow: inset 0 0 0 1px var(--brand); }
+    .seg input:focus-visible + label { outline: 3px solid #60a5fa; outline-offset: 2px; }
+
+    /* 입력 */
+    .field label.lbl { display: block; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .input-wrap { position: relative; }
+    .input { width: 100%; min-height: 56px; padding: 12px 52px 12px 16px; border: 2px solid var(--line-strong); border-radius: var(--radius-sm); background: #fff; font-size: 1.2rem; font-weight: 700; color: var(--ink); }
+    .input.plain { padding-right: 16px; font-size: 1.05rem; }
+    .input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 4px rgba(59,130,246,.15); }
+    .unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--ink-3); pointer-events: none; }
+    .hint { font-size: .85rem; color: var(--ink-3); margin-top: 6px; }
+    .reading { font-size: .9rem; color: var(--brand); font-weight: 700; margin-top: 6px; min-height: 1.4em; }
+    .grid-2 { display: grid; gap: 14px; }
+    @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+    details.more { border: 1px solid var(--line); border-radius: var(--radius-sm); background: #f8fafc; }
+    details.more > summary { list-style: none; cursor: pointer; padding: 14px 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; min-height: 52px; }
+    details.more > summary::-webkit-details-marker { display: none; }
+    details.more > summary::after { content: ''; width: 10px; height: 10px; border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3); transform: rotate(45deg); transition: transform .2s; margin-left: 12px; flex: none; }
+    details.more[open] > summary::after { transform: rotate(-135deg); }
+    details.more > .more-body { padding: 0 16px 16px; }
+
+    .callout { border-radius: var(--radius-sm); padding: 14px 16px; font-size: .92rem; }
+    .callout.info { background: var(--brand-soft); border: 1px solid var(--brand-line); color: var(--ink-2); }
+    .callout.warn { background: var(--warn-soft); border: 1px solid var(--warn-line); color: var(--warn); }
+
+    /* 가족 카드 */
+    .add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .add-btn { min-height: 48px; padding: 0 16px; border-radius: 999px; border: 2px dashed var(--brand-line); background: var(--brand-soft); color: var(--brand-strong); font-weight: 800; }
+    .add-btn:hover { border-style: solid; border-color: var(--brand); }
+    .add-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .empty { border: 2px dashed var(--line-strong); border-radius: var(--radius); padding: 28px 16px; text-align: center; color: var(--ink-3); }
+    .person { border: 2px solid var(--line); border-radius: var(--radius); padding: 16px; background: #fff; }
+    .person.ok { border-color: var(--ok-line); background: #f7fdfa; }
+    .person-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .person-name { font-weight: 800; font-size: 1.1rem; color: var(--ink); }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 800; }
+    .badge.ok { background: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok-line); }
+    .badge.no { background: var(--no-soft); color: var(--no); border: 1px solid var(--line); }
+    .remove { margin-left: auto; min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--ink-3); font-size: .85rem; font-weight: 700; border-radius: 10px; }
+    .remove:hover { color: var(--danger); background: #fef2f2; }
+    .person-grid { display: grid; gap: 12px; }
+    @media (min-width: 640px) { .person-grid { grid-template-columns: 150px 1fr; align-items: start; } }
+    .yn { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .yn input { position: absolute; opacity: 0; pointer-events: none; }
+    .yn label { min-height: 48px; display: grid; place-items: center; border: 2px solid var(--line-strong); border-radius: 12px; font-weight: 700; cursor: pointer; }
+    .yn input:checked + label { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-strong); }
+    .yn input:focus-visible + label { outline: 3px solid #60a5fa; outline-offset: 2px; }
+    .check { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0 0; cursor: pointer; font-size: .92rem; }
+    .check input { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--brand); flex: none; }
+    .reason { margin-top: 10px; font-size: .88rem; color: var(--ink-3); }
+    .person.ok .reason { color: var(--ok); }
+    details.extra { margin-top: 6px; }
+    details.extra > summary { cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--ink-3); min-height: 36px; display: inline-flex; align-items: center; }
+    details.extra > summary::-webkit-details-marker { display: none; }
+    details.extra > summary::before { content: '+'; display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 6px; border: 1px solid var(--line-strong); border-radius: 6px; font-size: .9rem; }
+    details.extra[open] > summary::before { content: '−'; }
+    .q { font-size: .78rem; font-weight: 700; color: var(--brand); background: none; border: 0; padding: 0 0 0 4px; text-decoration: underline; min-height: 24px; }
+
+    .toggle-row { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #f8fafc; cursor: pointer; }
+    .toggle-row input { width: 24px; height: 24px; margin-top: 2px; accent-color: var(--brand); flex: none; }
+
+    /* 결과 */
+    .hero { background: linear-gradient(145deg, var(--brand-strong), var(--brand)); color: #fff; border-radius: var(--radius); padding: 24px; box-shadow: 0 10px 30px rgba(30,58,138,.25); }
+    .hero-label { color: #bfdbfe; font-weight: 700; font-size: .92rem; }
+    .hero-amount { font-size: 2.3rem; font-weight: 900; letter-spacing: -.02em; line-height: 1.15; margin-top: 4px; }
+    .hero-sub { color: #dbeafe; margin-top: 6px; font-size: .92rem; }
+    .money-list { margin-top: 18px; border-top: 1px solid rgba(255,255,255,.2); padding-top: 14px; display: grid; gap: 8px; }
+    .money-row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .money-row span:first-child { color: #dbeafe; font-size: .9rem; }
+    .money-row strong { font-size: 1.05rem; text-align: right; }
+    .money-row.total { border-top: 1px dashed rgba(255,255,255,.3); padding-top: 8px; }
+    .result-col > * + * { margin-top: 14px; }
+    .r-title { font-weight: 800; color: var(--ink); font-size: 1.02rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .r-title svg { width: 20px; height: 20px; color: var(--brand); flex: none; }
+    .card.tight { padding: 18px 20px; }
+    .steps { margin: 0; padding-left: 20px; font-size: .9rem; }
+    .steps li + li { margin-top: 8px; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+    .compare > div { border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; }
+    .compare > div.on { border: 2px solid var(--brand); background: var(--brand-soft); }
+    .compare p:first-child { font-size: .8rem; color: var(--ink-3); }
+    .compare strong { font-size: 1rem; color: var(--ink); }
+    .range { width: 100%; accent-color: var(--brand); height: 32px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .btn { min-height: 48px; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--card); font-weight: 800; font-size: .9rem; color: var(--ink-2); }
+    .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .btn:hover { border-color: var(--brand); }
+    .disclaimer { font-size: .8rem; color: var(--ink-3); }
+
+    /* 모바일 하단 고정 바 */
+    .bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--card); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(15,23,42,.08); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; transition: transform .2s; }
+    .bottom-bar.away { transform: translateY(110%); }
+    .bottom-bar .bb-label { font-size: .78rem; color: var(--ink-3); }
+    .bottom-bar .bb-amount { font-size: 1.2rem; font-weight: 900; color: var(--ink); }
+    .bottom-bar .btn { margin-left: auto; padding: 0 18px; }
+    @media (min-width: 1024px) { .bottom-bar { display: none; } }
+
+    .toast { position: fixed; left: 50%; top: 84px; transform: translate(-50%, -20px); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-weight: 700; opacity: 0; pointer-events: none; transition: all .25s; z-index: 50; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* 안내 탭 */
+    .guide h2 { font-size: 1.3rem; margin-bottom: 12px; }
+    .guide h3 { font-size: 1.05rem; margin: 14px 0 6px; }
+    .guide ul, .guide ol { padding-left: 20px; margin: 0; }
+    .guide li + li { margin-top: 4px; }
+    .table-wrap { overflow-x: auto; }
+    table.t { width: 100%; border-collapse: collapse; font-size: .92rem; min-width: 480px; }
+    table.t th, table.t td { border: 1px solid var(--line-strong); padding: 10px; text-align: left; vertical-align: top; }
+    table.t th { background: #f1f5f9; }
+    table.t td.r { text-align: right; font-weight: 800; white-space: nowrap; }
+    .two { display: grid; gap: 12px; }
+    @media (min-width: 768px) { .two { grid-template-columns: 1fr 1fr; } }
+    .box { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; background: #f8fafc; }
+    .box.blue { background: var(--brand-soft); border-color: var(--brand-line); }
+    footer { max-width: 1160px; margin: 0 auto; padding: 0 16px 24px; font-size: .8rem; color: var(--ink-3); }
+    footer p + p { margin-top: 4px; }
+
+    @media print {
+      .topbar, .tabs, .bottom-bar, .no-print, .toast { display: none !important; }
+      body { background: #fff; }
+      main { padding: 0; }
+      .layout { display: block; }
+      .card, .hero { box-shadow: none; break-inside: avoid; }
+      .hero { background: #fff; color: #000; border: 2px solid #000; }
+      .hero-label, .hero-sub, .money-row span:first-child { color: #333; }
+      details.more:not([open]) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-in">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg>
+      </div>
+      <div>
+        <h1 class="title">산재 유족급여·장례비 계산기</h1>
+        <p class="subtitle">2026년 법령·고용노동부 고시 기준 모의계산</p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" id="btn-large" class="icon-btn" aria-pressed="false" title="글자를 크게 봅니다">글자 크게</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="화면 선택">
+      <button type="button" role="tab" class="tab" id="tab-btn-calc" aria-controls="tab-calc" aria-selected="true">계산하기</button>
+      <button type="button" role="tab" class="tab" id="tab-btn-guide" aria-controls="tab-guide" aria-selected="false">법령 기준·신청 안내</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===================== 계산 탭 ===================== -->
+    <section id="tab-calc" role="tabpanel" aria-labelledby="tab-btn-calc">
+      <div class="layout">
+        <div class="stack">
+
+          <!-- 1단계 -->
+          <section class="card" aria-labelledby="s1-title">
+            <div class="step-head">
+              <span class="step-no" id="s1-no">1</span>
+              <div>
+                <h2 class="step-title" id="s1-title">돌아가신 분의 임금</h2>
+                <p class="step-desc">사망의 원인이 된 <strong>사고가 난 날</strong>(질병은 <strong>진단 확정일</strong>) 전 3개월 임금이 기준입니다. 사망한 날이 기준이 아닙니다.</p>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="seg modes" role="radiogroup" aria-label="임금 입력 방식">
+                <input type="radio" name="wageMode" id="wm-month" value="month" checked>
+                <label for="wm-month">월급으로 입력<small>가장 간단해요</small></label>
+                <input type="radio" name="wageMode" id="wm-months" value="months">
+                <label for="wm-months">3개월 합계로 입력<small>더 정확해요</small></label>
+                <input type="radio" name="wageMode" id="wm-daily" value="daily">
+                <label for="wm-daily">1일 평균임금 입력<small>공단 결정서가 있을 때</small></label>
+              </div>
+
+              <div class="field" id="f-month">
+                <label class="lbl" for="monthly">한 달 월급 (세금 떼기 전)</label>
+                <div class="input-wrap">
+                  <input id="monthly" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 3,500,000" aria-describedby="monthly-r">
+                  <span class="unit">원</span>
+                </div>
+                <p class="reading" id="monthly-r" aria-live="polite"></p>
+                <p class="hint">기본급에 각종 수당·연장근로수당을 더한 금액입니다. 달마다 다르면 '3개월 합계로 입력'을 쓰세요.</p>
+              </div>
+
+              <div class="field" id="f-months" hidden>
+                <label class="lbl" for="wage3m">사고(진단) 전 3개월 동안 받은 임금 합계 (세전)</label>
+                <div class="input-wrap">
+                  <input id="wage3m" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 10,500,000" aria-describedby="wage3m-r">
+                  <span class="unit">원</span>
+                </div>
+                <p class="reading" id="wage3m-r" aria-live="polite"></p>
+              </div>
+
+              <div class="field" id="f-daily" hidden>
+                <label class="lbl" for="dailyDirect">1일 평균임금</label>
+                <div class="input-wrap">
+                  <input id="dailyDirect" class="input money-dec num" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 115,000.25" aria-describedby="daily-r">
+                  <span class="unit">원</span>
+                </div>
+                <p class="reading" id="daily-r" aria-live="polite"></p>
+                <p class="hint">근로복지공단 결정서·평균임금 산정내역서의 금액(증감 반영액)을 넣으세요. 소수점 둘째 자리까지 넣을 수 있습니다.</p>
+              </div>
+
+              <div class="grid-2" id="f-dates">
+                <div class="field">
+                  <label class="lbl" for="baseDate">사고 난 날 / 진단 확정일 <span class="muted small">(선택)</span></label>
+                  <input id="baseDate" class="input plain" type="date" min="1990-01-01" max="2100-12-31">
+                  <p class="hint" id="days-hint">입력하면 3개월의 실제 날짜 수를 자동으로 셉니다.</p>
+                </div>
+                <div class="field">
+                  <label class="lbl" for="deathDate">사망한 날 <span class="muted small">(선택)</span></label>
+                  <input id="deathDate" class="input plain" type="date" min="1990-01-01" max="2100-12-31">
+                  <p class="hint">사고·진단 후 1년이 지나 사망했는지 확인합니다.</p>
+                </div>
+              </div>
+
+              <details class="more" id="more-wage">
+                <summary>상여금·연차수당·통상임금 (선택)</summary>
+                <div class="more-body stack-sm">
+                  <div class="field" id="f-days">
+                    <label class="lbl" for="days3m">3개월의 달력상 총 일수</label>
+                    <div class="input-wrap">
+                      <input id="days3m" class="input num" type="number" min="1" max="92" value="92" inputmode="numeric">
+                      <span class="unit">일</span>
+                    </div>
+                    <p class="hint">보통 89~92일. 위에서 날짜를 넣으면 자동으로 바뀝니다.</p>
+                  </div>
+                  <div class="grid-2">
+                    <div class="field">
+                      <label class="lbl" for="bonusYear">사고(진단) 전 1년간 상여금</label>
+                      <div class="input-wrap">
+                        <input id="bonusYear" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                        <span class="unit">원</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="lbl" for="annualLeaveYear">사고(진단) 전 1년간 연차수당</label>
+                      <div class="input-wrap">
+                        <input id="annualLeaveYear" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                        <span class="unit">원</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="hint">1년분의 3/12을 3개월 임금에 더합니다(고용노동부 평균임금 산정 실무). 포함 여부는 지급 근거에 따라 달라질 수 있습니다.</p>
+                  <div class="field">
+                    <label class="lbl" for="ordinaryDaily">1일 통상임금</label>
+                    <div class="input-wrap">
+                      <input id="ordinaryDaily" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                      <span class="unit">원</span>
+                    </div>
+                    <p class="hint">평균임금이 통상임금보다 적으면 통상임금을 평균임금으로 합니다(근로기준법 제2조 제2항).</p>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </section>
+
+          <!-- 2단계 -->
+          <section class="card" aria-labelledby="s2-title">
+            <div class="step-head">
+              <span class="step-no" id="s2-no">2</span>
+              <div>
+                <h2 class="step-title" id="s2-title">남은 가족</h2>
+                <p class="step-desc">가족을 한 명씩 추가하면 <strong>연금을 받을 자격이 있는지</strong> 바로 알려 드립니다.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="add-row" role="group" aria-label="가족 추가">
+                <button type="button" class="add-btn" data-add="spouse">+ 배우자</button>
+                <button type="button" class="add-btn" data-add="child">+ 자녀</button>
+                <button type="button" class="add-btn" data-add="parent">+ 부모</button>
+                <button type="button" class="add-btn" data-add="grandchild">+ 손자녀</button>
+                <button type="button" class="add-btn" data-add="grandparent">+ 조부모</button>
+                <button type="button" class="add-btn" data-add="sibling">+ 형제자매</button>
+              </div>
+              <div id="people" class="stack-sm" aria-live="polite"></div>
+              <details class="more">
+                <summary>'생계를 같이 했다'는 무슨 뜻인가요?</summary>
+                <div class="more-body">
+                  <p>사망 당시 아래 중 하나에 해당하면 생계를 같이 한 것으로 봅니다 (산재보험법 시행령 제61조).</p>
+                  <ul style="margin:8px 0 0; padding-left:20px">
+                    <li>같은 세대에 함께 살면서 고인의 소득으로 생활의 전부 또는 상당 부분을 유지</li>
+                    <li>학업·취업·요양·주거 사정 등으로 따로 살았지만 고인의 소득으로 생활의 전부 또는 상당 부분을 유지</li>
+                    <li>고인이 정기적으로 보내 준 돈이나 경제적 지원으로 생활의 전부 또는 대부분을 유지</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+          </section>
+
+          <!-- 3단계 -->
+          <section class="card" aria-labelledby="s3-title">
+            <div class="step-head">
+              <span class="step-no" id="s3-no">3</span>
+              <div>
+                <h2 class="step-title" id="s3-title">장례</h2>
+                <p class="step-desc">장례비는 장례를 치른 사람에게 지급됩니다 (산재보험법 제71조).</p>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="seg" role="radiogroup" aria-label="장례를 치른 사람">
+                <input type="radio" name="funeralBy" id="fb-family" value="family" checked>
+                <label for="fb-family">유족이 치렀어요</label>
+                <input type="radio" name="funeralBy" id="fb-other" value="other">
+                <label for="fb-other">유족이 아닌 사람이 치렀어요<small>유족이 없거나 행방불명인 경우 등</small></label>
+              </div>
+              <div class="field" id="f-actual" hidden>
+                <label class="lbl" for="funeralActual">실제 들어간 장례 비용</label>
+                <div class="input-wrap">
+                  <input id="funeralActual" class="input money num" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 12,000,000" aria-describedby="actual-r">
+                  <span class="unit">원</span>
+                </div>
+                <p class="reading" id="actual-r" aria-live="polite"></p>
+                <p class="hint">평균임금 120일분 범위에서 실제 쓴 비용을 지급하고, 장례비 최고금액(19,279,760원)을 넘을 수 없습니다(법 제71조 제1항 단서·제2항). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용입니다(근로복지공단 보상업무처리규정 제44조 제3항). 유족이 아닌 사람이 받는 경우는 유족이 행방불명인 경우 등으로 한정됩니다(같은 조 제2항).</p>
+              </div>
+              <p class="hint" id="f-employer-note">유족이 장례를 치르고 <strong>회사가 비용을 대신 냈다면</strong> '유족이 치렀어요'를 고르세요. 이때 회사는 유족의 장례비 청구권을 대위할 수 있고(법 제89조), 공단은 유족과 회사에 나누어 지급하더라도 합계는 장례비 최고금액을 넘지 않습니다(서울행정법원 2015구합9391 판결 참고).</p>
+              <label class="toggle-row" id="f-prepaid">
+                <input id="funeralPrepaid" type="checkbox">
+                <span><strong>장례비 선지급을 이미 받았어요</strong><br><span class="muted small">업무상 사망으로 추정되면 장례 전에 장례비 최저금액(13,943,000원)을 먼저 받을 수 있습니다 (법 제71조 제3항, 시행령 제66조의2)</span></span>
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <!-- 결과 -->
+        <aside class="result-col" id="result" aria-label="계산 결과">
+          <div class="hero" aria-live="polite">
+            <p class="hero-label" id="r-label">예상 유족급여</p>
+            <p class="hero-amount num" id="r-amount">—</p>
+            <p class="hero-sub" id="r-sub">임금과 가족을 입력하면 바로 계산됩니다</p>
+            <div class="money-list" id="r-list" hidden></div>
+          </div>
+
+          <div class="card tight" id="r-who-card" hidden>
+            <h3 class="r-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>받을 사람</h3>
+            <div id="r-who" class="stack-sm"></div>
+          </div>
+
+          <div class="card tight" id="r-compare-card" hidden>
+            <h3 class="r-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></svg>연금 전액? 일부 일시금?</h3>
+            <label class="toggle-row" style="background:#fff">
+              <input id="splitOption" type="checkbox">
+              <span><strong>연금 절반을 일시금으로 미리 받기</strong><br><span class="muted small">유족보상일시금의 50%(650일분)를 먼저 받고 연금은 50%만 받습니다 (법 제62조 제3항)</span></span>
+            </label>
+            <div class="compare" id="r-compare"></div>
+            <label for="years" class="small" style="font-weight:700">비교 기간: <span id="years-out" class="num">10</span>년</label>
+            <input id="years" class="range" type="range" min="1" max="40" value="10">
+            <p class="small" id="r-breakeven"></p>
+            <p class="small muted">평균임금 증감(법 제36조 제3항)과 자녀 25세 도달 등 수급자격 변동은 반영하지 않은 단순 누적액입니다.</p>
+          </div>
+
+          <div id="r-warn" class="stack-sm"></div>
+
+          <details class="more card tight" id="r-steps-card" style="padding:0" hidden>
+            <summary style="padding:16px 20px">계산 과정과 근거 보기</summary>
+            <div class="more-body" style="padding:0 20px 18px">
+              <ol class="steps" id="r-steps"></ol>
+            </div>
+          </details>
+
+          <div class="actions no-print">
+            <button type="button" class="btn primary" id="btn-copy">결과 복사</button>
+            <button type="button" class="btn" id="btn-print">인쇄</button>
+            <button type="button" class="btn" id="btn-reset">처음부터</button>
+          </div>
+
+          <p class="disclaimer">이 계산은 2026년 법령·고시를 기준으로 한 모의계산입니다. 실제 지급액은 근로복지공단의 평균임금 산정, 유족 자격 조사·결정에 따릅니다. 평균임금은 소수점 셋째 자리에서 반올림했습니다(근로복지공단 보상업무처리규정 제76조 제1항). 연금·일시금·장례비의 원 미만은 정한 규정이 없어 버려 표시했으며, 공단의 처리와 다를 수 있습니다.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== 안내 탭 ===================== -->
+    <section id="tab-guide" class="guide stack" role="tabpanel" aria-labelledby="tab-btn-guide" hidden>
+      <div class="card">
+        <h2>2026년 적용 금액</h2>
+        <div class="table-wrap">
+          <table class="t">
+            <thead><tr><th>구분</th><th>금액</th><th>근거</th></tr></thead>
+            <tbody>
+              <tr><td>최고 보상기준 금액(1일)</td><td class="r">268,299원</td><td>고용노동부고시 제2025-84호 (2026. 1. 1.~12. 31.)</td></tr>
+              <tr><td>최저 보상기준 금액(1일)</td><td class="r">82,560원</td><td>고용노동부고시 제2025-84호</td></tr>
+              <tr><td>장례비 최고금액</td><td class="r">19,279,760원</td><td>고용노동부고시 제2025-85호 (2026. 1. 1.~12. 31.)</td></tr>
+              <tr><td>장례비 최저금액</td><td class="r">13,943,000원</td><td>고용노동부고시 제2025-85호</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted" style="margin-top:10px">최고·최저 보상기준 금액은 유족급여에 적용되지만 <strong>장례비에는 적용되지 않습니다</strong>(법 제36조 제7항 괄호). 장례비에는 별도의 장례비 최고·최저금액이 적용됩니다(법 제71조 제2항, 시행령 제66조).</p>
+      </div>
+
+      <div class="card">
+        <h2>유족급여 계산 기준 (법 제62조, 별표 3)</h2>
+        <div class="table-wrap">
+          <table class="t">
+            <thead><tr><th style="width:140px">종류</th><th>금액</th></tr></thead>
+            <tbody>
+              <tr><td><strong>유족보상연금</strong></td><td>급여기초연액(평균임금 × 365)의 <strong>47%</strong>(기본금액) + 수급권자 및 생계를 같이 하던 수급자격자 <strong>1인당 5%</strong>(가산금액, 합산 최대 <strong>20%</strong>)<br><span class="muted small">→ 1명 52%, 2명 57%, 3명 62%, 4명 이상 67%</span></td></tr>
+              <tr><td><strong>유족보상일시금</strong></td><td>평균임금의 <strong>1,300일분</strong> — 사망 당시 연금 수급자격자가 한 명도 없을 때만 지급</td></tr>
+              <tr><td><strong>50% 일시금 선택</strong></td><td>연금 수급자격자가 원하면 일시금의 50%(650일분)를 받고 연금은 50% 감액 (법 제62조 제3항)</td></tr>
+              <tr><td><strong>차액 일시금</strong></td><td>연금 수급자가 자격을 잃고 다른 수급자격자가 없을 때, 이미 받은 연금이 1,300일분에 못 미치면 그 차액을 일시금으로 지급 (법 제62조 제4항)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>연금 수급자격 (법 제63조 제1항)</h3>
+        <p>사망 당시 고인과 <strong>생계를 같이 하던</strong> 유족 중 배우자(사실혼 포함, 법 제5조 제3호)와 다음에 해당하는 사람:</p>
+        <ul>
+          <li>부모·조부모: 60세 이상 / 자녀·손자녀: 25세 미만 / 형제자매: 19세 미만 또는 60세 이상</li>
+          <li>위에 해당하지 않더라도 「장애인복지법」상 장애인으로서 고용노동부령으로 정한 장애 정도에 해당하는 자녀·부모·손자녀·조부모·형제자매</li>
+          <li>사망 당시 대한민국 국민이 아닌 사람으로서 외국에 거주하던 유족은 제외</li>
+          <li>사망 당시 태아였던 자녀는 출생한 때부터 생계를 같이 하던 유족으로 봄 (같은 조 제2항)</li>
+        </ul>
+        <h3>지급 방법</h3>
+        <ul>
+          <li>연금은 지급사유가 생긴 달의 다음 달 첫날부터 지급되며, 연액을 12로 나누어 매달 25일에 지급합니다 (법 제70조).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>누가 받는가 — 수급 순위</h2>
+        <div class="two">
+          <div class="box blue">
+            <h3 style="margin-top:0">유족보상연금 (법 제63조 제3항)</h3>
+            <p>수급자격자 중 <strong>배우자 → 자녀 → 부모 → 손자녀 → 조부모 → 형제자매</strong> 순서로 수급권자가 됩니다. 수급권자가 자격을 잃으면 같은 순위자, 없으면 다음 순위자에게 권리가 넘어갑니다(법 제64조 제2항).</p>
+          </div>
+          <div class="box">
+            <h3 style="margin-top:0">유족보상일시금 (법 제65조)</h3>
+            <ol>
+              <li>생계를 같이 하던 배우자·자녀·부모·손자녀·조부모</li>
+              <li>생계를 같이 하지 않던 배우자·자녀·부모·손자녀·조부모, 또는 생계를 같이 하던 형제자매</li>
+              <li>형제자매</li>
+            </ol>
+            <p class="small muted" style="margin-top:8px">각 호 안에서는 적힌 순서대로이며, 같은 순위가 2명 이상이면 똑같이 나눕니다. 부모·조부모는 양부모 쪽이 선순위이고, 고인이 유언으로 지정했다면 그에 따릅니다(같은 조 제2항·제4항).</p>
+          </div>
+        </div>
+        <h3>연금 수급자격을 잃는 경우 (법 제64조 제1항)</h3>
+        <ul>
+          <li>사망, 배우자의 재혼(사실혼 포함), 고인과의 친족 관계 종료</li>
+          <li>자녀·손자녀가 25세가 된 때, 형제자매가 19세가 된 때</li>
+          <li>장애로 자격을 얻은 사람의 장애 상태가 해소된 경우</li>
+          <li>국적 상실 후 외국 거주, 외국인 수급자격자의 외국 거주 목적 출국</li>
+        </ul>
+        <p style="margin-top:8px">같은 순위 연금 수급권자가 2명 이상이면 그중 1명을 청구·수령 대표자로 선임할 수 있습니다(시행령 제60조). 같은 순위자에게 똑같이 나누어 지급하는 제65조 제1항은 유족보상일시금(제62조 제2항·제4항)에 관한 규정이며 연금에는 적용되지 않습니다(대법원 2023. 10. 12. 선고 2023다247405 판결).</p>
+        <p style="margin-top:8px">수급권자가 3개월 이상 행방불명이면 같은 순위자(없으면 다음 순위자)의 신청으로 그 사람의 연금 지급을 정지하고 다른 사람에게 지급합니다(법 제64조 제3항, 시행령 제62조).</p>
+      </div>
+
+      <div class="card">
+        <h2>장례비 (법 제71조)</h2>
+        <ul>
+          <li>평균임금의 <strong>120일분</strong>을 장례를 지낸 유족에게 지급합니다.</li>
+          <li>계산액이 장례비 최고금액을 넘거나 최저금액에 못 미치면 최고·최저금액을 장례비로 합니다 (같은 조 제2항).</li>
+          <li>유족이 아닌 사람이 장례를 지냈다면 120일분 범위에서 <strong>실제 든 비용</strong>을 그 사람에게 지급합니다(같은 조 제1항 단서). 인정 범위는 「건전가정의례준칙」 제4장 상례에 따라 실제 지출된 비용이며, 유족이 아닌 사람이 받는 경우는 유족의 행방불명 등으로 한정됩니다(근로복지공단 보상업무처리규정 제44조 제2항·제3항). 제2항이 "제1항에 따른 장례비"라고 정하므로 최고금액은 이 경우에도 적용됩니다. 실제 비용이 최저금액보다 적을 때 최저금액까지 올려 지급하는지는 행정해석이 확인되지 않아, 계산기는 실제 비용으로 계산합니다.</li>
+          <li><strong>회사가 장례비를 대신 낸 경우</strong>: 유족이 장례를 치르고 회사(보험가입자)가 비용을 냈다면, 이는 제1항 단서(유족이 아닌 사람이 장례를 지낸 경우)가 아니라 수급권 대위(법 제89조) 문제입니다. 서울행정법원 2015구합9391 판결에서 공단은 유족에게 유족이 실제 지출한 390만 원을, 회사에는 당시 장의비 최고금액(13,051,700원)에서 390만 원을 뺀 9,151,700원을 지급했고, 법원은 이 처분이 적법하다고 보았습니다.</li>
+          <li>선지급액은 최저금액이고 유족의 확정 장례비는 항상 최저금액 이상이므로, 나중에는 차액만 추가로 받습니다. 업무상 재해로 인정되지 않으면 선지급액 전액을 돌려줘야 합니다(법 제84조, 보상업무처리규정 제44조의2 제2항).</li>
+          <li>업무상 사망으로 추정되면 장례 전이라도 유족 청구로 <strong>최저금액을 미리 지급</strong>할 수 있고, 나중에 확정되는 장례비에서 뺍니다.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>청구 기한과 신청 방법</h2>
+        <ul>
+          <li><strong>소멸시효 5년</strong>: 유족급여·장례비를 받을 권리는 5년간 행사하지 않으면 소멸합니다 (법 제112조 제1항 단서).</li>
+          <li>근로복지공단 관할 지사에 유족급여·장례비 청구서를 제출합니다. 통상 사망진단서(시체검안서), 가족관계 증명서류, 생계를 같이 했음을 보여 주는 자료(주민등록표, 송금 내역 등), 장례비 영수증(유족이 아닌 사람이 장례를 치른 경우) 등이 필요합니다. 정확한 구비서류는 공단 지사에 확인하세요.</li>
+          <li>공단 결정에 이의가 있으면 결정이 있음을 안 날부터 90일 이내에 심사청구를 할 수 있습니다 (법 제103조 제3항).</li>
+        </ul>
+      </div>
+
+      <div class="card" style="background:var(--warn-soft);border-color:var(--warn-line)">
+        <h2 style="color:var(--warn)">이 계산기가 다루지 않는 것</h2>
+        <ul>
+          <li><strong>진폐로 인한 사망</strong>: 유족보상연금 대신 진폐유족연금(법 제91조의4)이 적용되어 계산 방식이 다릅니다.</li>
+          <li><strong>평균임금 특례</strong>: 직업병(시행령 제25조), 일용근로자 등 근로형태 특이자(시행령 제23조·제24조)는 공단 산정액을 직접 입력하세요.</li>
+          <li><strong>평균임금 증감</strong>: 평균임금 산정사유 발생일(사고일·진단 확정일)부터 1년이 지나면 매년 임금·물가 변동률에 따라 평균임금이 증감되어 연금액도 바뀝니다 (법 제36조 제3항). 사고·진단 후 1년이 지나 사망한 경우에는 증감된 평균임금을 직접 입력해야 합니다.</li>
+          <li><strong>민사 손해배상</strong>: 유족이 같은 사유로 보험급여를 받으면 사업주는 그 금액 한도에서 민법상 손해배상 책임을 면하며, 유족보상연금을 받고 있는 사람은 유족보상일시금(1,300일분)을 받은 것으로 봅니다(법 제80조 제2항). 이를 넘는 손해(초과 손해)는 별도로 계산해야 합니다.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>근거: 산업재해보상보험법(법률 제21375호, 2026. 7. 1. 시행) 제5조·제36조·제62조~제65조·제70조·제71조·제80조·제84조·제103조·제112조, 별표 3 / 같은 법 시행령 제23조~제25조·제60조~제62조·제66조·제66조의2 / 대법원 2023. 10. 12. 선고 2023다247405 판결 / 근로복지공단 보상업무처리규정(2023. 7. 1. 시행본) 제44조·제44조의2·제76조 / 근로기준법 제2조, 같은 법 시행령 제52조 / 고용노동부고시 제2025-84호·제2025-85호. 2026. 10. 국가법령정보센터 원문 대조.</p>
+    <p>2027. 3. 30. 시행 예정인 개정법(법률 제22025호)의 제63조·제71조는 현행과 같은 문언임을 확인했습니다.</p>
+  </footer>
+
+  <!-- 모바일 하단 결과 바 -->
+  <div class="bottom-bar no-print" id="bottom-bar" aria-hidden="true">
+    <div>
+      <p class="bb-label" id="bb-label">예상 유족급여</p>
+      <p class="bb-amount num" id="bb-amount">—</p>
+    </div>
+    <button type="button" class="btn primary" id="bb-go" tabindex="-1">결과 보기</button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // [확정 기준] 고용노동부고시 제2025-84호·제2025-85호 (2026. 1. 1. ~ 2026. 12. 31.)
+    const STATUTORY_2026 = {
+      MAX_DAILY: 268299,        // 1일 최고 보상기준 금액 (유족급여에 적용, 장례비에는 미적용: 법 제36조 제7항)
+      MIN_DAILY: 82560,         // 1일 최저 보상기준 금액
+      FUNERAL_MAX: 19279760,    // 장례비 최고금액
+      FUNERAL_MIN: 13943000     // 장례비 최저금액
+    };
+
+    // [산재보험법 별표 3] 유족급여 — 2026. 10. 법령 원문 대조 완료
+    const SURVIVOR = {
+      BASE_PCT: 47,             // 기본금액: 급여기초연액의 47/100
+      ADD_PCT: 5,               // 가산금액: 1인당 5/100
+      ADD_CAP_PCT: 20,          // 가산금액 합산 한도 20/100
+      LUMP_DAYS: 1300,          // 유족보상일시금 1,300일분
+      FUNERAL_DAYS: 120         // 장례비 120일분 (법 제71조 제1항)
+    };
+
+    // 관계별 연금 나이 요건 (법 제63조 제1항) — 배열 순서가 연금 수급 순위 (같은 조 제3항)
+    const REL = {
+      spouse:      { label: '배우자',   ageText: '나이 요건 없음',        ageOk: () => true },
+      child:       { label: '자녀',     ageText: '25세 미만',             ageOk: a => a < 25 },
+      parent:      { label: '부모',     ageText: '60세 이상',             ageOk: a => a >= 60 },
+      grandchild:  { label: '손자녀',   ageText: '25세 미만',             ageOk: a => a < 25 },
+      grandparent: { label: '조부모',   ageText: '60세 이상',             ageOk: a => a >= 60 },
+      sibling:     { label: '형제자매', ageText: '19세 미만 또는 60세 이상', ageOk: a => a < 19 || a >= 60 }
+    };
+    const ANNUITY_ORDER = ['spouse', 'child', 'parent', 'grandchild', 'grandparent', 'sibling'];
+    const FIVE = ['spouse', 'child', 'parent', 'grandchild', 'grandparent'];
+
+    const $ = id => document.getElementById(id);
+    const fmt = n => Math.floor(n).toLocaleString('ko-KR');
+    const won = n => fmt(n) + '원';
+    // 평균임금처럼 원 미만이 생길 수 있는 값: 계산에 쓴 값을 소수 둘째 자리까지 그대로 표시
+    const wonW = n => n.toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '원';
+    const parseMoney = el => Number(String(el.value).replace(/[^0-9]/g, '')) || 0;
+    const parseDecimal = el => Number(String(el.value).replace(/[^0-9.]/g, '')) || 0;
+    // 평균임금은 소수점 셋째 자리에서 반올림 (근로복지공단 보상업무처리규정 제76조 제1항)
+    const round2 = n => Math.round(n * 100) / 100;
+    const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
+    const readKorean = n => {
+      const v = Math.floor(n);
+      if (v <= 0) return '';
+      const eok = Math.floor(v / 1e8), man = Math.floor((v % 1e8) / 1e4), rest = v % 1e4;
+      const parts = [];
+      if (eok) parts.push(`${eok.toLocaleString('ko-KR')}억`);
+      if (man) parts.push(`${man.toLocaleString('ko-KR')}만`);
+      if (rest && !eok) parts.push(rest.toLocaleString('ko-KR'));
+      return parts.join(' ') + '원';
+    };
+
+    /* ---------- 가족 ---------- */
+    let people = [];
+    let seq = 0;
+
+    function addPerson(rel) {
+      if (rel === 'spouse' && people.some(p => p.rel === 'spouse')) return;
+      people.push({ id: ++seq, rel, age: '', together: true, disabled: false, foreignAbroad: false });
+      renderPeople();
+      calculate();
+      const last = document.querySelector(`[data-pid="${seq}"] input[data-k="age"]`);
+      if (last) last.focus();
+    }
+
+    // 연금 수급자격 판정 (법 제63조 제1항)
+    function annuityStatus(p) {
+      const r = REL[p.rel];
+      if (!p.together) return { ok: false, why: '사망 당시 생계를 같이 하지 않아 연금 자격이 없습니다.' };
+      if (p.foreignAbroad) return { ok: false, why: '사망 당시 외국에 살던 외국 국적 유족은 연금 자격에서 제외됩니다.' };
+      if (p.rel === 'spouse') return { ok: true, why: '생계를 같이 하던 배우자 → 연금 자격 있음' };
+      const age = p.age === '' ? null : Number(p.age);
+      if (age !== null && r.ageOk(age)) return { ok: true, why: `${r.label} ${r.ageText} → 연금 자격 있음` };
+      if (p.disabled) return { ok: true, why: `장애 정도 요건 충족 → 연금 자격 있음` };
+      if (age === null) return { ok: false, why: `사망 당시 나이를 입력해 주세요 (${r.label}는 ${r.ageText}이어야 연금 자격이 있습니다).`, pending: true };
+      return { ok: false, why: `${r.label}는 ${r.ageText}이어야 연금 자격이 있습니다. 장애가 있다면 위에 체크하세요.` };
+    }
+
+    // 나이로 이미 자격이 되면 장애 질문은 감춤 (체크해 둔 경우는 계속 보임)
+    function needsDisability(p) {
+      if (p.rel === 'spouse') return false;
+      if (p.disabled) return true;
+      return p.age === '' ? false : !REL[p.rel].ageOk(Number(p.age));
+    }
+
+    function renderPeople() {
+      const box = $('people');
+      document.querySelector('[data-add="spouse"]').disabled = people.some(p => p.rel === 'spouse');
+      if (!people.length) {
+        box.innerHTML = `<div class="empty">위 버튼으로 남은 가족을 추가해 주세요.<br><span class="small">가족이 없으면 장례비만 계산됩니다.</span></div>`;
+        return;
+      }
+      // 같은 관계가 여럿이면 '자녀 1', '자녀 2'처럼 번호를 붙임
+      const counter = {};
+      box.innerHTML = people.map(p => {
+        const r = REL[p.rel];
+        counter[p.rel] = (counter[p.rel] || 0) + 1;
+        const total = people.filter(x => x.rel === p.rel).length;
+        const name = total > 1 ? `${r.label} ${counter[p.rel]}` : r.label;
+        const st = annuityStatus(p);
+        const ageField = p.rel === 'spouse' ? '' : `
+          <div class="field">
+            <label class="lbl" for="age-${p.id}">사망 당시 만 나이</label>
+            <div class="input-wrap">
+              <input id="age-${p.id}" data-k="age" class="input num" type="number" min="0" max="120" inputmode="numeric" value="${p.age}" placeholder="예: 12">
+              <span class="unit">세</span>
+            </div>
+          </div>`;
+        return `
+        <div class="person ${st.ok ? 'ok' : ''}" data-pid="${p.id}">
+          <div class="person-head">
+            <span class="person-name">${name}</span>
+            <span class="badge ${st.ok ? 'ok' : 'no'}">${st.ok ? '✓ 연금 자격 있음' : (st.pending ? '나이 입력 필요' : '연금 자격 없음')}</span>
+            <button type="button" class="remove" data-remove="${p.id}" aria-label="${name} 삭제">삭제</button>
+          </div>
+          <div class="person-grid">
+            ${ageField}
+            <div class="field" ${p.rel === 'spouse' ? 'style="grid-column:1/-1"' : ''}>
+              <span class="lbl" id="tg-${p.id}">고인의 소득으로 생활했나요? (생계를 같이 함)</span>
+              <div class="yn" role="radiogroup" aria-labelledby="tg-${p.id}">
+                <input type="radio" id="t1-${p.id}" name="tg-${p.id}" data-k="together" value="1" ${p.together ? 'checked' : ''}>
+                <label for="t1-${p.id}">예</label>
+                <input type="radio" id="t0-${p.id}" name="tg-${p.id}" data-k="together" value="0" ${p.together ? '' : 'checked'}>
+                <label for="t0-${p.id}">아니요</label>
+              </div>
+            </div>
+          </div>
+          ${p.rel === 'spouse' ? '' : `
+          <label class="check dis-row" ${needsDisability(p) ? '' : 'hidden'}><input type="checkbox" data-k="disabled" ${p.disabled ? 'checked' : ''}>
+            <span>장애가 있어요 <span class="muted">(「장애인복지법」상 장애인으로 고용노동부령이 정한 장애 정도)</span></span></label>`}
+          <details class="extra" ${p.foreignAbroad ? 'open' : ''}>
+            <summary>그 밖의 경우</summary>
+            <label class="check"><input type="checkbox" data-k="foreignAbroad" ${p.foreignAbroad ? 'checked' : ''}>
+              <span>외국 국적이고 사망 당시 외국에 살았어요 <span class="muted">(연금 자격 제외: 법 제63조 제1항)</span></span></label>
+          </details>
+          <p class="reason">${st.why}</p>
+        </div>`;
+      }).join('');
+    }
+
+    $('people').addEventListener('input', e => {
+      const card = e.target.closest('[data-pid]');
+      if (!card) return;
+      const p = people.find(x => x.id === Number(card.dataset.pid));
+      const k = e.target.dataset.k;
+      if (k === 'age') {
+        p.age = e.target.value === '' ? '' : Math.max(0, Math.floor(Number(e.target.value)));
+        updateCardStatus(card, p);   // 입력 중 포커스를 잃지 않도록 카드 전체를 다시 그리지 않음
+        calculate();
+      }
+    });
+    $('people').addEventListener('change', e => {
+      const card = e.target.closest('[data-pid]');
+      if (!card) return;
+      const p = people.find(x => x.id === Number(card.dataset.pid));
+      const k = e.target.dataset.k;
+      if (k === 'together') p.together = e.target.value === '1';
+      else if (k === 'disabled' || k === 'foreignAbroad') p[k] = e.target.checked;
+      else return;
+      updateCardStatus(card, p);
+      calculate();
+    });
+    $('people').addEventListener('click', e => {
+      const id = e.target.dataset.remove;
+      if (!id) return;
+      people = people.filter(p => p.id !== Number(id));
+      renderPeople();
+      calculate();
+    });
+
+    function updateCardStatus(card, p) {
+      const st = annuityStatus(p);
+      card.classList.toggle('ok', st.ok);
+      const badge = card.querySelector('.badge');
+      badge.className = `badge ${st.ok ? 'ok' : 'no'}`;
+      badge.textContent = st.ok ? '✓ 연금 자격 있음' : (st.pending ? '나이 입력 필요' : '연금 자격 없음');
+      card.querySelector('.reason').textContent = st.why;
+      const dis = card.querySelector('.dis-row');
+      if (dis) dis.hidden = !needsDisability(p);
+    }
+
+    document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addPerson(b.dataset.add)));
+
+    /* ---------- 날짜 ---------- */
+    // 산정사유 발생일 이전 3개월의 총 일수 (근로기준법 제2조 제1항 제6호): 발생일 전날부터 거꾸로 3개월
+    function daysInThreeMonths(dateStr) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      if (!y || !m || !d) return null;
+      const base = Date.UTC(y, m - 1, d);
+      const ty = m - 4 < 0 ? y - 1 : y;
+      const tm = (m - 4 + 12) % 12;
+      const lastDay = new Date(Date.UTC(ty, tm + 1, 0)).getUTCDate();
+      const start = Date.UTC(ty, tm, Math.min(d, lastDay));
+      return Math.round((base - start) / 86400000);
+    }
+
+    function onBaseDate() {
+      const v = $('baseDate').value;
+      const days = v ? daysInThreeMonths(v) : null;
+      if (days) {
+        $('days3m').value = days;
+        $('days-hint').textContent = `3개월 총 일수: ${days}일로 자동 계산했습니다.`;
+      } else {
+        $('days-hint').textContent = '입력하면 3개월의 실제 날짜 수를 자동으로 셉니다.';
+      }
+    }
+
+    /* ---------- 평균임금 ---------- */
+    function getAverageWage() {
+      const mode = radio('wageMode');
+      const steps = [];
+      let raw = 0;
+      if (mode === 'month' || mode === 'months') {
+        const total = mode === 'month' ? parseMoney($('monthly')) * 3 : parseMoney($('wage3m'));
+        const days = Math.floor(Number($('days3m').value) || 0);
+        const bonus = parseMoney($('bonusYear'));
+        const leave = parseMoney($('annualLeaveYear'));
+        const extra = Math.floor(bonus * 3 / 12) + Math.floor(leave * 3 / 12);
+        if (total <= 0 || days <= 0) return null;
+        raw = round2((total + extra) / days);
+        const totalText = mode === 'month' ? `월급 ${won(total / 3)} × 3개월 = ${won(total)}` : `3개월 임금 ${won(total)}`;
+        steps.push(`평균임금 = (${totalText}${extra > 0 ? ` + 상여금·연차수당 3/12 ${won(extra)}` : ''}) ÷ ${days}일 = <strong>${wonW(raw)}</strong> (근로기준법 제2조 제1항 제6호)`);
+      } else {
+        raw = round2(parseDecimal($('dailyDirect')));
+        if (raw <= 0) return null;
+        steps.push(`1일 평균임금(직접 입력) = <strong>${won(raw)}</strong>`);
+      }
+      const ordinary = parseMoney($('ordinaryDaily'));
+      if (ordinary > raw) {
+        steps.push(`평균임금이 1일 통상임금보다 적어 통상임금 <strong>${won(ordinary)}</strong>을 평균임금으로 함 (근로기준법 제2조 제2항)`);
+        raw = ordinary;
+      }
+      return { raw, steps };
+    }
+
+    /* ---------- 계산 ---------- */
+    let lastSummary = '';
+
+    function calculate() {
+      const warn = [];
+      const wage = getAverageWage();
+      const funeralBy = radio('funeralBy');
+      $('f-actual').hidden = funeralBy !== 'other';
+      // 선지급은 유족이 청구하는 것이므로 유족이 장례를 치른 경우에만 묻는다 (법 제71조 제3항)
+      $('f-prepaid').hidden = funeralBy !== 'family';
+      $('years-out').textContent = $('years').value;
+
+      // 단계 표시: 입력이 끝난 단계는 초록색
+      $('s1-no').classList.toggle('done', !!wage);
+      $('s2-no').classList.toggle('done', people.length > 0);
+      $('s3-no').classList.toggle('done', !!wage && (funeralBy === 'family' || parseMoney($('funeralActual')) > 0));
+
+      // 사고(진단)일과 사망일 비교 (법 제36조 제3항: 1년 경과 후 평균임금 증감)
+      const bd = $('baseDate').value, dd = $('deathDate').value;
+      if (bd && dd) {
+        const b = new Date(bd), d = new Date(dd);
+        const oneYear = new Date(b); oneYear.setFullYear(b.getFullYear() + 1);
+        if (d < b) warn.push('사망한 날이 사고(진단)일보다 앞섭니다. 날짜를 확인해 주세요.');
+        else if (d >= oneYear && radio('wageMode') !== 'daily') {
+          warn.push('사고(진단)일부터 1년이 지난 뒤 사망했습니다. 평균임금이 매년 증감되므로(법 제36조 제3항) 실제 금액은 이 계산보다 달라집니다. 공단이 증감한 금액을 \'1일 평균임금 입력\'으로 넣으면 정확합니다.');
+        }
+      }
+
+      if (!wage) {
+        showEmpty(warn);
+        return;
+      }
+
+      const steps = [...wage.steps];
+      if (new Date() > new Date(2026, 11, 31, 23, 59, 59)) {
+        warn.push('이 계산기의 최고·최저 보상기준 금액과 장례비 최고·최저금액은 2026. 12. 31.까지 유효한 고시 값입니다. 사고(진단) 연도에 맞는 고시 금액인지 확인하세요.');
+      }
+      const W_raw = wage.raw;
+
+      // 유족급여용 평균임금: 최고·최저 보상기준 금액 모두 적용 (법 제36조 제7항 본문)
+      let W = W_raw;
+      if (W > STATUTORY_2026.MAX_DAILY) {
+        W = STATUTORY_2026.MAX_DAILY;
+        steps.push(`최고 보상기준 금액 초과 → 유족급여는 <strong>${won(W)}</strong> 기준 (법 제36조 제7항, 고시 제2025-84호)`);
+      } else if (W < STATUTORY_2026.MIN_DAILY) {
+        W = STATUTORY_2026.MIN_DAILY;
+        steps.push(`최저 보상기준 금액 미달 → 유족급여는 <strong>${won(W)}</strong> 기준 (법 제36조 제7항, 고시 제2025-84호)`);
+      }
+
+      const qualifiedPeople = people.filter(p => annuityStatus(p).ok);
+      const qualified = qualifiedPeople.length;
+      if (people.some(p => annuityStatus(p).pending)) warn.push('나이를 입력하지 않은 가족이 있어 연금 자격 판정에서 빠졌습니다.');
+
+      const split = $('splitOption').checked;
+      const years = Number($('years').value) || 10;
+      const list = [];       // 받는 돈 정리
+      let hero = { label: '', amount: '', sub: '' };
+      let whoHtml = '';
+      let lumpNow = 0;
+      let monthly = 0;
+
+      if (qualified > 0) {
+        // 유족보상연금 (별표 3) — 부동소수점 오차를 피하려고 백분율 정수로 계산
+        const addPct = Math.min(qualified * SURVIVOR.ADD_PCT, SURVIVOR.ADD_CAP_PCT);
+        const pct = SURVIVOR.BASE_PCT + addPct;
+        const baseYear = W * 365;
+        const annual = Math.floor(baseYear * pct / 100);
+        steps.push(`급여기초연액 = ${wonW(W)} × 365 = ${wonW(baseYear)}`);
+        steps.push(`연금 수급자격자 ${qualified}명 → 기본 47% + 가산 ${addPct}%${qualified * 5 > 20 ? ' (한도 20%)' : ''} = <strong>${pct}%</strong> (별표 3)`);
+        steps.push(`유족보상연금 연액 = ${wonW(baseYear)} × ${pct}% = <strong>${won(annual)}</strong> → 월 ${won(annual / 12)} (법 제70조 제3항)`);
+
+        const lumpHalf = Math.floor(W * SURVIVOR.LUMP_DAYS * 0.5);
+        const yearPay = split ? Math.floor(annual / 2) : annual;
+        monthly = Math.floor(yearPay / 12);
+        if (split) {
+          lumpNow = lumpHalf;
+          steps.push(`50% 일시금 선택: 일시금 ${wonW(W)} × 650일 = <strong>${won(lumpHalf)}</strong>, 연금은 50% 감액 → 연 ${won(yearPay)} (법 제62조 제3항)`);
+        }
+        hero = {
+          label: split ? '매달 받는 유족보상연금 (50% 감액)' : '매달 받는 유족보상연금',
+          amount: won(monthly),
+          sub: `급여기초연액의 ${pct}%${split ? '의 절반' : ''} · 매달 25일 지급`
+        };
+        list.push(['매달 연금', won(monthly)], ['1년 연금', won(yearPay)]);
+        if (split) list.push(['처음 한 번에: 50% 일시금', won(lumpHalf)]);
+
+        // 연금 전액 vs 50% 일시금 비교
+        const cumFull = annual * years;
+        const cumSplit = lumpHalf + Math.floor(annual / 2) * years;
+        $('r-compare').innerHTML = `
+          <div class="${split ? '' : 'on'}"><p>연금 전액</p><strong class="num">${readKorean(cumFull)}</strong><p class="small muted">${years}년 누적</p></div>
+          <div class="${split ? 'on' : ''}"><p>50% 일시금 + 50% 연금</p><strong class="num">${readKorean(cumSplit)}</strong><p class="small muted">${years}년 누적</p></div>`;
+        const be = lumpHalf / (annual / 2);
+        $('r-breakeven').innerHTML = `약 <strong>${be.toFixed(1)}년</strong>이 지나면 두 방식의 누적액이 같아지고, 그 뒤로는 연금 전액이 더 많습니다. 연금 전액 수령 중 1,300일분(${readKorean(W * SURVIVOR.LUMP_DAYS)})을 다 받기 전에 수급자격자가 모두 없어지면 차액을 일시금으로 받습니다(법 제62조 제4항).`;
+        $('r-compare-card').hidden = false;
+
+        // 수급권자 (법 제63조 제3항)
+        const firstRel = ANNUITY_ORDER.find(rel => qualifiedPeople.some(p => p.rel === rel));
+        const sameRank = qualifiedPeople.filter(p => p.rel === firstRel).length;
+        const others = qualified - 1;
+        whoHtml = `<p><strong style="color:var(--brand)">수급권자: ${REL[firstRel].label}</strong>${sameRank > 1 ? ` (같은 순위 ${sameRank}명)` : ''}</p>
+          <p class="small">연금 수급자격자 총 ${qualified}명${others > 0 ? ` — 수급권자 외 ${others}명도 가산금액(1인당 5%)에 반영됩니다. 수급권자가 자격을 잃으면 다음 순위로 권리가 넘어갑니다(법 제64조 제2항).` : ''}</p>`;
+        if (sameRank > 1) warn.push(`같은 순위 수급권자가 ${sameRank}명입니다. 이들 중 1명을 연금 청구·수령 대표자로 선임할 수 있고, 선임하면 공단에 신고해야 합니다(시행령 제60조). 일시금처럼 똑같이 나눈다는 제65조 제1항은 연금에는 적용되지 않으며(대법원 2023. 10. 12. 선고 2023다247405 판결), 연금을 나누어 지급하는 방식은 확인되지 않아 표시한 금액은 연금 총액입니다.`);
+        const young = qualifiedPeople.filter(p => ['child', 'grandchild', 'sibling'].includes(p.rel) && !p.disabled && p.age !== '');
+        if (young.length) {
+          const soonest = young.map(p => (p.rel === 'sibling' ? 19 : 25) - Number(p.age)).filter(n => n > 0).sort((a, b) => a - b)[0];
+          if (soonest) warn.push(`약 ${soonest}년 뒤부터 자녀·손자녀(25세)나 형제자매(19세)가 나이 요건을 넘으면서 연금 수급자격을 잃어 가산금액이 줄어듭니다(법 제64조 제1항). 위 누적액은 이 변동을 반영하지 않았습니다.`);
+        }
+      } else {
+        // 유족보상일시금 (수급자격자 없음) — 수급 순위 법 제65조 제1항
+        $('r-compare-card').hidden = true;
+        const lump = Math.floor(W * SURVIVOR.LUMP_DAYS);
+        const ranks = [
+          { no: 1, groups: FIVE.map(rel => ({ label: `생계를 같이 하던 ${REL[rel].label}`, ps: people.filter(p => p.rel === rel && p.together) })) },
+          { no: 2, groups: [...FIVE.map(rel => ({ label: `생계를 같이 하지 않던 ${REL[rel].label}`, ps: people.filter(p => p.rel === rel && !p.together) })),
+                            { label: '생계를 같이 하던 형제자매', ps: people.filter(p => p.rel === 'sibling' && p.together) }] },
+          { no: 3, groups: [{ label: '형제자매', ps: people.filter(p => p.rel === 'sibling' && !p.together) }] }
+        ];
+        let found = null;
+        for (const r of ranks) {
+          const g = r.groups.find(x => x.ps.length > 0);
+          if (g) { found = { no: r.no, label: g.label, n: g.ps.length }; break; }
+        }
+        if (found) {
+          lumpNow = lump;
+          steps.push(`사망 당시 연금 수급자격자가 없음 → 유족보상일시금 = ${wonW(W)} × 1,300일 = <strong>${won(lump)}</strong> (법 제62조 제2항, 별표 3)`);
+          hero = { label: '한 번에 받는 유족보상일시금', amount: won(lump), sub: '연금 자격이 있는 가족이 없어 일시금으로 지급됩니다' };
+          list.push(['유족보상일시금', won(lump)]);
+          whoHtml = `<p><strong style="color:var(--brand)">수급권자: ${found.label}</strong> <span class="small muted">(법 제65조 제1항 제${found.no}호)</span></p>
+            ${found.n > 1 ? `<p>같은 순위 ${found.n}명이 똑같이 나눔 → 1인당 <strong>${won(lump / found.n)}</strong></p>` : ''}
+            <p class="small muted">고인이 유언으로 받을 사람을 지정했다면 그에 따릅니다(같은 조 제4항).</p>`;
+          if (split) warn.push('연금 자격이 있는 가족이 없어 50% 일시금 선택은 적용되지 않습니다.');
+        } else {
+          hero = { label: '유족급여', amount: '가족을 추가해 주세요', sub: '유족이 없으면 유족급여는 지급되지 않고 장례비만 지급됩니다' };
+          whoHtml = '<p>추가된 가족이 없습니다. 2단계에서 남은 가족을 추가해 주세요.</p>';
+        }
+      }
+
+      // 장례비 (법 제71조) — 최고·최저 보상기준 금액이 아닌 장례비 최고·최저금액 적용
+      const funeral120 = Math.floor(W_raw * SURVIVOR.FUNERAL_DAYS);
+      let funeral;
+      if (funeralBy === 'family') {
+        funeral = Math.min(Math.max(funeral120, STATUTORY_2026.FUNERAL_MIN), STATUTORY_2026.FUNERAL_MAX);
+        let note = '';
+        if (funeral120 > STATUTORY_2026.FUNERAL_MAX) note = ` → 최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 적용`;
+        else if (funeral120 < STATUTORY_2026.FUNERAL_MIN) note = ` → 최저금액 ${won(STATUTORY_2026.FUNERAL_MIN)} 적용`;
+        steps.push(`장례비 = 평균임금 ${wonW(W_raw)} × 120일 = ${won(funeral120)}${note} → <strong>${won(funeral)}</strong> (법 제71조, 고시 제2025-85호)`);
+      } else {
+        const actual = parseMoney($('funeralActual'));
+        // 최고금액은 단서에도 적용(법 제71조 제2항 "제1항에 따른 장례비"), 최저금액으로 올리지는 않음(공단 안내 기준)
+        const uncapped = Math.min(actual, funeral120);
+        funeral = Math.min(uncapped, STATUTORY_2026.FUNERAL_MAX);
+        steps.push(`장례비 = 실제 비용 ${won(actual)}과 120일분 ${won(funeral120)} 중 적은 금액${uncapped > STATUTORY_2026.FUNERAL_MAX ? ` → 최고금액 ${won(STATUTORY_2026.FUNERAL_MAX)} 적용` : ''} → <strong>${won(funeral)}</strong> (법 제71조 제1항 단서·제2항)`);
+        if (actual > 0 && funeral < STATUTORY_2026.FUNERAL_MIN) {
+          warn.push(`실제 비용이 장례비 최저금액(${won(STATUTORY_2026.FUNERAL_MIN)})보다 적어 실제 비용으로 계산했습니다(공단 안내 기준). 이 경우 최저금액까지 올려 지급하는지를 다룬 행정해석·업무지침은 확인되지 않았습니다.`);
+        }
+        if (actual <= 0) warn.push('유족이 아닌 사람이 장례를 치른 경우 3단계에 실제 장례 비용을 넣어야 장례비가 계산됩니다.');
+      }
+      const prepaid = funeralBy === 'family' && $('funeralPrepaid').checked;
+      let funeralShown = funeral;
+      if (prepaid) {
+        // 유족 장례비는 최저금액 이상(법 제71조 제2항)이고 선지급액은 최저금액(시행령 제66조의2)이므로 잔액은 0 이상
+        funeralShown = funeral - STATUTORY_2026.FUNERAL_MIN;
+        steps.push(`선지급 장례비 ${won(STATUTORY_2026.FUNERAL_MIN)}을 뺀 나머지 = <strong>${won(funeralShown)}</strong> (법 제71조 제4항)`);
+        warn.push('업무상 재해로 인정되지 않으면 미리 받은 장례비 전액을 돌려줘야 합니다(법 제84조, 근로복지공단 보상업무처리규정 제44조의2 제2항).');
+      }
+      if (W_raw > STATUTORY_2026.MAX_DAILY || W_raw < STATUTORY_2026.MIN_DAILY) {
+        warn.push('장례비는 최고·최저 보상기준 금액을 적용하지 않은 실제 평균임금으로 계산했습니다(법 제36조 제7항 괄호).');
+      }
+      list.push([prepaid ? '처음 한 번에: 장례비 (선지급 뺀 잔액)' : '처음 한 번에: 장례비', won(funeralShown)]);
+      list.push(['처음 한 번에 받는 돈 합계', won(lumpNow + funeralShown), 'total']);
+
+      // 화면 반영
+      $('r-label').textContent = hero.label;
+      $('r-amount').textContent = hero.amount;
+      $('r-sub').textContent = hero.sub;
+      $('r-list').hidden = false;
+      $('r-list').innerHTML = list.map(([k, v, cls]) => `<div class="money-row ${cls || ''}"><span>${k}</span><strong class="num">${v}</strong></div>`).join('');
+      $('r-who-card').hidden = false;
+      $('r-who').innerHTML = whoHtml;
+      $('r-steps-card').hidden = false;
+      $('r-steps').innerHTML = steps.map(s => `<li>${s}</li>`).join('');
+      renderWarn(warn);
+      $('bb-label').textContent = hero.label;
+      $('bb-amount').textContent = hero.amount;
+
+      lastSummary = [
+        '[산재 유족급여·장례비 예상액 — 2026년 기준 모의계산]',
+        `${hero.label}: ${hero.amount}`,
+        ...list.map(([k, v]) => `- ${k}: ${v}`),
+        '',
+        '받을 사람: ' + $('r-who').innerText.replace(/\n+/g, ' / '),
+        '',
+        '[계산 과정]',
+        ...steps.map((s, i) => `${i + 1}. ${s.replace(/<[^>]+>/g, '')}`),
+        ...(warn.length ? ['', '[확인할 점]', ...warn.map(w => `- ${w}`)] : []),
+        '',
+        '※ 실제 지급액은 근로복지공단의 조사·결정에 따릅니다.'
+      ].join('\n');
+    }
+
+    function showEmpty(warn) {
+      $('r-label').textContent = '예상 유족급여';
+      $('r-amount').textContent = '—';
+      $('r-sub').textContent = '1단계에 임금을 입력하면 바로 계산됩니다';
+      $('r-list').hidden = true;
+      $('r-who-card').hidden = true;
+      $('r-compare-card').hidden = true;
+      $('r-steps-card').hidden = true;
+      renderWarn(warn);
+      $('bb-label').textContent = '예상 유족급여';
+      $('bb-amount').textContent = '임금을 입력해 주세요';
+      lastSummary = '';
+    }
+
+    function renderWarn(warn) {
+      $('r-warn').innerHTML = warn.map(w => `<div class="callout warn">${w}</div>`).join('');
+    }
+
+    /* ---------- 입력 이벤트 ---------- */
+    const readings = { monthly: 'monthly-r', wage3m: 'wage3m-r', dailyDirect: 'daily-r', funeralActual: 'actual-r' };
+    // 1일 평균임금: 소수점 둘째 자리까지 입력 허용
+    $('dailyDirect').addEventListener('input', () => {
+      const el = $('dailyDirect');
+      const [intPart, ...rest] = el.value.replace(/[^0-9.]/g, '').split('.');
+      const n = Number(intPart) || 0;
+      const dec = rest.length ? '.' + rest.join('').slice(0, 2) : '';
+      el.value = intPart === '' && !dec ? '' : n.toLocaleString('ko-KR') + dec;
+      $('daily-r').textContent = n > 0 ? readKorean(n) : '';
+      calculate();
+    });
+    document.querySelectorAll('.money').forEach(el => {
+      el.addEventListener('input', () => {
+        const n = parseMoney(el);
+        el.value = n > 0 ? n.toLocaleString('ko-KR') : '';
+        if (readings[el.id]) $(readings[el.id]).textContent = n > 0 ? readKorean(n) : '';
+        calculate();
+      });
+    });
+
+    function syncWageMode() {
+      const mode = radio('wageMode');
+      $('f-month').hidden = mode !== 'month';
+      $('f-months').hidden = mode !== 'months';
+      $('f-daily').hidden = mode !== 'daily';
+      $('f-dates').querySelector('.field').hidden = mode === 'daily';
+      $('f-days').hidden = mode === 'daily';
+    }
+    document.querySelectorAll('input[name="wageMode"]').forEach(el => el.addEventListener('change', () => { syncWageMode(); calculate(); }));
+    document.querySelectorAll('input[name="funeralBy"]').forEach(el => el.addEventListener('change', calculate));
+    $('baseDate').addEventListener('change', () => { onBaseDate(); calculate(); });
+    $('deathDate').addEventListener('change', calculate);
+    ['days3m', 'funeralPrepaid', 'splitOption', 'years'].forEach(id => $(id).addEventListener('input', calculate));
+    $('funeralPrepaid').addEventListener('change', calculate);
+    $('splitOption').addEventListener('change', calculate);
+
+    /* ---------- 탭·버튼 ---------- */
+    function switchTab(tab) {
+      ['calc', 'guide'].forEach(t => {
+        $('tab-' + t).hidden = t !== tab;
+        $('tab-btn-' + t).setAttribute('aria-selected', String(t === tab));
+      });
+      $('bottom-bar').style.display = tab === 'calc' ? '' : 'none';
+      window.scrollTo({ top: 0 });
+    }
+    $('tab-btn-calc').addEventListener('click', () => switchTab('calc'));
+    $('tab-btn-guide').addEventListener('click', () => switchTab('guide'));
+
+    $('btn-large').addEventListener('click', e => {
+      const on = document.documentElement.classList.toggle('large');
+      e.currentTarget.setAttribute('aria-pressed', String(on));
+      try { localStorage.setItem('yujok-large', on ? '1' : '0'); } catch (_) {}
+    });
+    try { if (localStorage.getItem('yujok-large') === '1') { document.documentElement.classList.add('large'); $('btn-large').setAttribute('aria-pressed', 'true'); } } catch (_) {}
+
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+    $('btn-copy').addEventListener('click', async () => {
+      if (!lastSummary) { toast('먼저 임금을 입력해 주세요'); return; }
+      try {
+        await navigator.clipboard.writeText(lastSummary);
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = lastSummary; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (__) {}
+        ta.remove();
+      }
+      toast('계산 결과를 복사했습니다');
+    });
+    $('btn-print').addEventListener('click', () => { $('r-steps-card').open = true; window.print(); });
+    $('btn-reset').addEventListener('click', () => {
+      if (!confirm('입력한 내용을 모두 지우고 처음부터 할까요?')) return;
+      document.querySelectorAll('.money, .money-dec, input[type=date]').forEach(el => { el.value = ''; });
+      Object.values(readings).forEach(id => { $(id).textContent = ''; });
+      $('days3m').value = 92; $('years').value = 10;
+      $('wm-month').checked = true; $('fb-family').checked = true;
+      $('funeralPrepaid').checked = false; $('splitOption').checked = false;
+      people = [];
+      syncWageMode(); onBaseDate(); renderPeople(); calculate();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // 모바일: 결과 영역이 보이면 하단 바를 숨김
+    $('bb-go').addEventListener('click', () => $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    function updateBottomBar() {
+      const r = $('result').getBoundingClientRect();
+      $('bottom-bar').classList.toggle('away', r.top < window.innerHeight * 0.85 && r.bottom > 0);
+    }
+    window.addEventListener('scroll', updateBottomBar, { passive: true });
+    window.addEventListener('resize', updateBottomBar);
+    updateBottomBar();
+
+    syncWageMode();
+    renderPeople();
+    calculate();
+  </script>
+</body>
+</html>

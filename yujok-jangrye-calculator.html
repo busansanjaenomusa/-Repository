@@ -339,7 +339,7 @@
                     </div>
                     <p class="hint">보통 89~92일. 위에서 날짜를 넣으면 자동으로 바뀝니다.</p>
                   </div>
-                  <div class="grid-2">
+                  <div class="grid-2" id="f-bonus">
                     <div class="field">
                       <label class="lbl" for="bonusYear">사고(진단) 전 1년간 상여금</label>
                       <div class="input-wrap">
@@ -355,7 +355,7 @@
                       </div>
                     </div>
                   </div>
-                  <p class="hint">1년분의 3/12을 3개월 임금에 더합니다(고용노동부 평균임금 산정 실무). 포함 여부는 지급 근거에 따라 달라질 수 있습니다.</p>
+                  <p class="hint" id="f-bonus-hint">1년분의 3/12을 3개월 임금에 더합니다(고용노동부 평균임금 산정 실무). 포함 여부는 지급 근거에 따라 달라질 수 있습니다.</p>
                   <div class="field">
                     <label class="lbl" for="ordinaryDaily">1일 통상임금</label>
                     <div class="input-wrap">
@@ -829,7 +829,7 @@
       } else {
         raw = round2(parseDecimal($('dailyDirect')));
         if (raw <= 0) return null;
-        steps.push(`1일 평균임금(직접 입력) = <strong>${won(raw)}</strong>`);
+        steps.push(`1일 평균임금(직접 입력) = <strong>${wonW(raw)}</strong>`);
       }
       const ordinary = parseMoney($('ordinaryDaily'));
       if (ordinary > raw) {
@@ -877,6 +877,8 @@
         warn.push('이 계산기의 최고·최저 보상기준 금액과 장례비 최고·최저금액은 2026. 12. 31.까지 유효한 고시 값입니다. 사고(진단) 연도에 맞는 고시 금액인지 확인하세요.');
       }
       const W_raw = wage.raw;
+      // 평균임금은 소수 둘째 자리까지이므로 100배한 정수로 곱해야 원 미만 버림에서 1원 오차가 생기지 않음
+      const toCents = n => Math.round(n * 100);
 
       // 유족급여용 평균임금: 최고·최저 보상기준 금액 모두 적용 (법 제36조 제7항 본문)
       let W = W_raw;
@@ -904,13 +906,14 @@
         // 유족보상연금 (별표 3) — 부동소수점 오차를 피하려고 백분율 정수로 계산
         const addPct = Math.min(qualified * SURVIVOR.ADD_PCT, SURVIVOR.ADD_CAP_PCT);
         const pct = SURVIVOR.BASE_PCT + addPct;
-        const baseYear = W * 365;
-        const annual = Math.floor(baseYear * pct / 100);
+        const Wc = toCents(W);
+        const baseYear = Wc * 365 / 100;
+        const annual = Math.floor(Wc * 365 * pct / 10000);
         steps.push(`급여기초연액 = ${wonW(W)} × 365 = ${wonW(baseYear)}`);
         steps.push(`연금 수급자격자 ${qualified}명 → 기본 47% + 가산 ${addPct}%${qualified * 5 > 20 ? ' (한도 20%)' : ''} = <strong>${pct}%</strong> (별표 3)`);
         steps.push(`유족보상연금 연액 = ${wonW(baseYear)} × ${pct}% = <strong>${won(annual)}</strong> → 월 ${won(annual / 12)} (법 제70조 제3항)`);
 
-        const lumpHalf = Math.floor(W * SURVIVOR.LUMP_DAYS * 0.5);
+        const lumpHalf = Math.floor(Wc * (SURVIVOR.LUMP_DAYS / 2) / 100);
         const yearPay = split ? Math.floor(annual / 2) : annual;
         monthly = Math.floor(yearPay / 12);
         if (split) {
@@ -929,10 +932,10 @@
         const cumFull = annual * years;
         const cumSplit = lumpHalf + Math.floor(annual / 2) * years;
         $('r-compare').innerHTML = `
-          <div class="${split ? '' : 'on'}"><p>연금 전액</p><strong class="num">${readKorean(cumFull)}</strong><p class="small muted">${years}년 누적</p></div>
-          <div class="${split ? 'on' : ''}"><p>50% 일시금 + 50% 연금</p><strong class="num">${readKorean(cumSplit)}</strong><p class="small muted">${years}년 누적</p></div>`;
+          <div class="${split ? '' : 'on'}"><p>연금 전액</p><strong class="num">약 ${readKorean(cumFull)}</strong><p class="small muted">${years}년 누적</p></div>
+          <div class="${split ? 'on' : ''}"><p>50% 일시금 + 50% 연금</p><strong class="num">약 ${readKorean(cumSplit)}</strong><p class="small muted">${years}년 누적</p></div>`;
         const be = lumpHalf / (annual / 2);
-        $('r-breakeven').innerHTML = `약 <strong>${be.toFixed(1)}년</strong>이 지나면 두 방식의 누적액이 같아지고, 그 뒤로는 연금 전액이 더 많습니다. 연금 전액 수령 중 1,300일분(${readKorean(W * SURVIVOR.LUMP_DAYS)})을 다 받기 전에 수급자격자가 모두 없어지면 차액을 일시금으로 받습니다(법 제62조 제4항).`;
+        $('r-breakeven').innerHTML = `약 <strong>${be.toFixed(1)}년</strong>이 지나면 두 방식의 누적액이 같아지고, 그 뒤로는 연금 전액이 더 많습니다. 연금 전액 수령 중 1,300일분(${readKorean(Wc * SURVIVOR.LUMP_DAYS / 100)})을 다 받기 전에 수급자격자가 모두 없어지면 차액을 일시금으로 받습니다(법 제62조 제4항).`;
         $('r-compare-card').hidden = false;
 
         // 수급권자 (법 제63조 제3항)
@@ -950,7 +953,8 @@
       } else {
         // 유족보상일시금 (수급자격자 없음) — 수급 순위 법 제65조 제1항
         $('r-compare-card').hidden = true;
-        const lump = Math.floor(W * SURVIVOR.LUMP_DAYS);
+        const pendingNow = people.some(p => annuityStatus(p).pending);
+        const lump = Math.floor(toCents(W) * SURVIVOR.LUMP_DAYS / 100);
         const ranks = [
           { no: 1, groups: FIVE.map(rel => ({ label: `생계를 같이 하던 ${REL[rel].label}`, ps: people.filter(p => p.rel === rel && p.together) })) },
           { no: 2, groups: [...FIVE.map(rel => ({ label: `생계를 같이 하지 않던 ${REL[rel].label}`, ps: people.filter(p => p.rel === rel && !p.together) })),
@@ -962,13 +966,17 @@
           const g = r.groups.find(x => x.ps.length > 0);
           if (g) { found = { no: r.no, label: g.label, n: g.ps.length }; break; }
         }
-        if (found) {
+        if (found && pendingNow) {
+          hero = { label: '유족급여', amount: '나이를 입력해 주세요', sub: '나이를 넣어야 연금인지 일시금인지 판정할 수 있습니다' };
+          whoHtml = '<p>2단계에서 나이를 입력하지 않은 가족이 있습니다. 나이를 넣으면 연금 자격과 받을 사람이 판정됩니다.</p>';
+        } else if (found) {
           lumpNow = lump;
           steps.push(`사망 당시 연금 수급자격자가 없음 → 유족보상일시금 = ${wonW(W)} × 1,300일 = <strong>${won(lump)}</strong> (법 제62조 제2항, 별표 3)`);
           hero = { label: '한 번에 받는 유족보상일시금', amount: won(lump), sub: '연금 자격이 있는 가족이 없어 일시금으로 지급됩니다' };
           list.push(['유족보상일시금', won(lump)]);
           whoHtml = `<p><strong style="color:var(--brand)">수급권자: ${found.label}</strong> <span class="small muted">(법 제65조 제1항 제${found.no}호)</span></p>
             ${found.n > 1 ? `<p>같은 순위 ${found.n}명이 똑같이 나눔 → 1인당 <strong>${won(lump / found.n)}</strong></p>` : ''}
+            ${found.n > 1 && /부모/.test(found.label) ? '<p class="small muted">양부모와 친부모가 함께 있으면 양부모가 선순위입니다(같은 조 제2항).</p>' : ''}
             <p class="small muted">고인이 유언으로 받을 사람을 지정했다면 그에 따릅니다(같은 조 제4항).</p>`;
           if (split) warn.push('연금 자격이 있는 가족이 없어 50% 일시금 선택은 적용되지 않습니다.');
         } else {
@@ -978,7 +986,7 @@
       }
 
       // 장례비 (법 제71조) — 최고·최저 보상기준 금액이 아닌 장례비 최고·최저금액 적용
-      const funeral120 = Math.floor(W_raw * SURVIVOR.FUNERAL_DAYS);
+      const funeral120 = Math.floor(toCents(W_raw) * SURVIVOR.FUNERAL_DAYS / 100);
       let funeral;
       if (funeralBy === 'family') {
         funeral = Math.min(Math.max(funeral120, STATUTORY_2026.FUNERAL_MIN), STATUTORY_2026.FUNERAL_MAX);
@@ -1086,6 +1094,8 @@
       $('f-daily').hidden = mode !== 'daily';
       $('f-dates').querySelector('.field').hidden = mode === 'daily';
       $('f-days').hidden = mode === 'daily';
+      $('f-bonus').hidden = mode === 'daily';
+      $('f-bonus-hint').hidden = mode === 'daily';
     }
     document.querySelectorAll('input[name="wageMode"]').forEach(el => el.addEventListener('change', () => { syncWageMode(); calculate(); }));
     document.querySelectorAll('input[name="funeralBy"]').forEach(el => el.addEventListener('change', calculate));

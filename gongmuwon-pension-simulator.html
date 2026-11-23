@@ -288,7 +288,8 @@
   .teaser-item b { display: block; color: var(--blue); font-size: 0.95rem; margin-bottom: 2px; }
   .delta-card { border: 2px solid var(--blue); background: linear-gradient(180deg, #f5f9ff 0%, #fff 100%); }
   .delta-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .delta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .delta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .delta-item .d-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
   .delta-item { background: #fff; border: 1px solid var(--border); border-radius: 11px; padding: 11px 12px; }
   .delta-item .d-head { font-size: 0.76rem; font-weight: 700; color: var(--sub); }
   .delta-item .d-flow { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
@@ -1800,7 +1801,8 @@
         : `근로소득금액 월 ${fmtManDec(dInc)}만원(근로소득공제 후). ` +
           (dFull ? `기준(${fmtManDec(FULL_SUSP_REF)}만원) 이상이어서 연금이 전액 정지됩니다(제50조제1항).`
                  : `기준 ${AVG_PENSION_REF}만원 초과분에 따라 월 정지: 퇴직연금 −${fmtManDec(dSuspRet)}만원` + (dutyPension ? ` / 장해연금 −${fmtManDec(dSuspDis)}만원` : '') + ` (제50조제3항).`) +
-          (activePenForSusp <= 0 && !dutyPension ? ' 받는 연금이 없으면 정지도 없습니다.' : '');
+          (activePenForSusp <= 0 && !dutyPension ? ' 받는 연금이 없으면 정지도 없습니다.' : '') +
+          (gapYrs > 0 && !dFull && dSuspRet > 0 ? ` 퇴직연금은 ${effStartAge}세부터 나오므로 그 전에는 정지될 것이 없습니다.` : '');
     const incomeMonthly = wageToIncomeMonthly(bridgeWage);
     $('suspHint').textContent = suspTxt;
 
@@ -1933,7 +1935,7 @@
     $('sbCurSub').textContent = `세전 ${fmtMan(curGross)}만원 · 퇴직까지 ${yrsLeft}년`;
     $('sbRetPct').textContent = `상위 ${retTopPct.toFixed(1)}%`;
     $('sbRetNet').textContent = `${fmtMan(mySteadyRetNet)} 만원`;
-    $('sbRetSub').textContent = forcedLump ? '퇴직연금 없음 (일시금)' : `연금 개시 ${effStartAge}세` + (gapYrs > 0 ? ` · 소득공백 ${gapYrs}년` : ' · 공백 없음');
+    $('sbRetSub').textContent = (forcedLump ? '퇴직연금 없음 (일시금)' : `연금 개시 ${effStartAge}세` + (gapYrs > 0 ? ` · 소득공백 ${gapYrs}년` : ' · 공백 없음')) + (bridgeWage > 0 && bridgeYrs > 0 ? ' · 재취업 급여 제외' : '');
     $('sbSurvPct').textContent = `상위 ${survTopPct.toFixed(1)}%`;
     $('sbSurvNet').textContent = `${fmtMan(spouseTotalMonthlyNet)} 만원`;
     $('sbSurvSub').textContent = chosenSurvLump > 0
@@ -2161,19 +2163,33 @@
         return `<span class="d-diff ${r > 0 ? 'd-up' : 'd-down'}">${r > 0 ? '+' : '−'}${fmtMan(Math.abs(r))}${unit}</span>`;
       };
       const ageDiff = effStartAge - base.effStartAge;
+      // 재취업 기간에는 급여가 더해지므로 그 기간의 월 실수령을 따로 보여 줌
+      const bridgeOn = E.evBridge && bridgeWage > 0 && bridgeYrs > 0;
+      let bridgeItem = '';
+      if (bridgeOn) {
+        const nowAt = lifeSeries(lifeP, retAge, retAge)[0][1], baseAt = lifeSeries(base.life, retAge, retAge)[0][1];
+        const endAgeB = retAge + bridgeYrs - 1;
+        const suspNow = (retAge >= effStartAge ? retPenSuspMonthly : 0) + disPenSuspMonthly;   // 퇴직 첫해에 실제로 정지되는 금액
+        const suspNote = suspNow > 0 ? `연금 정지 −${fmtMan(suspNow)}만원`
+          : (retPenSuspMonthly > 0 && endAgeB >= effStartAge ? `연금 개시(${effStartAge}세) 뒤에도 재취업 중이면 월 −${fmtMan(retPenSuspMonthly)}만원 정지` : '연금 정지 없음');
+        bridgeItem = `
+          <div class="delta-item"><div class="d-head">재취업 기간 본인 월 실수령 (${retAge}${endAgeB > retAge ? '~' + endAgeB : ''}세)</div>
+            <div class="d-flow">${fmtMan(baseAt)}만 → <strong data-n="${Math.round(nowAt)}" data-from="${Math.round(baseAt)}" data-suffix="만원">${fmtMan(nowAt)}만원</strong></div>${diffTag(nowAt - baseAt, '만원')}
+            <div class="d-sub">급여 실수령 약 ${fmtMan(bridgeWage * 0.9)}만원 · ${suspNote}</div></div>`;
+      }
       deltaEl.style.display = 'block';
       deltaEl.innerHTML = `
         <div class="res-title"><span>기본 상황에서 이렇게 달라집니다</span><span class="pill pill-blue">상황 ${names.length}개 반영</span></div>
         <div class="delta-chips">${names.map(n => `<span class="pill pill-blue">${n}</span>`).join('')}</div>
-        <div class="delta-grid">
-          <div class="delta-item"><div class="d-head">은퇴 후 본인 월 실수령</div>
+        <div class="delta-grid">${bridgeItem}
+          <div class="delta-item"><div class="d-head">${bridgeOn ? '재취업을 마친 뒤 본인 월 실수령' : '은퇴 후 본인 월 실수령'}</div>
             <div class="d-flow">${fmtMan(base.mySteadyRetNet)}만 → <strong data-n="${Math.round(mySteadyRetNet)}" data-from="${Math.round(base.mySteadyRetNet)}" data-suffix="만원">${fmtMan(mySteadyRetNet)}만원</strong></div>${diffTag(mySteadyRetNet - base.mySteadyRetNet, '만원')}</div>
           <div class="delta-item"><div class="d-head">사후 배우자 월 실수령</div>
             <div class="d-flow">${fmtMan(base.spouseTotalMonthlyNet)}만 → <strong data-n="${Math.round(spouseTotalMonthlyNet)}" data-from="${Math.round(base.spouseTotalMonthlyNet)}" data-suffix="만원">${fmtMan(spouseTotalMonthlyNet)}만원</strong></div>${diffTag(spouseTotalMonthlyNet - base.spouseTotalMonthlyNet, '만원')}</div>
           <div class="delta-item"><div class="d-head">퇴직연금 개시</div>
             <div class="d-flow">${base.effStartAge}세 → <strong>${summary.hasPension ? effStartAge + '세' : '연금 없음'}</strong></div>${!summary.hasPension ? '<span class="d-diff d-down">일시금 수령</span>' : (ageDiff === 0 ? '<span class="d-diff d-same">변화 없음</span>' : `<span class="d-diff ${ageDiff < 0 ? 'd-up' : 'd-down'}">${Math.abs(ageDiff)}년 ${ageDiff < 0 ? '앞당겨짐' : '늦어짐'}</span>`)}</div>
         </div>
-        <p class="res-note">아래 그래프의 회색 점선이 상황을 더하기 전(기본 상황)입니다. 은퇴 후 금액은 재취업이 끝나고 연금이 개시된 뒤 기준입니다.</p>`;
+        <p class="res-note">아래 그래프의 회색 점선이 상황을 더하기 전(기본 상황)입니다. ‘재취업을 마친 뒤’ 금액은 재취업이 끝나고 연금이 개시된 뒤의 금액이라 급여는 들어 있지 않습니다.</p>`;
     } else {
       deltaEl.style.display = 'none';
       deltaEl.innerHTML = '';

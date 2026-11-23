@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>퇴직 예정 공무원 연금 · 공무상 장해 · 유족승계 통합 시뮬레이터 | 부산산재노무사 신명석</title>
+<meta name="description" content="퇴직 예정 공무원의 퇴직연금, 공무상 장해연금(1~14급), 퇴직연금공제일시금, 이혼 분할연금, 사후 배우자 유족연금(특별부가금·병급조정)을 2026년 법령 기준으로 한 번에 추정하는 무료 시뮬레이터입니다.">
+<link rel="canonical" href="https://busansanjaenomusa.github.io/-Repository/gongmuwon-pension-simulator.html">
+<meta property="og:title" content="퇴직 예정 공무원 연금 · 공무상 장해 · 유족승계 통합 시뮬레이터">
+<meta property="og:description" content="재직 중 → 은퇴 후 → 사후 배우자 승계까지 3단계 월 현금흐름을 2026년 법령 기준으로 추정합니다.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://busansanjaenomusa.github.io/-Repository/gongmuwon-pension-simulator.html">
+<meta name="theme-color" content="#14284b">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --navy: #14284b;
+    --navy-light: #1e3a6d;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --teal: #0d9488;
+    --teal-soft: #f0fdfa;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
+    --purple: #7c3aed;
+    --purple-soft: #f5f3ff;
+    --rose: #e11d48;
+    --rose-soft: #fff1f2;
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --border: #dde3ee;
+    --text: #111827;
+    --sub: #4b5563;
+    --muted: #6b7280;
+    --radius: 14px;
+    --font-scale: 1;
+  }
+  body.large-font { --font-scale: 1.14; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  html, body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: calc(15px * var(--font-scale));
+    line-height: 1.55;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; }
+  :focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+  /* Header */
+  .top-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: #fff;
+    padding: 20px 16px 16px;
+  }
+  .header-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.16);
+    color: #e0ecff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+  .top-header h1 { font-size: 1.32rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+  .top-header p { font-size: 0.85rem; color: #cbd5e1; margin-top: 4px; max-width: 760px; }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-util {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: #fff;
+    padding: 8px 13px;
+    border-radius: 9px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 40px;
+    transition: background 0.15s;
+  }
+  .btn-util:hover, .btn-util.active { background: #fff; color: var(--navy); }
+
+  /* Sticky Live Scoreboard */
+  .sticky-score {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    padding: 10px 14px;
+  }
+  .score-grid { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .score-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+    border-radius: 10px;
+    padding: 8px 12px;
+    min-width: 0;
+  }
+  .score-box.s-ret { border-left-color: var(--teal); }
+  .score-box.s-surv { border-left-color: var(--purple); }
+  .score-box.s-asset { border-left-color: var(--amber); }
+  .score-label { font-size: 0.75rem; font-weight: 700; color: var(--sub); display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .score-val { font-size: 1.12rem; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -0.02em; }
+  .score-sub { font-size: 0.74rem; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.71rem; font-weight: 700; white-space: nowrap; }
+  .pill-blue { background: var(--blue-soft); color: var(--blue); }
+  .pill-teal { background: var(--teal-soft); color: var(--teal); }
+  .pill-purple { background: var(--purple-soft); color: var(--purple); }
+  .pill-amber { background: var(--amber-soft); color: var(--amber); }
+  .pill-rose { background: var(--rose-soft); color: var(--rose); }
+
+  /* Main Layout */
+  .main-wrap { max-width: 1240px; margin: 18px auto 40px; padding: 0 14px; display: grid; grid-template-columns: 460px 1fr; gap: 18px; align-items: start; }
+  .panel-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(15,23,42,0.04); overflow: hidden; }
+  .preset-bar { padding: 12px 14px; background: #f8fafc; border-bottom: 1px solid var(--border); }
+  .preset-title { font-size: 0.76rem; font-weight: 700; color: var(--sub); margin-bottom: 7px; }
+  .preset-btns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .preset-btn { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; font-size: 0.78rem; font-weight: 700; color: var(--navy); cursor: pointer; text-align: left; transition: all 0.15s; min-height: 40px; }
+  .preset-btn:hover { border-color: var(--blue); background: var(--blue-soft); }
+
+  /* Tabs */
+  .tab-nav { display: grid; grid-template-columns: repeat(5, 1fr); background: #eef2f8; border-bottom: 1px solid var(--border); }
+  .tab-btn { border: none; background: transparent; padding: 11px 4px; font-size: 0.77rem; font-weight: 700; color: var(--sub); cursor: pointer; border-bottom: 3px solid transparent; line-height: 1.25; min-height: 48px; }
+  .tab-btn.active { background: #fff; color: var(--blue); border-bottom-color: var(--blue); }
+  .tab-pane { display: none; padding: 16px; }
+  .tab-pane.active { display: block; }
+  .step-nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .step-btn { flex: 1; padding: 10px; border-radius: 9px; border: 1px solid var(--border); background: #f8fafc; color: var(--navy); font-size: 0.82rem; font-weight: 800; cursor: pointer; min-height: 44px; }
+  .step-btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .step-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .sec-head { font-size: 0.92rem; font-weight: 800; color: var(--navy); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .field { margin-bottom: 14px; }
+  .field-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .field label, .field .lbl { font-size: 0.84rem; font-weight: 700; color: var(--text); }
+  .field .lbl { display: block; margin-bottom: 6px; }
+  .field-hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+  .num-wrap { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .num-input { width: 92px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 0.88rem; font-weight: 700; text-align: right; color: var(--navy); background: #fff; font-family: inherit; }
+  .num-input:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+  .unit-txt { font-size: 0.79rem; color: var(--sub); font-weight: 600; min-width: 28px; }
+  input[type="range"] { width: 100%; accent-color: var(--blue); height: 22px; cursor: pointer; }
+  select.sel-input { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; font-weight: 700; color: var(--text); background: #fff; min-height: 42px; font-family: inherit; }
+
+  .seg-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; }
+  .seg-group.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .seg-btn { padding: 9px 8px; border: 1px solid var(--border); background: #f8fafc; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: var(--sub); cursor: pointer; text-align: center; min-height: 42px; line-height: 1.25; }
+  .seg-btn small { display: block; font-weight: 600; font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .seg-btn.active { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); }
+  .seg-btn.active small { color: #3b82f6; }
+
+  .grade-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 12px; }
+  .grade-btn { padding: 7px 3px; border: 1px solid var(--border); background: #fff; border-radius: 7px; font-size: 0.75rem; font-weight: 700; color: var(--sub); cursor: pointer; text-align: center; line-height: 1.2; min-height: 44px; }
+  .grade-btn small { display: block; font-size: 0.67rem; font-weight: 600; color: var(--muted); }
+  .grade-btn.g-high { border-color: #99f6e4; background: #f0fdfa; }
+  .grade-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .grade-btn.active small { color: #cbd5e1; }
+
+  .notice-box { padding: 10px 12px; border-radius: 9px; font-size: 0.8rem; margin-bottom: 12px; line-height: 1.5; }
+  .notice-info { background: var(--blue-soft); border: 1px solid #bfdbfe; color: #1e40af; }
+  .notice-teal { background: var(--teal-soft); border: 1px solid #99f6e4; color: #115e59; }
+  .notice-warn { background: var(--amber-soft); border: 1px solid #fde68a; color: #92400e; }
+  .notice-danger { background: var(--rose-soft); border: 1px solid #fecdd3; color: #9f1239; }
+
+  .results-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .res-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); scroll-margin-top: 110px; }
+  .res-title { font-size: 1.02rem; font-weight: 800; color: var(--navy); margin-bottom: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+  .res-note { font-size: 0.76rem; color: var(--muted); margin-top: 8px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .kpi-item { background: #f8fafc; border: 1px solid var(--border); border-radius: 11px; padding: 12px; }
+  .kpi-item .k-head { font-size: 0.77rem; font-weight: 700; color: var(--sub); }
+  .kpi-item .k-num { font-size: 1.24rem; font-weight: 800; color: var(--navy); margin: 4px 0 2px; }
+  .kpi-item .k-desc { font-size: 0.76rem; color: var(--muted); }
+
+  .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.data-tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  table.data-tbl th, table.data-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: right; word-break: keep-all; }
+  table.data-tbl th:first-child, table.data-tbl td:first-child { text-align: left; }
+  table.data-tbl td:last-child, table.data-tbl th:last-child { text-align: left; color: var(--sub); font-size: 0.78rem; }
+  table.data-tbl thead th { background: #f1f5f9; color: var(--navy); font-weight: 800; font-size: 0.79rem; }
+  table.data-tbl tr.highlight-row { background: #f0fdfa; font-weight: 700; }
+  table.data-tbl tr.warn-row { background: #fff1f2; }
+
+  .svg-wrap { width: 100%; background: #fbfdff; border: 1px solid #e5eaf3; border-radius: 11px; padding: 10px; margin-top: 8px; }
+  .svg-wrap svg { width: 100%; height: auto; display: block; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 0.77rem; color: var(--sub); }
+  .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .opt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
+  .opt-card { border: 1px solid var(--border); border-radius: 11px; padding: 12px; background: #f8fafc; font-size: 0.84rem; }
+  .opt-card.recommended { border: 2px solid var(--teal); background: var(--teal-soft); }
+  .opt-head { font-size: 0.83rem; font-weight: 800; color: var(--navy); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 6px; flex-wrap: wrap; }
+
+  details.acc-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  details.acc-box summary { padding: 14px 18px; font-size: 0.92rem; font-weight: 800; color: var(--navy); cursor: pointer; background: #f8fafc; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  details.acc-box summary::-webkit-details-marker { display: none; }
+  details.acc-box summary::after { content: "펼쳐 보기 +"; font-size: 0.78rem; font-weight: 700; color: var(--blue); white-space: nowrap; }
+  details.acc-box[open] summary::after { content: "접기 −"; }
+  .acc-body { padding: 16px 18px; border-top: 1px solid var(--border); font-size: 0.83rem; color: var(--sub); }
+  .formula-step { background: #f8fafc; border-left: 3px solid var(--navy); padding: 9px 12px; border-radius: 6px; margin-bottom: 9px; }
+  .formula-step strong { color: var(--navy); }
+  .formula-step > strong:first-child { display: block; margin-bottom: 2px; }
+  .law-list { padding-left: 18px; }
+  .law-list li { margin-bottom: 8px; }
+  .disclaimer-bar { margin-top: 12px; padding: 10px 12px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; color: #92400e; font-size: 0.79rem; font-weight: 600; }
+
+  .consult-footer { max-width: 1240px; margin: 24px auto 36px; padding: 0 14px; }
+  .footer-card { background: var(--navy); color: #fff; border-radius: var(--radius); padding: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; }
+  .footer-info h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 4px; }
+  .footer-info p { font-size: 0.82rem; color: #cbd5e1; }
+  .footer-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .f-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 15px; border-radius: 9px; font-size: 0.84rem; font-weight: 800; min-height: 44px; text-decoration: none !important; }
+  .f-btn-kakao { background: #fee500; color: #191919; }
+  .f-btn-home { background: #2563eb; color: #fff; }
+  .f-btn-tel { background: rgba(255,255,255,0.14); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+
+  .jump-btn { display: none; position: fixed; right: 14px; bottom: 16px; z-index: 95; background: var(--navy); color: #fff; border: none; border-radius: 999px; padding: 12px 16px; font-size: 0.84rem; font-weight: 800; box-shadow: 0 6px 18px rgba(15,23,42,0.28); cursor: pointer; min-height: 46px; }
+  .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); background: #111827; color: #fff; padding: 9px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 99; }
+  .toast.show { opacity: 0.95; }
+
+  @media (max-width: 980px) {
+    .main-wrap { grid-template-columns: 1fr; }
+    .score-grid { grid-template-columns: repeat(2, 1fr); }
+    .jump-btn { display: block; }
+  }
+  @media (max-width: 560px) {
+    .top-header h1 { font-size: 1.1rem; }
+    .score-grid { gap: 6px; }
+    .sticky-score { padding: 7px 8px; }
+    .score-box { padding: 5px 8px; }
+    .score-label { font-size: 0.68rem; }
+    .score-val { font-size: 0.95rem; }
+    .score-sub { display: none; }
+    .tab-btn { font-size: 0.71rem; padding: 9px 2px; }
+    .preset-btns { grid-template-columns: 1fr; }
+    .grade-grid { grid-template-columns: repeat(3, 1fr); }
+    .kpi-row { grid-template-columns: 1fr; }
+    .opt-grid { grid-template-columns: 1fr; }
+    .seg-group.cols-3 { grid-template-columns: 1fr; }
+    .num-input { width: 82px; }
+    .res-card { padding: 14px 12px; }
+    .svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .svg-wrap svg { min-width: 540px; }
+    table.data-tbl thead { display: none; }
+    table.data-tbl, table.data-tbl tbody { display: block; }
+    table.data-tbl tr { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+    table.data-tbl td { padding: 0; border: none; font-size: 0.84rem; text-align: left; }
+    table.data-tbl td:first-child { grid-column: 1 / -1; font-weight: 800; color: var(--navy); }
+    table.data-tbl td:last-child { grid-column: 1 / -1; font-size: 0.76rem; margin-top: 2px; }
+    table.data-tbl td:nth-child(2)::before, table.data-tbl td:nth-child(3)::before { display: block; font-size: 0.7rem; font-weight: 700; color: var(--muted); }
+    .tbl-live td:nth-child(2)::before { content: "월액"; }
+    .tbl-live td:nth-child(3)::before { content: "일시금"; }
+    .tbl-surv td:nth-child(2)::before { content: "산정액"; }
+    .tbl-surv td:nth-child(3)::before { content: "조정 후"; }
+  }
+  @media print {
+    .sticky-score { position: static; }
+    .btn-util, .preset-bar, .tab-nav, .step-nav, .jump-btn, .consult-footer .footer-btns { display: none !important; }
+    .main-wrap { grid-template-columns: 1fr; }
+    .tab-pane { display: block !important; border-bottom: 1px solid var(--border); }
+    details.acc-box > .acc-body { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div class="header-inner">
+    <div>
+      <span class="brand-badge">공인노무사 신명석 제작 · 2026년 법령 기준 참고용 추정</span>
+      <h1>퇴직 예정 공무원 연금 · 공무상 장해 · 공제일시금 · 분할연금 · 유족승계 시뮬레이터</h1>
+      <p>재직 중 소득부터 은퇴 후 연금·장해급여, 공제일시금·이혼 분할, 사후 배우자 유족연금·특별부가금까지 한 화면에서 추정합니다. 왼쪽에서 값을 바꾸면 결과가 바로 바뀝니다.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-util" id="btnFontToggle" onclick="toggleLargeFont()" aria-pressed="false">큰 글씨</button>
+      <button type="button" class="btn-util" onclick="copyShareLink()">입력값 링크 복사</button>
+      <button type="button" class="btn-util" onclick="window.print()">인쇄 / PDF</button>
+      <button type="button" class="btn-util" onclick="resetDefaults()">초기값</button>
+    </div>
+  </div>
+</header>
+
+<section class="sticky-score" aria-label="핵심 지표 요약">
+  <div class="score-grid">
+    <div class="score-box">
+      <div class="score-label"><span>① 재직 중 월 실수령</span><span class="pill pill-blue" id="sbCurPct">상위 -%</span></div>
+      <div class="score-val" id="sbCurNet">- 만원</div>
+      <div class="score-sub" id="sbCurSub">세전 -만원</div>
+    </div>
+    <div class="score-box s-ret">
+      <div class="score-label"><span>② 은퇴 후 본인 월 수령</span><span class="pill pill-teal" id="sbRetPct">상위 -%</span></div>
+      <div class="score-val" id="sbRetNet">- 만원</div>
+      <div class="score-sub" id="sbRetSub">연금 개시 -세</div>
+    </div>
+    <div class="score-box s-surv">
+      <div class="score-label"><span>③ 사후 배우자 월 수령</span><span class="pill pill-purple" id="sbSurvPct">상위 -%</span></div>
+      <div class="score-val" id="sbSurvNet">- 만원</div>
+      <div class="score-sub" id="sbSurvSub">유족연금 비과세</div>
+    </div>
+    <div class="score-box s-asset">
+      <div class="score-label"><span>④ 퇴직 시점 순자산</span><span class="pill pill-amber" id="sbAssetPct">상위 -%</span></div>
+      <div class="score-val" id="sbAssetVal">- 억원</div>
+      <div class="score-sub" id="sbAssetSub">퇴직수당·일시금 포함</div>
+    </div>
+  </div>
+</section>
+
+<main class="main-wrap">
+  <section class="panel-card" id="inputPanel" aria-label="입력">
+    <div class="preset-bar">
+      <div class="preset-title">상담 사례 불러오기 (누르면 자동 입력)</div>
+      <div class="preset-btns">
+        <button type="button" class="preset-btn" onclick="applyPreset('std')">① 일반 정년퇴직 (33년·무장해)</button>
+        <button type="button" class="preset-btn" onclick="applyPreset('duty7')">② 공무상 장해 7급 (즉시 개시)</button>
+        <button type="button" class="preset-btn" onclick="applyPreset('commute_div')">③ 공제일시금 10년 + 이혼 분할</button>
+        <button type="button" class="preset-btn" onclick="applyPreset('early_surv')">④ 개시 1년 내 사망 (특별부가금)</button>
+      </div>
+    </div>
+
+    <nav class="tab-nav" role="tablist" aria-label="입력 단계">
+      <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="basic" onclick="switchTab('basic')">1. 기본·자산</button>
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="disab" onclick="switchTab('disab')">2. 장해</button>
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="lumpdiv" onclick="switchTab('lumpdiv')">3. 일시금·이혼</button>
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="surv" onclick="switchTab('surv')">4. 유족승계</button>
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="effort" onclick="switchTab('effort')">5. 재취업·목표</button>
+    </nav>
+
+    <!-- 탭 1 -->
+    <div id="tab-basic" class="tab-pane active" role="tabpanel">
+      <div class="sec-head"><span>재직 · 보수 정보</span><span class="pill pill-blue">공무원연금법</span></div>
+      <div id="ageWarnBox" class="notice-box notice-warn" style="display:none;"></div>
+
+      <div class="field">
+        <span class="lbl">최초 임용 시기 (연금 개시연령이 달라집니다)</span>
+        <div class="seg-group cols-3">
+          <button type="button" class="seg-btn" id="btnEraPre" onclick="setHireEra('pre1996')">1995년 이전<small>종전 경과규정</small></button>
+          <button type="button" class="seg-btn active" id="btnEraMid" onclick="setHireEra('y1996')">1996~2009년<small>62~65세</small></button>
+          <button type="button" class="seg-btn" id="btnEraNew" onclick="setHireEra('y2010')">2010년 이후<small>62~65세</small></button>
+        </div>
+        <div class="field-hint" id="eraHint"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="curAge">현재 연령 (만 나이)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="curAge" class="num-input" value="58" min="40" max="70" step="1"><span class="unit-txt">세</span></div>
+        </div>
+        <input type="range" id="curAgeR" min="40" max="70" step="1" value="58" aria-label="현재 연령">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="retAge">퇴직 예정 연령</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="retAge" class="num-input" value="60" min="45" max="70" step="1"><span class="unit-txt">세</span></div>
+        </div>
+        <input type="range" id="retAgeR" min="45" max="70" step="1" value="60" aria-label="퇴직 예정 연령">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="curSvc">현재까지 재직기간 (군 복무 산입·합산 포함)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="curSvc" class="num-input" value="31" min="1" max="42" step="0.5"><span class="unit-txt">년</span></div>
+        </div>
+        <input type="range" id="curSvcR" min="1" max="42" step="0.5" value="31" aria-label="현재까지 재직기간">
+        <div class="field-hint" id="svcHint"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="milYrs">그중 군 복무 산입·타 연금 합산 기간</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="milYrs" class="num-input" value="0" min="0" max="10" step="0.5"><span class="unit-txt">년</span></div>
+        </div>
+        <input type="range" id="milYrsR" min="0" max="10" step="0.5" value="0" aria-label="군 복무 산입 기간">
+        <div class="field-hint">이 기간은 퇴직수당 계산에서 빠집니다 (공무원연금법 제25조제4항).</div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="avgBase">전 기간 평균 기준소득월액 (현재가치)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="avgBase" class="num-input" value="560" min="200" max="1100" step="5"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="avgBaseR" min="200" max="1100" step="5" value="560" aria-label="평균 기준소득월액">
+        <div class="field-hint">퇴직연금 추정의 기초입니다. 공무원 전체 평균액의 160%(952만원)를 넘는 부분은 반영되지 않습니다 (제30조제2항).</div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="knownPen">공단 예상 퇴직연금 월액 (알고 있으면 입력)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="knownPen" class="num-input" value="0" min="0" max="900" step="1"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="knownPenR" min="0" max="900" step="1" value="0" aria-label="공단 예상 퇴직연금 월액">
+        <div class="field-hint" id="knownPenHint">0이면 자동 추정합니다. 공무원연금공단 ‘예상퇴직급여’ 조회값을 넣으면 그 금액을 기준으로 계산해 훨씬 정확합니다.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="finalBase">퇴직 당시 기준소득월액</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="finalBase" class="num-input" value="640" min="200" max="1100" step="5"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="finalBaseR" min="200" max="1100" step="5" value="640" aria-label="퇴직 당시 기준소득월액">
+        <div class="field-hint">퇴직수당 · 일시금 · 장해연금 · 순직유족연금 계산의 기초입니다.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="curGross">현재 월평균 세전 총급여 (수당·성과급 포함)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="curGross" class="num-input" value="660" min="200" max="1500" step="5"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="curGrossR" min="200" max="1500" step="5" value="660" aria-label="현재 세전 총급여">
+      </div>
+
+      <div class="sec-head" style="margin-top:18px;"><span>가구 자산 · 부채 · 부수소득</span><span class="pill pill-amber">선택 입력</span></div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="finAsset">금융자산 (예금·주식·개인연금 등)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="finAsset" class="num-input" value="18000" min="0" max="300000" step="500"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="finAssetR" min="0" max="200000" step="500" value="18000" aria-label="금융자산">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="realAsset">부동산 등 실물자산 (시세)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="realAsset" class="num-input" value="62000" min="0" max="500000" step="1000"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="realAssetR" min="0" max="300000" step="1000" value="62000" aria-label="실물자산">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="debtAmt">총 부채</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="debtAmt" class="num-input" value="8000" min="0" max="200000" step="500"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="debtAmtR" min="0" max="150000" step="500" value="8000" aria-label="총 부채">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="otherInc">은퇴 후 고정 부수소득 (개인연금·임대·배당 월액)</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="otherInc" class="num-input" value="35" min="0" max="1000" step="5"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="otherIncR" min="0" max="500" step="5" value="35" aria-label="부수소득">
+      </div>
+      <div class="step-nav"><button type="button" class="step-btn" disabled>← 이전</button><button type="button" class="step-btn primary" onclick="switchTab('disab')">다음: 장해 →</button></div>
+    </div>
+
+    <!-- 탭 2 -->
+    <div id="tab-disab" class="tab-pane" role="tabpanel">
+      <div class="sec-head"><span>퇴직 시점 장해 판정</span><span class="pill pill-teal">재해보상법 제28·29조</span></div>
+      <div class="notice-box notice-teal" id="disabBenefitBanner"></div>
+
+      <div class="field">
+        <span class="lbl">장해 원인</span>
+        <div class="seg-group">
+          <button type="button" class="seg-btn active" id="btnCauseDuty" onclick="setDisabCause('duty')">공무상 장해<small>공무원 재해보상법</small></button>
+          <button type="button" class="seg-btn" id="btnCauseNon" onclick="setDisabCause('non_duty')">비공무상 장해<small>공무원연금법 제59조</small></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lbl">장해등급 (민트색 1~7급은 퇴직 즉시 퇴직연금 개시)</span>
+        <div class="grade-grid" id="gradeGrid"></div>
+      </div>
+
+      <div class="field" id="disabPayWrap">
+        <span class="lbl">장해급여 수령 방식</span>
+        <div class="seg-group">
+          <button type="button" class="seg-btn active" id="btnDisPen" onclick="setDisabPay('pension')">장해연금<small>매월 · 사망 시 유족 60%</small></button>
+          <button type="button" class="seg-btn" id="btnDisLump" onclick="setDisabPay('lump')">장해일시금<small>연금 5년분 · 승계 없음</small></button>
+        </div>
+      </div>
+
+      <div class="notice-box notice-info" id="disabClipNotice"></div>
+      <div class="step-nav"><button type="button" class="step-btn" onclick="switchTab('basic')">← 이전</button><button type="button" class="step-btn primary" onclick="switchTab('lumpdiv')">다음: 일시금·이혼 →</button></div>
+    </div>
+
+    <!-- 탭 3 -->
+    <div id="tab-lumpdiv" class="tab-pane" role="tabpanel">
+      <div class="sec-head"><span>퇴직급여 수령 형태</span><span class="pill pill-amber">제43조제3·5·6항</span></div>
+
+      <div class="field">
+        <div class="seg-group cols-3">
+          <button type="button" class="seg-btn active" id="btnLumpNone" onclick="setLumpChoice('none')">전액 연금<small>공제 안 함</small></button>
+          <button type="button" class="seg-btn" id="btnLumpPart" onclick="setLumpChoice('partial_deduct')">공제일시금<small>10년 초과분 일부</small></button>
+          <button type="button" class="seg-btn" id="btnLumpFull" onclick="setLumpChoice('full_lump')">전액 일시금<small>연금·유족연금 없음</small></button>
+        </div>
+      </div>
+
+      <div id="deductControls" style="display:none;">
+        <div class="field">
+          <div class="field-top">
+            <label for="deductYrs">일시금으로 받을 재직연수</label>
+            <div class="num-wrap"><input type="number" inputmode="decimal" id="deductYrs" class="num-input" value="5" min="0" max="26" step="0.5"><span class="unit-txt">년</span></div>
+          </div>
+          <input type="range" id="deductYrsR" min="0" max="26" step="0.5" value="5" aria-label="공제재직연수">
+          <div class="field-hint" id="deductHint"></div>
+        </div>
+      </div>
+
+      <div id="lumpRoiWrap" style="display:none;">
+        <div class="field">
+          <div class="field-top">
+            <label for="lumpRoi">받은 일시금의 연 운용수익률</label>
+            <div class="num-wrap"><input type="number" inputmode="decimal" id="lumpRoi" class="num-input" value="3.5" min="0" max="10" step="0.1"><span class="unit-txt">%</span></div>
+          </div>
+          <input type="range" id="lumpRoiR" min="0" max="10" step="0.1" value="3.5" aria-label="일시금 운용수익률">
+        </div>
+      </div>
+
+      <div class="sec-head" style="margin-top:18px;"><span>이혼 분할연금</span><span class="pill pill-rose">제45조~제49조</span></div>
+      <div id="divWarnBanner" class="notice-box notice-danger" style="display:none;"></div>
+
+      <div class="field">
+        <div class="seg-group cols-3">
+          <button type="button" class="seg-btn active" id="btnDivNone" onclick="setDivStatus('none')">해당 없음<small>혼인 유지</small></button>
+          <button type="button" class="seg-btn" id="btnDivPre" onclick="setDivStatus('pre_claim')">퇴직급여 청구 전 이혼<small>연금·일시금 모두 분할</small></button>
+          <button type="button" class="seg-btn" id="btnDivPost" onclick="setDivStatus('post_claim')">연금 받는 중 이혼<small>월 연금만 분할</small></button>
+        </div>
+        <div class="field-hint">분할연금은 2016.1.1. 이후 이혼한 경우에 적용됩니다 (법률 제13387호 부칙 제2조).</div>
+      </div>
+
+      <div id="divDetailWrap" style="display:none;">
+        <div class="field">
+          <div class="field-top">
+            <label for="divMarYrs">재직 중 실질 혼인기간 (별거 제외)</label>
+            <div class="num-wrap"><input type="number" inputmode="decimal" id="divMarYrs" class="num-input" value="18" min="0" max="40" step="0.5"><span class="unit-txt">년</span></div>
+          </div>
+          <input type="range" id="divMarYrsR" min="0" max="40" step="0.5" value="18" aria-label="혼인기간">
+          <div class="field-hint">5년 이상이어야 분할 청구가 됩니다 (제45조제1항).</div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label for="divSharePct">분할 비율 (법정 균등 50%)</label>
+            <div class="num-wrap"><input type="number" inputmode="decimal" id="divSharePct" class="num-input" value="50" min="10" max="90" step="1"><span class="unit-txt">%</span></div>
+          </div>
+          <input type="range" id="divSharePctR" min="10" max="90" step="1" value="50" aria-label="분할 비율">
+          <div class="field-hint">협의·재판으로 달리 정했으면 그 비율이 우선합니다 (제46조).</div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label for="exBirthYr">전 배우자 출생연도</label>
+            <div class="num-wrap"><input type="number" inputmode="numeric" id="exBirthYr" class="num-input" value="1968" min="1950" max="1990" step="1"><span class="unit-txt">년생</span></div>
+          </div>
+          <input type="range" id="exBirthYrR" min="1950" max="1990" step="1" value="1968" aria-label="전 배우자 출생연도">
+          <div class="field-hint" id="exStartHint"></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label for="exAliveYrs">전 배우자의 분할연금 예상 수령기간</label>
+            <div class="num-wrap"><input type="number" inputmode="decimal" id="exAliveYrs" class="num-input" value="25" min="1" max="40" step="1"><span class="unit-txt">년</span></div>
+          </div>
+          <input type="range" id="exAliveYrsR" min="1" max="40" step="1" value="25" aria-label="전 배우자 수령기간">
+          <div class="field-hint">전 배우자가 사망하면 다음 달부터 분할 전 금액으로 돌아옵니다 (제47조제5항).</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <span class="lbl">현재 배우자와 혼인한 시점 (유족연금 자격)</span>
+        <div class="seg-group cols-3">
+          <button type="button" class="seg-btn active" id="btnRemIn" onclick="setRemarry('in_service')">재직 중 혼인<small>유족 인정</small></button>
+          <button type="button" class="seg-btn" id="btnRemPost" onclick="setRemarry('post_retire')">퇴직 후 혼인<small>유족 제외</small></button>
+          <button type="button" class="seg-btn" id="btnRemSingle" onclick="setRemarry('single')">배우자 없음</button>
+        </div>
+        <div class="field-hint">배우자는 ‘재직 당시 혼인관계에 있던 사람’만 유족입니다 (제3조제1항제2호가목).</div>
+      </div>
+      <div class="step-nav"><button type="button" class="step-btn" onclick="switchTab('disab')">← 이전</button><button type="button" class="step-btn primary" onclick="switchTab('surv')">다음: 유족승계 →</button></div>
+    </div>
+
+    <!-- 탭 4 -->
+    <div id="tab-surv" class="tab-pane" role="tabpanel">
+      <div class="sec-head"><span>사후 배우자 유족연금</span><span class="pill pill-purple">제54·55조 / 재해 제19·20조</span></div>
+
+      <div class="field">
+        <span class="lbl">사망 사유 · 시점</span>
+        <div class="seg-group">
+          <button type="button" class="seg-btn active" id="btnDeathGen" onclick="setDeathType('general')">연금 받는 중 일반 사망<small>퇴직유족 + 장해유족</small></button>
+          <button type="button" class="seg-btn" id="btnDeathEarly" onclick="setDeathType('early_before_start')">연금 개시 전 사망<small>조기연금 상당액의 60%</small></button>
+          <button type="button" class="seg-btn" id="btnDeathDuty" onclick="setDeathType('duty_death')">순직 인정<small>순직유족연금과 택일</small></button>
+          <button type="button" class="seg-btn" id="btnDeathHazard" onclick="setDeathType('hazard_duty_death')">위험직무순직 인정<small>43% + 보상금 45배</small></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="deathAge">본인 예상 사망 연령</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="deathAge" class="num-input" value="82" min="50" max="100" step="1"><span class="unit-txt">세</span></div>
+        </div>
+        <input type="range" id="deathAgeR" min="50" max="100" step="1" value="82" aria-label="예상 사망 연령">
+        <div class="field-hint" id="deathAgeHint"></div>
+      </div>
+
+      <div class="field" id="earlyMosWrap" style="display:none;">
+        <div class="field-top">
+          <label for="earlyRecMos">사망 전까지 연금을 받은 개월 수</label>
+          <div class="num-wrap"><input type="number" inputmode="numeric" id="earlyRecMos" class="num-input" value="12" min="0" max="35" step="1"><span class="unit-txt">개월</span></div>
+        </div>
+        <input type="range" id="earlyRecMosR" min="0" max="35" step="1" value="12" aria-label="연금 수령 개월 수">
+        <div class="field-hint" id="earlyMosHint"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="widowYears">배우자가 혼자 받는 예상 기간</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="widowYears" class="num-input" value="10" min="1" max="35" step="1"><span class="unit-txt">년</span></div>
+        </div>
+        <input type="range" id="widowYearsR" min="1" max="35" step="1" value="10" aria-label="배우자 수급 기간">
+      </div>
+
+      <div class="field" id="survCountWrap">
+        <label for="survCount" class="lbl">순직 시 유족 수 (1명당 5% 가산, 최대 20%)</label>
+        <select id="survCount" class="sel-input" onchange="calculateAll()">
+          <option value="1" selected>1명 (배우자) · 순직 43% / 위험직무 48%</option>
+          <option value="2">2명 · 순직 48% / 위험직무 53%</option>
+          <option value="3">3명 · 순직 53% / 위험직무 58%</option>
+          <option value="4">4명 이상 · 순직 58% / 위험직무 63%</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="lbl">배우자 본인의 공적연금</span>
+        <div class="seg-group cols-3">
+          <button type="button" class="seg-btn" id="btnSpNone" onclick="setSpousePen('none')">없음<small>유족연금 전액</small></button>
+          <button type="button" class="seg-btn active" id="btnSpNat" onclick="setSpousePen('national')">국민연금<small>감액 없음</small></button>
+          <button type="button" class="seg-btn" id="btnSpCiv" onclick="setSpousePen('civil')">공무원·사학·군인연금<small>유족연금 1/2 감액</small></button>
+        </div>
+      </div>
+
+      <div class="field" id="spouseOwnPenWrap">
+        <div class="field-top">
+          <label for="spouseOwnPen">배우자 본인 연금 월액</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="spouseOwnPen" class="num-input" value="85" min="0" max="500" step="5"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="spouseOwnPenR" min="0" max="500" step="5" value="85" aria-label="배우자 본인 연금">
+      </div>
+      <div class="step-nav"><button type="button" class="step-btn" onclick="switchTab('lumpdiv')">← 이전</button><button type="button" class="step-btn primary" onclick="switchTab('effort')">다음: 재취업·목표 →</button></div>
+    </div>
+
+    <!-- 탭 5 -->
+    <div id="tab-effort" class="tab-pane" role="tabpanel">
+      <div class="sec-head"><span>퇴직 전 저축 · 퇴직 후 재취업</span><span class="pill pill-blue">제50조 지급정지</span></div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="saveRate">퇴직 전 실수령액 대비 저축률</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="saveRate" class="num-input" value="25" min="0" max="80" step="1"><span class="unit-txt">%</span></div>
+        </div>
+        <input type="range" id="saveRateR" min="0" max="80" step="1" value="25" aria-label="저축률">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="bridgeWage">퇴직 후 재취업 월 세전 급여</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="bridgeWage" class="num-input" value="250" min="0" max="1200" step="10"><span class="unit-txt">만원</span></div>
+        </div>
+        <input type="range" id="bridgeWageR" min="0" max="1200" step="10" value="250" aria-label="재취업 급여">
+        <div class="field-hint" id="suspHint"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="bridgeYrs">재취업 지속 기간</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="bridgeYrs" class="num-input" value="3" min="0" max="15" step="1"><span class="unit-txt">년</span></div>
+        </div>
+        <input type="range" id="bridgeYrsR" min="0" max="15" step="1" value="3" aria-label="재취업 기간">
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="roiRate">금융자산 연 운용수익률</label>
+          <div class="num-wrap"><input type="number" inputmode="decimal" id="roiRate" class="num-input" value="3.8" min="1" max="8" step="0.1"><span class="unit-txt">%</span></div>
+        </div>
+        <input type="range" id="roiRateR" min="1" max="8" step="0.1" value="3.8" aria-label="운용수익률">
+        <div class="field-hint">원금은 그대로 두고 운용수익만 생활비로 쓴다고 가정합니다.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-top">
+          <label for="targetTopPct">은퇴 후 목표 소득 위치</label>
+          <div class="num-wrap"><span class="unit-txt">상위</span><input type="number" inputmode="decimal" id="targetTopPct" class="num-input" value="25" min="5" max="60" step="1"><span class="unit-txt">%</span></div>
+        </div>
+        <input type="range" id="targetTopPctR" min="5" max="60" step="1" value="25" aria-label="목표 백분위">
+      </div>
+      <div class="step-nav"><button type="button" class="step-btn" onclick="switchTab('surv')">← 이전</button><button type="button" class="step-btn primary" onclick="jumpToResults()">결과 보기 ↓</button></div>
+    </div>
+  </section>
+
+  <section class="results-col" id="resultsCol" aria-label="결과" aria-live="off">
+
+    <div class="res-card" id="card1">
+      <div class="res-title">
+        <span>1. 임금근로자 소득 분포에서 본 내 위치</span>
+        <span class="pill pill-blue">2024년 중위 288만원 · 평균 375만원</span>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-item">
+          <div class="k-head">재직 중 현재</div>
+          <div class="k-num" id="kpiCurRank">상위 -%</div>
+          <div class="k-desc" id="kpiCurDetail">-</div>
+        </div>
+        <div class="kpi-item">
+          <div class="k-head">은퇴 후 본인</div>
+          <div class="k-num" id="kpiRetRank">상위 -%</div>
+          <div class="k-desc" id="kpiRetDetail">-</div>
+        </div>
+        <div class="kpi-item">
+          <div class="k-head">사후 배우자</div>
+          <div class="k-num" id="kpiSurvRank">상위 -%</div>
+          <div class="k-desc" id="kpiSurvDetail">-</div>
+        </div>
+      </div>
+      <div class="svg-wrap" id="distSvgWrap"></div>
+      <div class="chart-legend">
+        <span><i class="leg-dot" style="background:#2563eb;"></i>재직 중</span>
+        <span><i class="leg-dot" style="background:#0d9488;"></i>은퇴 후 본인</span>
+        <span><i class="leg-dot" style="background:#7c3aed;"></i>사후 배우자</span>
+      </div>
+      <p class="res-note">※ 은퇴 후·사후 위치는 가구의 월 실수령액(연금+자산수익+부수소득)을 ‘같은 실수령액을 받는 근로자의 세전 월급’으로 바꿔 개인 임금근로자 분포에 대어 본 어림값입니다. 통계상 확인된 좌표(중위·평균·350만원 미만 61.6%) 사이는 보간했습니다.</p>
+    </div>
+
+    <div class="res-card" id="card2">
+      <div class="res-title">
+        <span>2. 생애 월 현금흐름</span>
+        <span class="pill pill-teal" id="timelineBadge">-</span>
+      </div>
+      <div class="svg-wrap" id="lifeSvgWrap"></div>
+      <div class="chart-legend">
+        <span><i class="leg-dot" style="background:#2563eb;"></i>본인 월 실수령</span>
+        <span><i class="leg-dot" style="background:#7c3aed;"></i>사망 후 배우자 월 실수령</span>
+        <span><i class="leg-dot" style="background:#e11d48;"></i>전 배우자 분할연금</span>
+      </div>
+    </div>
+
+    <div class="res-card" id="card3">
+      <div class="res-title">
+        <span>3. 생전 급여 명세</span>
+        <span class="pill pill-amber" id="lumpBreakEvenBadge">-</span>
+      </div>
+      <div id="startAgeNote" class="notice-box notice-info"></div>
+      <div class="table-wrap">
+        <table class="data-tbl tbl-live">
+          <thead><tr><th>항목</th><th>월액</th><th>일시금</th><th>근거 · 비고</th></tr></thead>
+          <tbody id="livingTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="res-card" id="card4">
+      <div class="res-title">
+        <span>4. 사후 배우자 유족급여</span>
+        <span class="pill pill-purple" id="survRuleBadge">-</span>
+      </div>
+      <div id="survAlertBox"></div>
+      <div class="opt-grid" id="survOptGrid" style="display:none;"></div>
+      <div class="table-wrap">
+        <table class="data-tbl tbl-surv">
+          <thead><tr><th>항목</th><th>산정액</th><th>조정 후</th><th>근거 · 비고</th></tr></thead>
+          <tbody id="survTableBody"></tbody>
+        </table>
+      </div>
+      <div class="svg-wrap" id="compSvgWrap" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="res-card" id="card5">
+      <div class="res-title">
+        <span>5. 목표 소득 위치까지 남은 거리</span>
+        <span class="pill pill-blue" id="targetStatusBadge">-</span>
+      </div>
+      <div id="targetSolverBox" class="notice-box notice-info" style="margin-bottom:0;"></div>
+    </div>
+
+    <details class="acc-box">
+      <summary>계산 과정 보기</summary>
+      <div class="acc-body" id="formulaTraceBody"></div>
+    </details>
+
+    <details class="acc-box">
+      <summary>법적 근거와 이 계산기의 한계 (꼭 읽어 주세요)</summary>
+      <div class="acc-body">
+        <ul class="law-list">
+          <li><strong>퇴직연금:</strong> 재직기간 1년당 평균기준소득월액의 1.7%(2026년 퇴직 1.736%에서 2035년 1.7%까지 단계 인하, <a href="https://www.law.go.kr/법령/공무원연금법" target="_blank" rel="noopener">공무원연금법</a> 제43조제4항, 법률 제13387호 부칙 제9조). 재직기간 상한은 36년이지만 2016.1.1. 당시 재직자는 그 전 재직기간에 따라 33~36년입니다(같은 부칙 제11조). <u>2015년 이전 재직기간은 종전 산식(2009년 이전분은 평균보수월액 기준)이 적용되고 소득재분배도 들어가므로, 자동 추정액은 실제와 차이가 날 수 있습니다.</u> 공단 예상액을 입력해 쓰시기를 권합니다.</li>
+          <li><strong>연금 개시연령:</strong> 1996년 이후 임용자는 퇴직연도에 따라 62~65세(부칙 제7조제1항·제8조). 1995년 이전 임용자는 법률 제6328호 부칙 제10조가 먼저 적용되어 퇴직 즉시 또는 60세부터 받습니다(부칙 제7조제4항). 장해등급 1~7급이면 퇴직 즉시 개시됩니다(제43조제1항제5호, 시행령 제40조). 정년·계급정년·직제폐지 특례(제43조제1항제2~4호)는 반영하지 않았습니다.</li>
+          <li><strong>퇴직수당:</strong> 재직기간 × 기준소득월액 × 6.5~39%(제62조, 시행령 제58조). 33년 상한이 있고, 군 복무 산입·합산기간은 빠집니다(제25조제4항). 휴직·정직기간 1/2 차감(제25조제5항)은 반영하지 않았습니다.</li>
+          <li><strong>공무상 장해급여:</strong> 기준소득월액의 52%(1급)~9.75%(14급), 일시금은 5년분(<a href="https://www.law.go.kr/법령/공무원재해보상법" target="_blank" rel="noopener">공무원 재해보상법</a> 제29조). 퇴직연금과 함께 받습니다. 기준소득월액 상·하한(평균액의 160%·50%)은 순직유족연금 등에만 적용되고 장해급여에는 적용되지 않습니다(같은 법 제10조제2항). 재취업 소득이 있으면 퇴직연금과 같은 기준으로 일부 정지됩니다(제32조).</li>
+          <li><strong>비공무상 장해급여:</strong> 1~2급 26%, 3~4급 22.75%, 5~7급 19.5%의 연금, 8급 이하는 기준소득월액 2.25배의 일시금(공무원연금법 제59조). <u>퇴직연금과 함께 받을 수 없습니다</u>(제40조제4항).</li>
+          <li><strong>연금 일부정지:</strong> 근로·사업소득금액 월평균이 전년도 평균연금월액(2026년 적용 280만원)을 넘으면 초과분을 50만원 단위 구간별로 30~70% 정지하되 연금의 1/2까지만(제50조제3항). 공무원 재임용, 선출직 취임, 정부·지자체 전액 출자·출연기관 재취업으로 인한 전액정지(제50조제1항)와 사업소득은 반영하지 않았습니다.</li>
+          <li><strong>분할연금:</strong> 혼인기간 5년 이상, 혼인기간에 해당하는 연금액을 균등 분할(제45조), 협의·재판 비율 우선(제46조), 전 배우자 사망 시 환원(제47조제5항), 퇴직급여 청구 전 이혼이면 일시금도 분할(제49조). 퇴직수당과 장해연금은 공단 분할 대상이 아닙니다. 분할이 진행 중일 때 본인이 사망하면 유족연금은 분할 후 금액을 기준으로 계산했는데, 이는 이 계산기의 가정이므로 공단에 확인하십시오.</li>
+          <li><strong>유족급여:</strong> 퇴직유족연금은 퇴직연금의 60%, 개시 전 사망이면 조기퇴직연금 상당액의 60%(제55조제1항). 개시 전 또는 개시 후 3년 이내 사망이면 특별부가금(제54조제3항·제55조제3항). 장해유족연금은 장해연금의 60%(재해보상법 제35조). 순직유족연금(38%+유족 1명당 5%)·위험직무순직유족연금(43%+가산)은 퇴직유족연금·장해유족연금과 각각 택일(공무원연금법 제41조제4항, 재해보상법 제19조제2항·제20조). 순직유족보상금은 공무원 전체 기준소득월액 평균액(2026.5.~2027.4. 595만원)의 24배, 위험직무는 45배(제37·39조).</li>
+          <li><strong>배우자가 직역연금 수급자인 경우:</strong> 퇴직유족연금 1/2 감액(공무원연금법 제40조제1항·제41조제2항), 순직유족연금·장해유족연금 1/2 감액(재해보상법 제20조제6항). 위험직무순직유족연금은 같은 항에 열거되어 있지 않아 감액하지 않고 계산했습니다. 실제 적용은 공단에 확인하십시오.</li>
+          <li><strong>세금·분포 가정:</strong> 재직 중 공제율, 연금소득세, 퇴직수당·일시금 세후 96.5%는 법정 산식이 아닌 어림 계수입니다. 장해연금·유족연금은 비과세로 보았습니다(소득세법 제12조). 순자산 분포는 2025년 가계금융복지조사 평균(4억 7,144만원) 등을 이용한 어림입니다.</li>
+        </ul>
+        <div class="disclaimer-bar">
+          ※ 이 결과는 참고용 추정치입니다. 실제 지급액은 개인별 재직 이력과 공무원연금공단·인사혁신처의 결정에 따라 달라집니다. 급여 선택(연금·일시금, 순직유족연금 택일 등)은 되돌리기 어려우므로 청구 전에 공단 예상퇴직급여 조회와 전문가 상담을 거치시기 바랍니다.
+        </div>
+      </div>
+    </details>
+
+  </section>
+</main>
+
+<button type="button" class="jump-btn" id="jumpBtn" onclick="jumpToggle()">결과 보기 ↓</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="consult-footer">
+  <div class="footer-card">
+    <div class="footer-info">
+      <h3>부산산재노무사 공인노무사 신명석 (대신노무법인 송정)</h3>
+      <p>공무상 요양 · 퇴직 시점 장해급여 청구 · 순직유족급여 · 심사/재심사 상담</p>
+    </div>
+    <div class="footer-btns">
+      <a class="f-btn f-btn-kakao" href="https://open.kakao.com/o/gL5e0stf" target="_blank" rel="noopener">카카오톡 상담</a>
+      <a class="f-btn f-btn-home" href="https://busansanjaenomusa.github.io/" target="_blank" rel="noopener">홈페이지 · 계산기 모음</a>
+      <a class="f-btn f-btn-tel" href="tel:051-832-7227">전화 051-832-7227</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ───────── 상태 ─────────
+  const STATE_DEFAULTS = {
+    hireEra: 'y1996',          // 'pre1996' | 'y1996' | 'y2010'
+    disabCause: 'duty',        // 'duty' | 'non_duty'
+    disabGrade: 7,             // 0~14
+    disabPayType: 'pension',   // 'pension' | 'lump' (공무상만 선택)
+    lumpChoice: 'none',        // 'none' | 'partial_deduct' | 'full_lump'
+    divStatus: 'none',         // 'none' | 'pre_claim' | 'post_claim'
+    remarryType: 'in_service', // 'in_service' | 'post_retire' | 'single'
+    deathType: 'general',      // 'general' | 'early_before_start' | 'duty_death' | 'hazard_duty_death'
+    spousePenType: 'national'  // 'none' | 'national' | 'civil'
+  };
+  const STATE = Object.assign({}, STATE_DEFAULTS);
+
+  // ───────── 기준값 (근거는 하단 ‘법적 근거’ 참조) ─────────
+  const BASE_YEAR = 2026;
+  const AVG_CIVIL_BASE = 595;                 // 공무원 전체 기준소득월액 평균액 (2026.5.1.~2027.4.30. 적용, 인사혁신처 고시)
+  const MIN_DUTY_BASE = AVG_CIVIL_BASE * 0.5; // 재해보상법 제10조제2항 (순직유족연금 등에만 적용)
+  const MAX_DUTY_BASE = AVG_CIVIL_BASE * 1.6;
+  const AVG_PENSION_REF = 280;                // 2026년 적용 전년도 평균연금월액 (공무원연금공단 안내)
+
+  // 임금근로일자리 소득(보수) 2024년 결과: 중위 288, 평균 375, 350만원 미만 61.6% (국가데이터처 2026.2.23.)
+  // 그 밖의 좌표는 분포 모양을 잡기 위한 보간용 어림값
+  const INCOME_CDF = [
+    [0, 0], [85, 12.2], [150, 20.6], [250, 41.5], [288, 50.0],
+    [350, 61.6], [375, 65.2], [450, 73.3], [545, 80.0], [650, 86.4],
+    [745, 90.0], [833, 92.5], [1000, 95.7], [1400, 98.2], [2000, 99.1], [2885, 99.5]
+  ];
+  // 가계금융복지조사 2025년: 가구 평균 순자산 4억 7,144만원. 나머지는 어림값
+  const ASSET_CDF = [
+    [0, 5.0], [5000, 18.0], [12000, 32.0], [23860, 50.0], [38000, 65.0],
+    [47144, 72.5], [65000, 81.0], [85000, 86.5], [105000, 90.0],
+    [150000, 95.0], [220000, 98.0], [330000, 99.0]
+  ];
+
+  // [range id, number id, min, max, default]
+  const BOUND_PAIRS = [
+    ['curAgeR', 'curAge', 40, 70, 58],
+    ['retAgeR', 'retAge', 45, 70, 60],
+    ['curSvcR', 'curSvc', 1, 42, 31],
+    ['milYrsR', 'milYrs', 0, 10, 0],
+    ['avgBaseR', 'avgBase', 200, 1100, 560],
+    ['knownPenR', 'knownPen', 0, 900, 0],
+    ['finalBaseR', 'finalBase', 200, 1100, 640],
+    ['curGrossR', 'curGross', 200, 1500, 660],
+    ['finAssetR', 'finAsset', 0, 300000, 18000],
+    ['realAssetR', 'realAsset', 0, 500000, 62000],
+    ['debtAmtR', 'debtAmt', 0, 200000, 8000],
+    ['otherIncR', 'otherInc', 0, 1000, 35],
+    ['deductYrsR', 'deductYrs', 0, 26, 5],
+    ['lumpRoiR', 'lumpRoi', 0, 10, 3.5],
+    ['divMarYrsR', 'divMarYrs', 0, 40, 18],
+    ['divSharePctR', 'divSharePct', 10, 90, 50],
+    ['exBirthYrR', 'exBirthYr', 1950, 1990, 1968],
+    ['exAliveYrsR', 'exAliveYrs', 1, 40, 25],
+    ['deathAgeR', 'deathAge', 50, 100, 82],
+    ['earlyRecMosR', 'earlyRecMos', 0, 35, 12],
+    ['widowYearsR', 'widowYears', 1, 35, 10],
+    ['spouseOwnPenR', 'spouseOwnPen', 0, 500, 85],
+    ['saveRateR', 'saveRate', 0, 80, 25],
+    ['bridgeWageR', 'bridgeWage', 0, 1200, 250],
+    ['bridgeYrsR', 'bridgeYrs', 0, 15, 3],
+    ['roiRateR', 'roiRate', 1, 8, 3.8],
+    ['targetTopPctR', 'targetTopPct', 5, 60, 25]
+  ];
+  const TAB_ORDER = ['basic', 'disab', 'lumpdiv', 'surv', 'effort'];
+
+  // ───────── 유틸 ─────────
+  const $ = id => document.getElementById(id);
+
+  function safeVal(id, fallback, min, max) {
+    const el = $(id);
+    if (!el) return fallback;
+    const v = parseFloat(el.value);
+    if (isNaN(v) || !isFinite(v)) return fallback;
+    return Math.min(max, Math.max(min, v));
+  }
+  function fmtMan(v) { return isFinite(v) ? Math.round(v).toLocaleString('ko-KR') : '0'; }
+  function fmtManDec(v) {
+    if (!isFinite(v)) return '0.0';
+    return (Math.round(v * 10) / 10).toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  }
+  function fmtEok(manVal) { return (manVal / 10000).toFixed(2); }
+  function fmtAge(a) { return Number.isInteger(a) ? String(a) : a.toFixed(1); }
+
+  function interpCdf(pts, x) {
+    if (x <= pts[0][0]) return pts[0][1];
+    for (let i = 1; i < pts.length; i++) {
+      if (x <= pts[i][0]) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+        return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
+      }
+    }
+    return 99.7;
+  }
+  function invCdf(pts, cumPct) {
+    if (cumPct <= pts[0][1]) return pts[0][0];
+    for (let i = 1; i < pts.length; i++) {
+      if (cumPct <= pts[i][1]) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+        return x0 + ((cumPct - y0) / (y1 - y0)) * (x1 - x0);
+      }
+    }
+    return pts[pts.length - 1][0];
+  }
+
+  // 세전 월급 → 실수령 어림 (구간별 한계공제율 누적: 단조 증가 보장)
+  function grossToWorkerNet(gross) {
+    if (gross <= 0) return 0;
+    const bands = [[300, 0.145], [200, 0.23], [200, 0.28], [300, 0.33], [Infinity, 0.38]];
+    let rem = gross, ded = 0;
+    for (const [span, rate] of bands) {
+      if (rem <= 0) break;
+      const c = Math.min(rem, span);
+      ded += c * rate;
+      rem -= c;
+    }
+    return gross - ded;
+  }
+  function netToEquivWorkerGross(targetNet) {
+    if (targetNet <= 0) return 0;
+    let lo = 0, hi = 5000;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (grossToWorkerNet(mid) < targetNet) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  // 연금소득세 어림 (법정 산식 아님)
+  function calcPenTax(m) {
+    if (m <= 150) return m * 0.012;
+    if (m <= 300) return 1.8 + (m - 150) * 0.032;
+    if (m <= 500) return 6.6 + (m - 300) * 0.058;
+    return 18.2 + (m - 500) * 0.088;
+  }
+
+  // 소득세법 제47조 근로소득공제 (연, 만원)
+  function earnedIncomeDeduction(annual) {
+    let d;
+    if (annual <= 500) d = annual * 0.7;
+    else if (annual <= 1500) d = 350 + (annual - 500) * 0.4;
+    else if (annual <= 4500) d = 750 + (annual - 1500) * 0.15;
+    else if (annual <= 10000) d = 1200 + (annual - 4500) * 0.05;
+    else d = 1475 + (annual - 10000) * 0.02;
+    return Math.min(2000, d);
+  }
+  // 세전 월급 → 근로소득금액 월평균(소득월액)
+  function wageToIncomeMonthly(monthlyWage) {
+    const annual = monthlyWage * 12;
+    return Math.max(0, annual - earnedIncomeDeduction(annual)) / 12;
+  }
+  // 공무원연금법 제50조제3항 일부정지액 (연금의 1/2 한도)
+  function calcSuspension(monthlyWage, monthlyPen) {
+    if (monthlyPen <= 0 || monthlyWage <= 0) return 0;
+    const ex = wageToIncomeMonthly(monthlyWage) - AVG_PENSION_REF;
+    if (ex <= 0) return 0;
+    let s;
+    if (ex < 50) s = ex * 0.30;
+    else if (ex < 100) s = 15 + (ex - 50) * 0.40;
+    else if (ex < 150) s = 35 + (ex - 100) * 0.50;
+    else if (ex < 200) s = 60 + (ex - 150) * 0.60;
+    else s = 90 + (ex - 200) * 0.70;
+    return Math.min(monthlyPen * 0.5, s);
+  }
+
+  // 법률 제13387호 부칙 제9조: 퇴직연도별 지급률
+  function accrualRateFor(retYear) {
+    if (retYear >= 2035) return 0.017;
+    const y = Math.max(2026, retYear);
+    return 0.01736 - 0.00004 * (y - 2026);
+  }
+  // 부칙 제7조제1항·제8조: 퇴직연도별 개시연령
+  function tableStartAge(retYear) {
+    if (retYear <= 2021) return 60;
+    if (retYear <= 2023) return 61;
+    if (retYear <= 2026) return 62;
+    if (retYear <= 2029) return 63;
+    if (retYear <= 2032) return 64;
+    return 65;
+  }
+  // 임용시기별 개시연령 판정
+  function resolveStartAge(era, retYear, retAge, totalSvc, yrsLeft, curSvc) {
+    if (era === 'pre1996') {
+      const svc2000 = Math.max(0, curSvc - (BASE_YEAR - 2000));   // 2000.12.31. 당시 재직기간(어림)
+      const postYrs = totalSvc - svc2000;
+      if (svc2000 >= 20) return { age: retAge, why: '2000년 말 재직 20년 이상 → 퇴직 즉시 (법률 제6328호 부칙 제10조제1항)' };
+      const shortfall = 20 - svc2000;
+      if (totalSvc >= 20 && postYrs >= 2 * shortfall) {
+        return { age: retAge, why: `2000년 말 20년 미달기간(${shortfall.toFixed(1)}년)의 2배 이상 재직 → 퇴직 즉시 (법률 제6328호 부칙 제10조제3항)` };
+      }
+      return { age: Math.max(retAge, 60), why: '1995년 이전 임용 · 종전 규정상 60세 (법률 제9905호 부칙 제7조제3항)' };
+    }
+    const a = tableStartAge(retYear);
+    return { age: Math.max(retAge, a), why: `${retYear}년 퇴직 → ${a}세 (법률 제13387호 부칙 ${era === 'y2010' ? '제8조' : '제7조제1항'})` };
+  }
+  // 부칙 제11조: 재직기간 상한
+  function svcCapFor(pre2016) {
+    if (pre2016 <= 0) return 36;
+    if (pre2016 >= 21) return 33;
+    if (pre2016 >= 17) return 34;
+    if (pre2016 >= 15) return 35;
+    return 36;
+  }
+  // 분할연금 수급연령 (부칙 제2조제2항): 해당 연령에 도달하는 연도 기준
+  function exStartAgeFor(birthYr) {
+    for (const a of [60, 61, 62, 63, 64, 65]) {
+      const y = birthYr + a;
+      if (a === 65 || tableStartAge(y) <= a) return Math.max(a, tableStartAge(y));
+    }
+    return 65;
+  }
+  // 비공무상 장해연금 지급률 (제59조제2항)
+  function nonDutyRate(g) {
+    if (g >= 1 && g <= 2) return 0.26;
+    if (g >= 3 && g <= 4) return 0.2275;
+    if (g >= 5 && g <= 7) return 0.195;
+    return 0;
+  }
+
+  // ───────── UI 핸들러 ─────────
+  function renderGradeButtons() {
+    let html = `<button type="button" class="grade-btn ${STATE.disabGrade === 0 ? 'active' : ''}" onclick="setDisabGrade(0)">없음<small>-</small></button>`;
+    for (let g = 1; g <= 14; g++) {
+      let sub;
+      if (STATE.disabCause === 'duty') sub = ((17 - g) * 3.25).toFixed(2) + '%';
+      else sub = g <= 7 ? (nonDutyRate(g) * 100).toFixed(2) + '%' : '일시금';
+      html += `<button type="button" class="grade-btn ${g <= 7 ? 'g-high' : ''} ${STATE.disabGrade === g ? 'active' : ''}" onclick="setDisabGrade(${g})">제${g}급<small>${sub}</small></button>`;
+    }
+    $('gradeGrid').innerHTML = html;
+  }
+
+  function switchTab(tabKey) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      const on = b.dataset.tab === tabKey;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('tab-' + tabKey).classList.add('active');
+    const panel = $('inputPanel');
+    if (panel.getBoundingClientRect().top < 0) panel.scrollIntoView({ block: 'start' });
+  }
+  function jumpToResults() { $('resultsCol').scrollIntoView({ block: 'start' }); }
+  function jumpToggle() {
+    const r = $('resultsCol').getBoundingClientRect();
+    if (r.top > window.innerHeight * 0.5) jumpToResults();
+    else $('inputPanel').scrollIntoView({ block: 'start' });
+  }
+  function updateJumpBtn() {
+    const r = $('resultsCol').getBoundingClientRect();
+    $('jumpBtn').textContent = r.top > window.innerHeight * 0.5 ? '결과 보기 ↓' : '입력 고치기 ↑';
+  }
+  function toggleLargeFont() {
+    const on = document.body.classList.toggle('large-font');
+    $('btnFontToggle').classList.toggle('active', on);
+    $('btnFontToggle').setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function syncSegButtons() {
+    const map = {
+      btnEraPre: STATE.hireEra === 'pre1996', btnEraMid: STATE.hireEra === 'y1996', btnEraNew: STATE.hireEra === 'y2010',
+      btnCauseDuty: STATE.disabCause === 'duty', btnCauseNon: STATE.disabCause === 'non_duty',
+      btnDisPen: STATE.disabPayType === 'pension', btnDisLump: STATE.disabPayType === 'lump',
+      btnLumpNone: STATE.lumpChoice === 'none', btnLumpPart: STATE.lumpChoice === 'partial_deduct', btnLumpFull: STATE.lumpChoice === 'full_lump',
+      btnDivNone: STATE.divStatus === 'none', btnDivPre: STATE.divStatus === 'pre_claim', btnDivPost: STATE.divStatus === 'post_claim',
+      btnRemIn: STATE.remarryType === 'in_service', btnRemPost: STATE.remarryType === 'post_retire', btnRemSingle: STATE.remarryType === 'single',
+      btnDeathGen: STATE.deathType === 'general', btnDeathEarly: STATE.deathType === 'early_before_start',
+      btnDeathDuty: STATE.deathType === 'duty_death', btnDeathHazard: STATE.deathType === 'hazard_duty_death',
+      btnSpNone: STATE.spousePenType === 'none', btnSpNat: STATE.spousePenType === 'national', btnSpCiv: STATE.spousePenType === 'civil'
+    };
+    Object.keys(map).forEach(id => {
+      $(id).classList.toggle('active', map[id]);
+      $(id).setAttribute('aria-pressed', map[id] ? 'true' : 'false');
+    });
+    $('disabPayWrap').style.display = (STATE.disabCause === 'duty') ? 'block' : 'none';
+    $('deductControls').style.display = (STATE.lumpChoice === 'partial_deduct') ? 'block' : 'none';
+    $('lumpRoiWrap').style.display = (STATE.lumpChoice !== 'none') ? 'block' : 'none';
+    $('divDetailWrap').style.display = (STATE.divStatus !== 'none') ? 'block' : 'none';
+    $('spouseOwnPenWrap').style.display = (STATE.spousePenType === 'none') ? 'none' : 'block';
+    const duty = STATE.deathType === 'duty_death' || STATE.deathType === 'hazard_duty_death';
+    $('survCountWrap').style.display = duty ? 'block' : 'none';
+    renderGradeButtons();
+  }
+  function setState(key, val) { STATE[key] = val; syncSegButtons(); calculateAll(); }
+  function setHireEra(v) { setState('hireEra', v); }
+  function setDisabCause(v) { setState('disabCause', v); }
+  function setDisabGrade(v) { setState('disabGrade', v); }
+  function setDisabPay(v) { setState('disabPayType', v); }
+  function setLumpChoice(v) { setState('lumpChoice', v); }
+  function setDivStatus(v) { setState('divStatus', v); }
+  function setRemarry(v) { setState('remarryType', v); }
+  function setSpousePen(v) { setState('spousePenType', v); }
+
+  function currentStartAge() {
+    const curAge = safeVal('curAge', 58, 40, 70);
+    const retAge = Math.max(curAge, safeVal('retAge', 60, 45, 70));
+    const yrsLeft = retAge - curAge;
+    const curSvc = safeVal('curSvc', 31, 1, 42);
+    const immed = STATE.disabGrade >= 1 && STATE.disabGrade <= 7;
+    const r = resolveStartAge(STATE.hireEra, BASE_YEAR + yrsLeft, retAge, curSvc + yrsLeft, yrsLeft, curSvc);
+    return { retAge, startAge: immed ? retAge : r.age };
+  }
+  function setDeathType(dt) {
+    STATE.deathType = dt;
+    const { retAge, startAge } = currentStartAge();
+    if (dt === 'early_before_start') {
+      setPairVal('deathAge', Math.max(retAge, startAge - 1));
+    } else if (safeVal('deathAge', 82, 50, 100) < Math.max(65, startAge)) {
+      setPairVal('deathAge', 82);
+    }
+    syncSegButtons();
+    calculateAll();
+  }
+
+  function setPairVal(numId, val) {
+    const pair = BOUND_PAIRS.find(p => p[1] === numId);
+    if (!pair) return;
+    $(pair[1]).value = val;
+    $(pair[0]).value = val;
+  }
+
+  function applyPreset(key) {
+    const base = { hireEra: 'y1996', disabCause: 'duty', disabPayType: 'pension', lumpChoice: 'none', divStatus: 'none', remarryType: 'in_service', deathType: 'general', spousePenType: 'national' };
+    const P = {
+      std: { s: { disabGrade: 0 }, v: { curAge: 58, retAge: 60, curSvc: 31, avgBase: 560, finalBase: 640, curGross: 660, deathAge: 84, spouseOwnPen: 85 } },
+      duty7: { s: { disabGrade: 7 }, v: { curAge: 58, retAge: 60, curSvc: 31, avgBase: 560, finalBase: 640, curGross: 660, deathAge: 82, spouseOwnPen: 85 } },
+      commute_div: { s: { disabGrade: 9, lumpChoice: 'partial_deduct', divStatus: 'pre_claim', spousePenType: 'civil' },
+        v: { curAge: 59, retAge: 60, curSvc: 32, avgBase: 550, finalBase: 630, curGross: 650, deductYrs: 10, divMarYrs: 20, divSharePct: 50, exBirthYr: 1968, exAliveYrs: 22, deathAge: 83, spouseOwnPen: 240 } },
+      early_surv: { s: { disabGrade: 6, lumpChoice: 'partial_deduct' },
+        v: { curAge: 59, retAge: 60, curSvc: 30, avgBase: 530, finalBase: 610, curGross: 630, deductYrs: 5, deathAge: 61, earlyRecMos: 14, spouseOwnPen: 90 } }
+    }[key];
+    if (!P) return;
+    setPairVal('knownPen', 0); setPairVal('milYrs', 0);
+    Object.assign(STATE, base, P.s);
+    // 공제연수 상한이 프리셋 값보다 작게 남아 있지 않도록 먼저 풀어 둠
+    $('deductYrs').max = 26; $('deductYrsR').max = 26;
+    Object.keys(P.v).forEach(k => setPairVal(k, P.v[k]));
+    $('survCount').value = '1';
+    syncSegButtons();
+    calculateAll();
+    showToast('사례를 불러왔습니다');
+  }
+
+  function resetDefaults() {
+    $('deductYrs').max = 26; $('deductYrsR').max = 26;
+    BOUND_PAIRS.forEach(([rId, nId, min, max, def]) => { $(nId).value = def; $(rId).value = def; });
+    Object.assign(STATE, STATE_DEFAULTS);
+    $('survCount').value = '1';
+    if (document.body.classList.contains('large-font')) toggleLargeFont();
+    syncSegButtons();
+    calculateAll();
+    showToast('초기값으로 되돌렸습니다');
+  }
+
+  // 입력값 공유 링크
+  function buildShareHash() {
+    const o = {};
+    BOUND_PAIRS.forEach(p => { const v = parseFloat($(p[1]).value); if (isFinite(v) && v !== p[4]) o[p[1]] = v; });
+    Object.keys(STATE_DEFAULTS).forEach(k => { if (STATE[k] !== STATE_DEFAULTS[k]) o[k] = STATE[k]; });
+    if ($('survCount').value !== '1') o.survCount = $('survCount').value;
+    return Object.keys(o).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(o[k])).join('&');
+  }
+  function copyShareLink() {
+    const url = location.origin + location.pathname + '#' + buildShareHash();
+    const done = () => showToast('입력값이 담긴 링크를 복사했습니다');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, () => { prompt('아래 주소를 복사하세요', url); });
+    } else { prompt('아래 주소를 복사하세요', url); }
+    try { history.replaceState(null, '', url); } catch (e) {}
+  }
+  function loadFromHash() {
+    const h = location.hash.replace(/^#/, '');
+    if (!h) return;
+    const allowed = {
+      hireEra: ['pre1996', 'y1996', 'y2010'], disabCause: ['duty', 'non_duty'], disabPayType: ['pension', 'lump'],
+      lumpChoice: ['none', 'partial_deduct', 'full_lump'], divStatus: ['none', 'pre_claim', 'post_claim'],
+      remarryType: ['in_service', 'post_retire', 'single'],
+      deathType: ['general', 'early_before_start', 'duty_death', 'hazard_duty_death'], spousePenType: ['none', 'national', 'civil']
+    };
+    h.split('&').forEach(kv => {
+      const i = kv.indexOf('=');
+      if (i < 0) return;
+      let k, v;
+      try { k = decodeURIComponent(kv.slice(0, i)); v = decodeURIComponent(kv.slice(i + 1)); } catch (e) { return; }
+      const pair = BOUND_PAIRS.find(p => p[1] === k);
+      if (pair) {
+        const n = parseFloat(v);
+        if (isFinite(n)) setPairVal(k, Math.min(pair[3], Math.max(pair[2], n)));
+      } else if (k === 'disabGrade') {
+        const g = parseInt(v, 10);
+        if (g >= 0 && g <= 14) STATE.disabGrade = g;
+      } else if (k === 'survCount') {
+        if (['1', '2', '3', '4'].includes(v)) $('survCount').value = v;
+      } else if (allowed[k] && allowed[k].includes(v)) {
+        STATE[k] = v;
+      }
+    });
+  }
+
+  // ───────── 계산 엔진 ─────────
+  function calculateAll() {
+    // 1. 연령·재직기간
+    const curAge = safeVal('curAge', 58, 40, 70);
+    const rawRetAge = safeVal('retAge', 60, 45, 70);
+    const retAge = Math.max(curAge, rawRetAge);
+    const ageWarnBox = $('ageWarnBox');
+    if (rawRetAge < curAge) {
+      ageWarnBox.style.display = 'block';
+      ageWarnBox.textContent = `퇴직 예정 연령(${rawRetAge}세)이 현재 연령(${curAge}세)보다 낮아, 지금 바로 퇴직하는 것으로 계산했습니다.`;
+    } else ageWarnBox.style.display = 'none';
+
+    const yrsLeft = retAge - curAge;
+    const retCalYear = BASE_YEAR + yrsLeft;
+    const curSvc = safeVal('curSvc', 31, 1, 42);
+    const totalSvc = Math.min(45, curSvc + yrsLeft);
+    const pre2016 = Math.max(0, curSvc - (BASE_YEAR - 2016));   // 2016.1.1. 전 재직기간(어림)
+    const svcCap = svcCapFor(pre2016);
+    const cappedSvc = Math.min(svcCap, totalSvc);
+    const milYrs = Math.min(safeVal('milYrs', 0, 0, 10), totalSvc);
+    const sevSvc = Math.min(33, Math.max(0, totalSvc - milYrs));   // 시행령 제58조제2항, 법 제25조제4항
+
+    $('svcHint').textContent =
+      `퇴직 시 재직 ${totalSvc.toFixed(1)}년 → 연금 인정 ${cappedSvc.toFixed(1)}년(상한 ${svcCap}년` +
+      (pre2016 > 0 ? `, 2016년 전 재직 약 ${pre2016.toFixed(1)}년 기준` : '') + `) · 퇴직수당 인정 ${sevSvc.toFixed(1)}년`;
+
+    const avgBase = safeVal('avgBase', 560, 200, 1100);
+    const finalBase = safeVal('finalBase', 640, 200, 1100);
+    const curGross = safeVal('curGross', 660, 200, 1500);
+    const finAsset = safeVal('finAsset', 18000, 0, 300000);
+    const realAsset = safeVal('realAsset', 62000, 0, 500000);
+    const debtAmt = safeVal('debtAmt', 8000, 0, 200000);
+    const otherInc = safeVal('otherInc', 35, 0, 1000);
+
+    // 2. 연금 개시연령
+    const startInfo = resolveStartAge(STATE.hireEra, retCalYear, retAge, totalSvc, yrsLeft, curSvc);
+    const normalStartAge = startInfo.age;
+    const isImmedDisab = (STATE.disabGrade >= 1 && STATE.disabGrade <= 7);
+    const effStartAge = isImmedDisab ? retAge : normalStartAge;
+    const gapYrs = Math.max(0, effStartAge - retAge);
+    const startWhy = isImmedDisab ? '장해등급 1~7급 → 퇴직 즉시 (제43조제1항제5호, 시행령 제40조)' : startInfo.why;
+    $('eraHint').textContent = (totalSvc < 10)
+      ? '재직 10년 미만이면 퇴직연금 대상이 아닙니다(퇴직일시금).'
+      : `현재 입력 기준 개시연령: ${effStartAge}세 — ${startWhy}`;
+
+    // 3. 퇴직수당
+    let sevRate = 0;
+    if (sevSvc >= 20) sevRate = 0.39;
+    else if (sevSvc >= 15) sevRate = 0.325;
+    else if (sevSvc >= 10) sevRate = 0.2925;
+    else if (sevSvc >= 5) sevRate = 0.2275;
+    else if (sevSvc >= 1) sevRate = 0.065;
+    const sevGross = finalBase * sevSvc * sevRate;
+    const sevNet = sevGross * 0.965;
+
+    // 4. 퇴직연금 · 일시금
+    const accrual = accrualRateFor(retCalYear);
+    const penBase = Math.min(avgBase, MAX_DUTY_BASE);   // 제30조제2항제2호: 평균액의 160% 상한
+    const autoPen = penBase * cappedSvc * accrual;
+    const knownPen = safeVal('knownPen', 0, 0, 900);
+    const usingKnown = knownPen > 0;
+    const origRetPenGross = (totalSvc >= 10) ? (usingKnown ? knownPen : autoPen) : 0;
+    $('knownPenHint').textContent = usingKnown
+      ? `입력하신 ${fmtMan(knownPen)}만원을 기준으로 계산합니다. (자동 추정값은 ${fmtManDec(autoPen)}만원)`
+      : `0이면 자동 추정합니다(현재 ${fmtManDec(totalSvc >= 10 ? autoPen : 0)}만원). 공무원연금공단 ‘예상퇴직급여’ 조회값을 넣으면 그 금액을 기준으로 계산해 훨씬 정확합니다.`;
+
+    const lumpFactor = y => 0.975 + 0.0065 * (y - 5);   // 제43조제5항
+    const fullLumpGross = finalBase * cappedSvc * lumpFactor(cappedSvc);
+
+    const maxDeductYrs = Math.max(0, Math.floor((cappedSvc - 10) * 2) / 2);
+    const dEl = $('deductYrs'), dREl = $('deductYrsR');
+    dEl.max = maxDeductYrs; dREl.max = maxDeductYrs;
+    if (parseFloat(dEl.value) > maxDeductYrs) { dEl.value = maxDeductYrs; dREl.value = maxDeductYrs; }
+    $('deductHint').textContent = maxDeductYrs > 0
+      ? `최대 ${maxDeductYrs.toFixed(1)}년까지 (연금 인정 ${cappedSvc.toFixed(1)}년 중 10년은 연금으로 남겨야 함, 제43조제3항)`
+      : `재직 10년을 넘는 기간이 없어 공제일시금을 선택할 수 없습니다.`;
+
+    const rawDeductYrs = safeVal('deductYrs', 5, 0, 26);
+    let actualDeductYrs = 0, remPenYears = cappedSvc, chosenLumpGross = 0, afterLumpPenGross = origRetPenGross;
+    const forcedLump = totalSvc < 10;
+    if (forcedLump || STATE.lumpChoice === 'full_lump') {
+      actualDeductYrs = cappedSvc; remPenYears = 0; chosenLumpGross = fullLumpGross; afterLumpPenGross = 0;
+    } else if (STATE.lumpChoice === 'partial_deduct' && maxDeductYrs > 0) {
+      actualDeductYrs = Math.min(rawDeductYrs, maxDeductYrs);
+      remPenYears = cappedSvc - actualDeductYrs;
+      chosenLumpGross = finalBase * actualDeductYrs * (0.975 + 0.0065 * actualDeductYrs);   // 제43조제6항
+      afterLumpPenGross = origRetPenGross * (remPenYears / cappedSvc);
+    }
+    const lumpRoi = safeVal('lumpRoi', 3.5, 0, 10) / 100;
+    const penForBreakEven = forcedLump ? 0 : ((totalSvc >= 10) ? (usingKnown ? knownPen : autoPen) : 0);
+    const forgoneMonthly = Math.max(0, penForBreakEven - afterLumpPenGross);
+    const breakEvenYrs = (forgoneMonthly > 0 && chosenLumpGross > 0) ? (chosenLumpGross / (forgoneMonthly * 12)) : 0;
+
+    // 5. 장해급여
+    const g = STATE.disabGrade;
+    const isDuty = STATE.disabCause === 'duty';
+    let disabMonthly = 0, disabLumpAmt = 0, disabRate = 0, nonDutyBlocked = false, nonDutyRefMonthly = 0;
+    if (g > 0 && isDuty) {
+      disabRate = (17 - g) * 0.0325;                       // 재해보상법 제29조제1항
+      if (STATE.disabPayType === 'pension') disabMonthly = finalBase * disabRate;
+      else disabLumpAmt = finalBase * disabRate * 60;       // 제29조제2항 5년분
+    } else if (g > 0) {
+      if (g <= 7) {
+        disabRate = nonDutyRate(g);
+        nonDutyRefMonthly = finalBase * disabRate;
+        if (afterLumpPenGross > 0) nonDutyBlocked = true;   // 제40조제4항: 퇴직연금과 병급 불가
+        else disabMonthly = nonDutyRefMonthly;
+      } else {
+        disabLumpAmt = finalBase * 2.25;                    // 제59조제3항
+        if (afterLumpPenGross > 0) { nonDutyBlocked = true; disabLumpAmt = 0; }
+      }
+    }
+    const dutyPension = isDuty && disabMonthly > 0;
+
+    $('disabBenefitBanner').innerHTML = isDuty
+      ? `공무상 장해연금은 <strong>퇴직연금과 함께</strong> 받고 <strong>비과세</strong>입니다. 1~7급이면 개시연령을 기다리지 않고 <strong>퇴직 즉시</strong> 퇴직연금이 나옵니다.`
+      : `비공무상 장해급여는 <strong>퇴직연금과 함께 받을 수 없습니다</strong>(공무원연금법 제40조제4항). 1~7급은 연금, 8급 이하는 일시금(기준소득월액 2.25배)입니다.`;
+    const clipEl = $('disabClipNotice');
+    if (g === 0) {
+      clipEl.innerHTML = `지금은 <strong>장해 없음</strong>입니다. 퇴직 때 장해등급 판정이 예상되면 위에서 등급을 눌러 보세요.`;
+    } else if (isDuty) {
+      clipEl.innerHTML = `퇴직 당시 기준소득월액 <strong>${fmtMan(finalBase)}만원</strong> × ${(disabRate * 100).toFixed(2)}% = 월 <strong>${fmtManDec(finalBase * disabRate)}만원</strong>` +
+        (STATE.disabPayType === 'lump' ? ` → 일시금(5년분) <strong>${fmtMan(disabLumpAmt)}만원</strong>` : '') +
+        `<br>장해급여에는 기준소득월액 상·하한 보정이 적용되지 않습니다(재해보상법 제10조제2항).`;
+    } else if (g <= 7) {
+      clipEl.innerHTML = `비공무상 장해연금 ${fmtMan(finalBase)}만원 × ${(disabRate * 100).toFixed(2)}% = 월 <strong>${fmtManDec(nonDutyRefMonthly)}만원</strong>.<br>` +
+        (nonDutyBlocked
+          ? `<strong>퇴직연금을 받는 것으로 설정되어 있어 이 금액은 합산하지 않았습니다.</strong> 실제로는 둘 중 유리한 쪽을 고르게 됩니다. 1~7급이므로 퇴직연금은 퇴직 즉시 개시됩니다.`
+          : `퇴직연금을 받지 않는 설정이어서 합산했습니다. 일시금 선택 시 병급 여부는 공단에 확인하십시오. 본인 사망 시 유족에게 승계되지 않습니다.`);
+    } else {
+      clipEl.innerHTML = `비공무상 8급 이하는 일시금 ${fmtMan(finalBase)}만원 × 2.25 = <strong>${fmtMan(finalBase * 2.25)}만원</strong>.<br>` +
+        (nonDutyBlocked ? `<strong>퇴직연금을 받는 설정이어서 합산하지 않았습니다</strong>(제40조제4항).` : `퇴직연금을 받지 않는 설정이어서 합산했습니다. 병급 여부는 공단에 확인하십시오.`);
+    }
+
+    // 6. 이혼 분할
+    const divMarYrs = safeVal('divMarYrs', 18, 0, 40);
+    const effMarYrs = Math.min(divMarYrs, totalSvc);
+    const divSharePct = safeVal('divSharePct', 50, 10, 90);
+    const shareRatio = divSharePct / 100;
+    const exBirthYr = safeVal('exBirthYr', 1968, 1950, 1990);
+    const exAliveYrs = safeVal('exAliveYrs', 25, 1, 40);
+    const exStartAge = exStartAgeFor(exBirthYr);
+    const exAgeAtMyRet = retCalYear - exBirthYr;
+    const myAgeWhenExStarts = Math.max(effStartAge, retAge + Math.max(0, exStartAge - exAgeAtMyRet));
+    const myAgeWhenExDies = myAgeWhenExStarts + exAliveYrs;
+    $('exStartHint').textContent = `전 배우자는 ${exStartAge}세(${exBirthYr + exStartAge}년)부터 받을 수 있습니다 — 본인 ${myAgeWhenExStarts}세 무렵부터 분할.`;
+
+    const marRatio = totalSvc > 0 ? Math.min(1, effMarYrs / totalSvc) : 0;
+    const divEligible = (STATE.divStatus !== 'none' && effMarYrs >= 5 && totalSvc >= 10);
+    let divLumpToEx = 0, divMonthlyToEx = 0, divWarnHtml = '';
+    if (STATE.divStatus !== 'none') {
+      if (effMarYrs < 5) {
+        divWarnHtml = `재직 중 혼인기간(${effMarYrs.toFixed(1)}년)이 <strong>5년 미만</strong>이어서 분할연금·분할일시금을 청구할 수 없습니다(제45조·제49조). 분할액 0원으로 계산했습니다.`;
+      } else if (STATE.lumpChoice === 'full_lump' && STATE.divStatus === 'post_claim') {
+        divWarnHtml = `전액 일시금을 이미 받은 뒤 이혼하면 나눌 연금이 없어 공단 분할연금은 생기지 않습니다(민법상 재산분할 문제). 퇴직급여 청구 전에 이혼한다면 ‘퇴직급여 청구 전 이혼’을 고르세요.`;
+      } else if (divEligible) {
+        if (STATE.divStatus === 'pre_claim' && chosenLumpGross > 0) divLumpToEx = chosenLumpGross * marRatio * shareRatio;
+        if (afterLumpPenGross > 0) divMonthlyToEx = afterLumpPenGross * marRatio * shareRatio;
+      }
+    }
+    const divWarnEl = $('divWarnBanner');
+    divWarnEl.style.display = divWarnHtml ? 'block' : 'none';
+    divWarnEl.innerHTML = divWarnHtml;
+
+    const myLumpRetainedGross = Math.max(0, chosenLumpGross - divLumpToEx);
+    const myLumpRetainedNet = myLumpRetainedGross * 0.965;
+    const myLumpMonthlyFlow = (myLumpRetainedNet * lumpRoi) / 12;
+
+    // 7. 저축 · 재취업 · 자산
+    const saveRate = safeVal('saveRate', 25, 0, 80) / 100;
+    const bridgeWage = safeVal('bridgeWage', 250, 0, 1200);
+    const bridgeYrs = safeVal('bridgeYrs', 3, 0, 15);
+    const roiRate = safeVal('roiRate', 3.8, 1, 8) / 100;
+    const targetTopPct = safeVal('targetTopPct', 25, 5, 60);
+
+    const curNetMonthly = grossToWorkerNet(curGross);
+    const annualSave = curNetMonthly * saveRate * 12;
+    let netFinAtRet = finAsset - debtAmt;
+    for (let y = 0; y < yrsLeft; y++) netFinAtRet = netFinAtRet * (1 + roiRate) + annualSave;
+    const totalLumpAddedNet = sevNet + myLumpRetainedNet + disabLumpAmt;
+    const netFinWithLumpAtRet = netFinAtRet + totalLumpAddedNet;
+    const totalNetWorthAtRet = netFinWithLumpAtRet + realAsset;
+
+    const activePenForSusp = Math.max(0, afterLumpPenGross - (myAgeWhenExStarts <= effStartAge ? divMonthlyToEx : 0));
+    const retPenSuspMonthly = calcSuspension(bridgeWage, activePenForSusp);
+    const disPenSuspMonthly = dutyPension ? calcSuspension(bridgeWage, disabMonthly) : 0;   // 재해보상법 제32조제1항
+    const incomeMonthly = wageToIncomeMonthly(bridgeWage);
+    $('suspHint').textContent = (bridgeWage > 0 && bridgeYrs > 0)
+      ? `근로소득금액 월 ${fmtManDec(incomeMonthly)}만원(근로소득공제 후) · 기준 ${AVG_PENSION_REF}만원 → 월 정지 추정: 퇴직연금 −${fmtManDec(retPenSuspMonthly)}만원` + (dutyPension ? ` / 장해연금 −${fmtManDec(disPenSuspMonthly)}만원` : '') + `. 공공기관 등 전액정지 대상은 반영하지 않았습니다.`
+      : `재취업 없음 (연금 정지 0원)`;
+
+    let finPoolAfterGap = netFinWithLumpAtRet;
+    const loopSpan = Math.max(gapYrs, bridgeYrs);
+    for (let y = 0; y < loopSpan; y++) {
+      const age = retAge + y;
+      const working = y < bridgeYrs && bridgeWage > 0;
+      const penStarted = age >= effStartAge;
+      let deltaYr = 0;
+      if (working) {
+        // 재취업 실수령(세전의 90% 가정)의 35%를 저축한다고 가정, 정지된 연금만큼은 저축 감소
+        deltaYr = bridgeWage * 0.90 * 12 * 0.35 - (penStarted ? retPenSuspMonthly * 12 : 0) - disPenSuspMonthly * 12;
+      } else if (!penStarted) {
+        // 소득공백기: 월 220만원 생활비 가정, 장해연금·부수소득으로 모자란 만큼 인출
+        deltaYr = Math.min(0, (disabMonthly + otherInc) * 12 - 220 * 12);
+      }
+      finPoolAfterGap = finPoolAfterGap * (1 + roiRate) + deltaYr;
+    }
+    const finPoolExclLump = Math.max(0, finPoolAfterGap - myLumpRetainedNet);
+    const assetDrawMonthly = (finPoolExclLump * roiRate) / 12;
+
+    // 8. 은퇴 후 본인 월 실수령 (분할 반영 안정기)
+    const myPenDuringSplitGross = Math.max(0, afterLumpPenGross - divMonthlyToEx);
+    const myPenTax = calcPenTax(myPenDuringSplitGross);
+    const myPenDuringSplitNet = Math.max(0, myPenDuringSplitGross - myPenTax);
+    const mySteadyRetNet = myPenDuringSplitNet + disabMonthly + myLumpMonthlyFlow + otherInc + assetDrawMonthly;
+    const myPenPreSplitNet = Math.max(0, afterLumpPenGross - calcPenTax(afterLumpPenGross));
+
+    // 9. 사후 유족급여
+    const rawDeathAge = safeVal('deathAge', 82, 50, 100);
+    let effDeathAge;
+    if (STATE.deathType === 'early_before_start') {
+      effDeathAge = (effStartAge > retAge) ? Math.min(effStartAge - 0.5, Math.max(retAge, rawDeathAge)) : retAge;
+    } else effDeathAge = Math.max(retAge, rawDeathAge);
+
+    const hasPension = remPenYears >= 10 && afterLumpPenGross > 0;
+    const isDeathBeforeStart = effDeathAge < effStartAge;
+    const postStartElapsedYrs = Math.max(0, effDeathAge - effStartAge);
+    const isWithin3Yrs = (!isDeathBeforeStart && postStartElapsedYrs < 3 && hasPension);
+
+    // 수령 개월 수: 사망연령과 모순되지 않는 범위로 제한
+    const mosEl = $('earlyRecMos'), mosREl = $('earlyRecMosR');
+    $('earlyMosWrap').style.display = isWithin3Yrs ? 'block' : 'none';
+    let effRecMos = 36;
+    if (isDeathBeforeStart) effRecMos = 0;
+    else if (isWithin3Yrs) {
+      const lo = Math.floor(postStartElapsedYrs) * 12, hi = Math.min(35, lo + 11);
+      mosEl.min = lo; mosEl.max = hi; mosREl.min = lo; mosREl.max = hi;
+      let m = parseFloat(mosEl.value);
+      if (!isFinite(m)) m = lo;
+      m = Math.min(hi, Math.max(lo, Math.round(m)));
+      if (document.activeElement !== mosEl) mosEl.value = m;
+      mosREl.value = m;
+      effRecMos = m;
+      $('earlyMosHint').textContent = `개시 ${effStartAge}세, 사망 ${fmtAge(effDeathAge)}세이므로 ${lo}~${hi}개월 사이에서 고를 수 있습니다. 특별부가금 = 연금 선택분 일시금 × 1/4 × (36 − 개월수)/36 (제55조제3항)`;
+    }
+    $('deathAgeHint').textContent = !hasPension
+      ? `퇴직연금을 받지 않는 설정이어서 퇴직유족연금·특별부가금은 없습니다.`
+      : isDeathBeforeStart
+        ? `연금 개시(${effStartAge}세) 전 사망: 조기퇴직연금 상당액의 60% + 특별부가금 전액(1/4)`
+        : (isWithin3Yrs
+            ? `연금 개시(${effStartAge}세) 후 3년 안에 사망하는 경우입니다. 아래에서 받은 개월 수를 맞춰 주세요.`
+            : `연금 개시(${effStartAge}세) 후 3년이 지나 사망 — 특별부가금 없음`);
+
+    // 개시 전 사망 시 조기퇴직연금 상당액 (제55조제1항 단서, 제43조제2항)
+    const shortfallYrs = isDeathBeforeStart ? Math.max(0, effStartAge - effDeathAge) : 0;
+    const earlyPenaltyRate = isDeathBeforeStart ? (Math.min(5, Math.max(1, Math.ceil(shortfallYrs))) * 0.05) : 0;
+
+    const basePenAtDeath = (divMonthlyToEx > 0 && effDeathAge >= myAgeWhenExStarts && effDeathAge < myAgeWhenExDies)
+      ? myPenDuringSplitGross : afterLumpPenGross;
+
+    const eligibleSpouse = (STATE.remarryType === 'in_service');
+    const isCivilSpouse = STATE.spousePenType === 'civil';
+    const halfFactor = isCivilSpouse ? 0.5 : 1.0;
+    const spouseOwnPen = (STATE.spousePenType === 'none') ? 0 : safeVal('spouseOwnPen', 85, 0, 500);
+    const widowYears = safeVal('widowYears', 10, 1, 35);
+    const survCount = parseInt($('survCount').value, 10) || 1;
+
+    const rawRetSurvPen = (eligibleSpouse && hasPension) ? (basePenAtDeath * (1 - earlyPenaltyRate) * 0.60) : 0;
+    const rawDisabSurvPen = (eligibleSpouse && dutyPension) ? (disabMonthly * 0.60) : 0;   // 재해보상법 제35조
+
+    const remPenLumpEquiv = hasPension ? (finalBase * remPenYears * lumpFactor(remPenYears)) : 0;
+    const specialSuppLump = (eligibleSpouse && hasPension && effRecMos < 36)
+      ? (remPenLumpEquiv * 0.25 * ((36 - effRecMos) / 36)) : 0;
+
+    const isHazard = STATE.deathType === 'hazard_duty_death';
+    const isLineOfDutyDeath = (STATE.deathType === 'duty_death' || isHazard);
+    const dutyClippedBase = Math.min(MAX_DUTY_BASE, Math.max(MIN_DUTY_BASE, finalBase));   // 재해보상법 제10조제2항
+    const survAddRate = Math.min(0.20, survCount * 0.05);
+    const dutyDeathBaseRate = isHazard ? 0.43 : 0.38;
+    const rawDutyDeathPen = (eligibleSpouse && isLineOfDutyDeath) ? (dutyClippedBase * (dutyDeathBaseRate + survAddRate)) : 0;
+    const dutyDeathCompLump = (eligibleSpouse && isLineOfDutyDeath) ? AVG_CIVIL_BASE * (isHazard ? 45 : 24) : 0;
+
+    const adjRetSurvPen = rawRetSurvPen * halfFactor;                    // 공무원연금법 제40조제1항·제41조제2항
+    const adjDisabSurvPen = rawDisabSurvPen * halfFactor;                // 재해보상법 제20조제6항
+    const dutyFactor = isHazard ? 1.0 : halfFactor;                      // 위험직무순직유족연금은 제20조제6항에 열거 없음
+    const adjDutyDeathPen = rawDutyDeathPen * dutyFactor;
+
+    // 순직 시: A(퇴직유족+장해유족) vs B(순직유족연금). 보상금과 특별부가금은 양쪽 모두 지급(제54조제2·3항)
+    const survLumpTotal = specialSuppLump + dutyDeathCompLump;
+    const optAMonthly = adjRetSurvPen + adjDisabSurvPen;
+    const optBMonthly = adjDutyDeathPen;
+    const optATotal = optAMonthly * 12 * widowYears + survLumpTotal;
+    const optBTotal = optBMonthly * 12 * widowYears + survLumpTotal;
+    const pickB = isLineOfDutyDeath && optBTotal >= optATotal;
+
+    const chosenSurvMonthly = pickB ? optBMonthly : optAMonthly;
+    const chosenSurvLump = survLumpTotal;
+    const dutyName = isHazard ? '위험직무순직유족연금' : '순직유족연금';
+    const chosenTrackLabel = !isLineOfDutyDeath ? '퇴직유족 + 장해유족연금' : (pickB ? dutyName + ' 선택' : '퇴직유족 + 장해유족연금 선택');
+
+    const survExtraLumpFlow = (chosenSurvLump * roiRate) / 12;
+    const householdFlow = myLumpMonthlyFlow + otherInc + assetDrawMonthly + survExtraLumpFlow;
+    const spouseTotalMonthlyNet = chosenSurvMonthly + spouseOwnPen + householdFlow;
+
+    // 10. 백분위
+    const curTopPct = Math.max(0.3, 100 - interpCdf(INCOME_CDF, curGross));
+    const retEquivGross = netToEquivWorkerGross(mySteadyRetNet);
+    const retTopPct = Math.max(0.3, 100 - interpCdf(INCOME_CDF, retEquivGross));
+    const survEquivGross = netToEquivWorkerGross(spouseTotalMonthlyNet);
+    const survTopPct = Math.max(0.3, 100 - interpCdf(INCOME_CDF, survEquivGross));
+    const assetTopPct = Math.max(0.5, 100 - interpCdf(ASSET_CDF, totalNetWorthAtRet));
+
+    // ── 요약바 ──
+    $('sbCurPct').textContent = `상위 ${curTopPct.toFixed(1)}%`;
+    $('sbCurNet').textContent = `${fmtMan(curNetMonthly)} 만원`;
+    $('sbCurSub').textContent = `세전 ${fmtMan(curGross)}만원 · 퇴직까지 ${yrsLeft}년`;
+    $('sbRetPct').textContent = `상위 ${retTopPct.toFixed(1)}%`;
+    $('sbRetNet').textContent = `${fmtMan(mySteadyRetNet)} 만원`;
+    $('sbRetSub').textContent = forcedLump ? '퇴직연금 없음 (일시금)' : `연금 개시 ${effStartAge}세` + (gapYrs > 0 ? ` · 소득공백 ${gapYrs}년` : ' · 공백 없음');
+    $('sbSurvPct').textContent = `상위 ${survTopPct.toFixed(1)}%`;
+    $('sbSurvNet').textContent = `${fmtMan(spouseTotalMonthlyNet)} 만원`;
+    $('sbSurvSub').textContent = chosenSurvLump > 0
+      ? `유족연금 ${fmtMan(chosenSurvMonthly)}만 + 일시금 ${fmtEok(chosenSurvLump)}억`
+      : `유족연금 월 ${fmtMan(chosenSurvMonthly)}만원`;
+    $('sbAssetPct').textContent = `상위 ${assetTopPct.toFixed(1)}%`;
+    $('sbAssetVal').textContent = `${fmtEok(totalNetWorthAtRet)} 억원`;
+    $('sbAssetSub').textContent = `퇴직수당·일시금 ${fmtEok(totalLumpAddedNet)}억 포함`;
+
+    // ── KPI ──
+    $('kpiCurRank').textContent = `상위 ${curTopPct.toFixed(1)}%`;
+    $('kpiCurDetail').textContent = `세전 ${fmtMan(curGross)}만원 (실수령 약 ${fmtMan(curNetMonthly)}만원)`;
+    $('kpiRetRank').textContent = `상위 ${retTopPct.toFixed(1)}%`;
+    $('kpiRetDetail').textContent = `월 ${fmtMan(mySteadyRetNet)}만원 (세전 ${fmtMan(retEquivGross)}만원 근로자 수준)`;
+    $('kpiSurvRank').textContent = `상위 ${survTopPct.toFixed(1)}%`;
+    $('kpiSurvDetail').textContent = `월 ${fmtMan(spouseTotalMonthlyNet)}만원 (세전 ${fmtMan(survEquivGross)}만원 근로자 수준)`;
+
+    // ── 생전 명세 ──
+    $('lumpBreakEvenBadge').textContent = (chosenLumpGross > 0 && breakEvenYrs > 0)
+      ? `일시금 손익분기 약 ${breakEvenYrs.toFixed(1)}년` : (forcedLump ? '재직 10년 미만 · 일시금' : '전액 연금');
+    $('startAgeNote').innerHTML = forcedLump
+      ? `재직 10년 미만이어서 <strong>퇴직연금 대상이 아닙니다</strong>. 퇴직일시금으로 받습니다(제51조).`
+      : `연금 개시 <strong>${effStartAge}세</strong> — ${startWhy}` +
+        (gapYrs > 0 ? `<br>퇴직(${retAge}세) 후 <strong>${gapYrs}년간</strong> 퇴직연금이 나오지 않습니다.` : '');
+
+    const penSrc = usingKnown ? '공단 예상액 입력값' : `${fmtMan(penBase)}만 × ${cappedSvc.toFixed(1)}년 × ${(accrual * 100).toFixed(3)}% (추정)`;
+    let livRows = `
+      <tr>
+        <td>① 퇴직연금 (공제·분할 전)</td>
+        <td>${fmtManDec(origRetPenGross)} 만원</td>
+        <td>-</td>
+        <td>${totalSvc >= 10 ? penSrc : '재직 10년 미만 → 퇴직일시금(제51조)'}</td>
+      </tr>`;
+    if (STATE.lumpChoice !== 'none' || forcedLump) {
+      const full = STATE.lumpChoice === 'full_lump' || forcedLump;
+      livRows += `
+      <tr class="warn-row">
+        <td>② ${full ? (forcedLump ? '퇴직일시금' : '퇴직연금일시금 (전액)') : `퇴직연금공제일시금 (${actualDeductYrs.toFixed(1)}년분)`}</td>
+        <td>${forgoneMonthly > 0 ? '−' + fmtManDec(forgoneMonthly) + ' 만원' : '-'}</td>
+        <td>+${fmtMan(chosenLumpGross)} 만원</td>
+        <td>${breakEvenYrs > 0 ? `연금으로 ${breakEvenYrs.toFixed(1)}년 넘게 받으면 연금이 유리 · ` : ''}연금으로 남는 기간 ${remPenYears.toFixed(1)}년</td>
+      </tr>`;
+    }
+    if (divEligible && (divMonthlyToEx > 0 || divLumpToEx > 0)) {
+      livRows += `
+      <tr class="warn-row">
+        <td>③ 이혼 분할 (혼인 ${effMarYrs.toFixed(1)}년 · ${divSharePct}%)</td>
+        <td>−${fmtManDec(divMonthlyToEx)} 만원</td>
+        <td>${divLumpToEx > 0 ? '−' + fmtMan(divLumpToEx) + ' 만원' : '-'}</td>
+        <td>본인 ${myAgeWhenExStarts}~${myAgeWhenExDies}세 구간, 이후 환원 (제47조제5항)</td>
+      </tr>`;
+    }
+    const disLabel = g === 0 ? '없음' : `제${g}급`;
+    let disNote;
+    if (g === 0) disNote = '-';
+    else if (isDuty) disNote = '비과세 · 퇴직연금과 병급 · 분할 대상 아님';
+    else if (nonDutyBlocked) disNote = '퇴직연금과 병급 불가 → 미합산 (제40조제4항)';
+    else disNote = '제59조 · 유족 승계 없음';
+    livRows += `
+      <tr>
+        <td>④ 본인 세후 퇴직연금</td>
+        <td><strong>${fmtManDec(myPenDuringSplitNet)} 만원</strong></td>
+        <td>-</td>
+        <td>연금소득세 약 ${fmtManDec(myPenTax)}만원 차감(어림)${divMonthlyToEx > 0 && myAgeWhenExStarts > effStartAge ? ` · 분할 전(${effStartAge}~${myAgeWhenExStarts - 1}세)은 ${fmtManDec(myPenPreSplitNet)}만원` : ''}</td>
+      </tr>
+      <tr class="${disabMonthly > 0 || disabLumpAmt > 0 ? 'highlight-row' : ''}">
+        <td>⑤ ${isDuty ? '공무상' : '비공무상'} 장해급여 (${disLabel})</td>
+        <td>${disabMonthly > 0 ? '+' + fmtManDec(disabMonthly) + ' 만원' : '-'}</td>
+        <td>${disabLumpAmt > 0 ? '+' + fmtMan(disabLumpAmt) + ' 만원' : '-'}</td>
+        <td>${disNote}</td>
+      </tr>
+      <tr>
+        <td>⑥ 퇴직수당</td>
+        <td>-</td>
+        <td>+${fmtMan(sevGross)} 만원</td>
+        <td>${fmtMan(finalBase)}만 × ${sevSvc.toFixed(1)}년 × ${(sevRate * 100).toFixed(2)}% (시행령 제58조) · 세후 약 ${fmtMan(sevNet)}만</td>
+      </tr>
+      <tr>
+        <td>⑦ 자산 운용수익 + 부수소득</td>
+        <td>+${fmtManDec(assetDrawMonthly + myLumpMonthlyFlow + otherInc)} 만원</td>
+        <td>퇴직 시 순금융자산 ${fmtEok(netFinWithLumpAtRet)}억</td>
+        <td>금융자산 수익 ${fmtManDec(assetDrawMonthly)}만 + 일시금 수익 ${fmtManDec(myLumpMonthlyFlow)}만 + 부수 ${fmtMan(otherInc)}만 (원금 보존 가정)</td>
+      </tr>
+      <tr class="highlight-row">
+        <td><strong>은퇴 후 본인 월 실수령</strong></td>
+        <td><strong>${fmtMan(mySteadyRetNet)} 만원</strong></td>
+        <td><strong>순자산 ${fmtEok(totalNetWorthAtRet)}억</strong></td>
+        <td>연금 개시 후 · 재취업 종료 후 기준</td>
+      </tr>`;
+    $('livingTableBody').innerHTML = livRows;
+
+    // ── 유족 ──
+    const survBadge = $('survRuleBadge');
+    let alertHtml = '';
+    if (STATE.remarryType === 'post_retire') {
+      survBadge.textContent = '퇴직 후 혼인 · 유족 아님'; survBadge.className = 'pill pill-rose';
+      alertHtml = `<div class="notice-box notice-danger">퇴직한 뒤에 혼인한 배우자는 법상 유족이 아니어서 퇴직유족연금·장해유족연금·특별부가금이 모두 <strong>0원</strong>입니다(공무원연금법 제3조제1항제2호가목).</div>`;
+    } else if (STATE.remarryType === 'single') {
+      survBadge.textContent = '배우자 없음'; survBadge.className = 'pill pill-amber';
+      alertHtml = `<div class="notice-box notice-warn">배우자가 없는 것으로 설정되어 배우자 유족연금은 0원입니다. 19세 미만 자녀, 장해가 있는 자녀, 부양하던 부모 등이 있으면 그 유족이 받을 수 있습니다.</div>`;
+    } else if (!hasPension) {
+      survBadge.textContent = '퇴직유족연금 없음'; survBadge.className = 'pill pill-amber';
+      alertHtml = `<div class="notice-box notice-warn">퇴직연금을 일시금으로 받는 설정이어서 사후 <strong>퇴직유족연금과 특별부가금은 없습니다</strong>.${dutyPension ? ' 공무상 장해연금을 받다가 사망하면 장해유족연금(60%)은 지급됩니다.' : ''}</div>`;
+    } else {
+      survBadge.textContent = isCivilSpouse ? '직역연금 배우자 · 1/2 감액' : '유족연금 비과세'; survBadge.className = 'pill pill-purple';
+      if (specialSuppLump > 0) {
+        alertHtml = `<div class="notice-box notice-teal"><strong>퇴직유족연금특별부가금 ${fmtMan(specialSuppLump)}만원</strong>이 일시금으로 따로 나옵니다 (${isDeathBeforeStart ? '연금 개시 전 사망' : `개시 후 ${effRecMos}개월 수령 뒤 사망`}, 제54조제3항·제55조제3항).</div>`;
+      }
+    }
+    if (isLineOfDutyDeath && eligibleSpouse) {
+      alertHtml += `<div class="notice-box notice-info">순직은 인사혁신처 공무원재해보상심의회의 인정이 있어야 합니다. 퇴직 후 사망은 재직 중 공무상 부상·질병이 원인이어야 합니다(재해보상법 제36조).</div>`;
+    }
+    $('survAlertBox').innerHTML = alertHtml;
+
+    const optGrid = $('survOptGrid');
+    if (isLineOfDutyDeath && eligibleSpouse) {
+      optGrid.style.display = 'grid';
+      optGrid.innerHTML = `
+        <div class="opt-card ${!pickB ? 'recommended' : ''}">
+          <div class="opt-head"><span>A. 퇴직유족 + 장해유족연금</span>${!pickB ? '<span class="pill pill-teal">더 유리</span>' : ''}</div>
+          <div>월 <strong>${fmtManDec(optAMonthly)}만원</strong></div>
+          <div style="font-size:0.76rem; color:var(--sub); margin-top:4px;">${widowYears}년 합계(일시금 포함) <strong>${fmtEok(optATotal)}억원</strong></div>
+        </div>
+        <div class="opt-card ${pickB ? 'recommended' : ''}">
+          <div class="opt-head"><span>B. ${dutyName}</span>${pickB ? '<span class="pill pill-teal">더 유리</span>' : ''}</div>
+          <div>월 <strong>${fmtManDec(optBMonthly)}만원</strong></div>
+          <div style="font-size:0.76rem; color:var(--sub); margin-top:4px;">${widowYears}년 합계(일시금 포함) <strong>${fmtEok(optBTotal)}억원</strong></div>
+        </div>`;
+    } else { optGrid.style.display = 'none'; optGrid.innerHTML = ''; }
+
+    const halfTxt = isCivilSpouse ? '1/2 감액' : '감액 없음';
+    const notChosen = '0 (선택 안 함)';
+    let survRows = `
+      <tr>
+        <td>① 퇴직유족연금 (60%${earlyPenaltyRate > 0 ? ` · 조기연금 ${(100 - earlyPenaltyRate * 100).toFixed(0)}% 기준` : ''})</td>
+        <td>${fmtManDec(rawRetSurvPen)} 만원/월</td>
+        <td>${pickB ? notChosen : fmtManDec(adjRetSurvPen) + ' 만원/월'}</td>
+        <td>제55조제1항 · ${halfTxt}${isCivilSpouse ? '(제40조제1항·제41조제2항)' : ''}</td>
+      </tr>
+      <tr>
+        <td>② 장해유족연금 (장해연금의 60%)</td>
+        <td>${fmtManDec(rawDisabSurvPen)} 만원/월</td>
+        <td>${pickB ? notChosen : fmtManDec(adjDisabSurvPen) + ' 만원/월'}</td>
+        <td>재해보상법 제35조 · ${halfTxt}${isCivilSpouse ? '(제20조제6항)' : ''}${!isDuty && g > 0 ? ' · 비공무상은 승계 없음' : ''}</td>
+      </tr>`;
+    if (isLineOfDutyDeath) {
+      survRows += `
+      <tr>
+        <td>③ ${dutyName} (${((dutyDeathBaseRate + survAddRate) * 100).toFixed(0)}%)</td>
+        <td>${fmtManDec(rawDutyDeathPen)} 만원/월</td>
+        <td>${pickB ? fmtManDec(adjDutyDeathPen) + ' 만원/월' : notChosen}</td>
+        <td>기준소득월액 ${fmtManDec(dutyClippedBase)}만원(상·하한 적용) · 유족 ${survCount}명${isCivilSpouse ? (isHazard ? ' · 감액 규정에 열거 없음(공단 확인)' : ' · 1/2 감액(제20조제6항)') : ''}</td>
+      </tr>`;
+    }
+    if (chosenSurvLump > 0) {
+      const parts = [];
+      if (specialSuppLump > 0) parts.push(`특별부가금 ${fmtMan(specialSuppLump)}만`);
+      if (dutyDeathCompLump > 0) parts.push(`${isHazard ? '위험직무순직' : '순직'}유족보상금 ${fmtMan(dutyDeathCompLump)}만(평균액 ${AVG_CIVIL_BASE}만 × ${isHazard ? 45 : 24})`);
+      survRows += `
+      <tr class="highlight-row">
+        <td>④ 유족 일시금</td>
+        <td>${fmtMan(chosenSurvLump)} 만원</td>
+        <td><strong>${fmtMan(chosenSurvLump)} 만원</strong></td>
+        <td>${parts.join(' + ')} · 감액 없음</td>
+      </tr>`;
+    }
+    survRows += `
+      <tr>
+        <td>⑤ 배우자 본인 연금 + 자산수익·부수소득</td>
+        <td>${fmtManDec(spouseOwnPen + householdFlow)} 만원/월</td>
+        <td>${fmtManDec(spouseOwnPen + householdFlow)} 만원/월</td>
+        <td>본인 연금 ${fmtMan(spouseOwnPen)}만 + 자산·부수 ${fmtManDec(householdFlow)}만</td>
+      </tr>
+      <tr class="highlight-row">
+        <td><strong>사후 배우자 월 실수령</strong></td>
+        <td>-</td>
+        <td><strong>${fmtMan(spouseTotalMonthlyNet)} 만원</strong></td>
+        <td>${chosenTrackLabel} · ${widowYears}년간 유족급여 합계 ${fmtEok(chosenSurvMonthly * 12 * widowYears + chosenSurvLump)}억</td>
+      </tr>`;
+    $('survTableBody').innerHTML = survRows;
+
+    // ── 목표 ──
+    const reqEquivGross = invCdf(INCOME_CDF, 100 - targetTopPct);
+    const reqMonthlyNet = grossToWorkerNet(reqEquivGross);
+    const monthlyShortfall = reqMonthlyNet - mySteadyRetNet;
+    const solverEl = $('targetSolverBox'), solverBadge = $('targetStatusBadge');
+    if (monthlyShortfall <= 0) {
+      solverBadge.textContent = `상위 ${targetTopPct}% 도달`; solverBadge.className = 'pill pill-teal';
+      solverEl.className = 'notice-box notice-teal';
+      solverEl.innerHTML = `은퇴 후 월 실수령 <strong>${fmtMan(mySteadyRetNet)}만원</strong>으로, 상위 ${targetTopPct}% 기준(실수령 약 ${fmtMan(reqMonthlyNet)}만원)보다 <strong>월 ${fmtMan(-monthlyShortfall)}만원</strong> 많습니다.`;
+    } else {
+      solverBadge.textContent = `월 ${fmtMan(monthlyShortfall)}만원 부족`; solverBadge.className = 'pill pill-amber';
+      solverEl.className = 'notice-box notice-warn';
+      const neededCapital = (monthlyShortfall * 12) / roiRate;
+      solverEl.innerHTML = `상위 ${targetTopPct}%가 되려면 월 실수령 <strong>${fmtMan(reqMonthlyNet)}만원</strong>(세전 ${fmtMan(reqEquivGross)}만원 근로자 수준)이 필요합니다. 지금 설정보다 <strong>월 ${fmtMan(monthlyShortfall)}만원</strong> 모자랍니다.<br>` +
+        `메우는 방법: ① 개인연금·임대 등 월 ${fmtMan(monthlyShortfall)}만원의 고정 소득을 더 만들거나, ② 연 ${(roiRate * 100).toFixed(1)}% 수익 기준으로 금융자산 약 <strong>${fmtEok(neededCapital)}억원</strong>을 더 마련.`;
+    }
+
+    // ── 차트 · 산식 ──
+    renderDistSvg(curGross, retEquivGross, survEquivGross, curTopPct, retTopPct, survTopPct);
+    renderLifecycleSvg({
+      curAge, retAge, effStartAge, effDeathAge, widowYears, curNetMonthly, bridgeYrs, bridgeWage,
+      afterLumpPenGross, divMonthlyToEx, myAgeWhenExStarts, myAgeWhenExDies,
+      disabMonthly, retPenSuspMonthly, disPenSuspMonthly, myLumpMonthlyFlow, otherInc, assetDrawMonthly, spouseTotalMonthlyNet
+    });
+    renderComparisonSvg({
+      origNet: Math.max(0, penForBreakEven - calcPenTax(penForBreakEven)) + disabMonthly + otherInc + assetDrawMonthly,
+      mySteadyRetNet, spouseTotalMonthlyNet, divMonthlyToEx
+    });
+    renderFormulaTrace({
+      totalSvc, cappedSvc, svcCap, penBase, accrual, usingKnown, finalBase, origRetPenGross,
+      actualDeductYrs, remPenYears, chosenLumpGross, afterLumpPenGross, forcedLump, fullLump: STATE.lumpChoice === 'full_lump',
+      g, isDuty, disabRate, disabMonthly, disabLumpAmt, nonDutyBlocked,
+      sevSvc, sevRate, sevGross,
+      effMarYrs, marRatio, shareRatio, divMonthlyToEx, divLumpToEx,
+      effStartAge, startWhy, effDeathAge, earlyPenaltyRate, effRecMos, remPenLumpEquiv, specialSuppLump,
+      rawRetSurvPen, rawDisabSurvPen, halfFactor, chosenSurvMonthly, chosenSurvLump, dutyDeathCompLump,
+      isLineOfDutyDeath, rawDutyDeathPen, dutyClippedBase, dutyDeathBaseRate, survAddRate, dutyFactor, chosenTrackLabel,
+      bridgeWage, incomeMonthly, retPenSuspMonthly, disPenSuspMonthly
+    });
+  }
+
+  // ───────── 차트 ─────────
+  function renderDistSvg(curG, retG, survG, curTop, retTop, survTop) {
+    const W = 720, H = 235, padL = 42, padR = 26, padT = 34, padB = 38, maxX = 1150;
+    const xOf = v => padL + (Math.min(maxX, Math.max(0, v)) / maxX) * (W - padL - padR);
+    const pdf = x => {
+      if (x <= 15) return 0;
+      const mu = Math.log(288), sigma = 0.64;
+      return (1 / (x * sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-Math.pow(Math.log(x) - mu, 2) / (2 * sigma * sigma));
+    };
+    let maxP = 0; const pts = [];
+    for (let x = 20; x <= maxX; x += 15) { const p = pdf(x); if (p > maxP) maxP = p; pts.push([x, p]); }
+    const baseY = H - padB, plotH = baseY - padT;
+    const yOf = p => baseY - (p / maxP) * (plotH * 0.86);
+    let dArea = `M ${xOf(20)} ${baseY} `, dLine = '';
+    pts.forEach(([x, p], i) => {
+      const px = xOf(x).toFixed(1), py = yOf(p).toFixed(1);
+      dArea += `L ${px} ${py} `; dLine += (i === 0 ? 'M ' : 'L ') + `${px} ${py} `;
+    });
+    dArea += `L ${xOf(maxX)} ${baseY} Z`;
+    const markers = [
+      { x: curG, label: `재직 상위 ${curTop.toFixed(1)}%`, color: '#2563eb', dy: 0 },
+      { x: retG, label: `은퇴 후 상위 ${retTop.toFixed(1)}%`, color: '#0d9488', dy: 18 },
+      { x: survG, label: `사후 배우자 상위 ${survTop.toFixed(1)}%`, color: '#7c3aed', dy: 36 }
+    ];
+    let mk = '';
+    markers.forEach(m => {
+      const mx = xOf(m.x), my = yOf(pdf(Math.max(25, Math.min(maxX, m.x))));
+      const anchor = mx > W * 0.72 ? 'end' : (mx < W * 0.22 ? 'start' : 'middle');
+      const tx = anchor === 'end' ? mx - 6 : (anchor === 'start' ? mx + 6 : mx);
+      mk += `<line x1="${mx.toFixed(1)}" y1="${padT + m.dy}" x2="${mx.toFixed(1)}" y2="${baseY}" stroke="${m.color}" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5.5" fill="${m.color}" stroke="#fff" stroke-width="2"/>
+        <text x="${tx.toFixed(1)}" y="${padT + m.dy - 4}" text-anchor="${anchor}" fill="${m.color}" font-size="11.5" font-weight="800">${m.label}</text>`;
+    });
+    let tk = '';
+    [150, 288, 375, 545, 745, 1000].forEach(t => {
+      const tx = xOf(t), lbl = t === 288 ? '중위 288' : (t === 375 ? '평균 375' : `${t}만`);
+      tk += `<line x1="${tx.toFixed(1)}" y1="${baseY}" x2="${tx.toFixed(1)}" y2="${baseY + 5}" stroke="#94a3b8"/>
+        <text x="${tx.toFixed(1)}" y="${baseY + 19}" text-anchor="middle" fill="#64748b" font-size="10.5">${lbl}</text>`;
+    });
+    $('distSvgWrap').innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="임금근로자 소득 분포에서의 위치">
+        <defs><linearGradient id="distFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+        </linearGradient></defs>
+        <path d="${dArea}" fill="url(#distFill)"/>
+        <path d="${dLine}" fill="none" stroke="#64748b" stroke-width="2"/>
+        <line x1="${padL}" y1="${baseY}" x2="${W - padR}" y2="${baseY}" stroke="#cbd5e1" stroke-width="1.2"/>
+        ${tk}${mk}
+      </svg>`;
+  }
+
+  function renderLifecycleSvg(p) {
+    const endAge = Math.min(105, Math.max(90, Math.ceil(p.effDeathAge + p.widowYears)));
+    const startAge = p.curAge;
+    $('timelineBadge').textContent = `퇴직 ${p.retAge}세 → 연금 ${p.effStartAge}세 → 사망 ${fmtAge(p.effDeathAge)}세`;
+    const sMy = [], sSp = [], sEx = [];
+    let maxY = 100;
+    for (let age = startAge; age <= endAge; age++) {
+      let myVal = 0, spVal = 0, exVal = 0;
+      if (age < p.retAge) myVal = p.curNetMonthly;
+      else if (age < p.effDeathAge) {
+        const isWorking = (age < p.retAge + p.bridgeYrs) && p.bridgeWage > 0;
+        const wageNet = isWorking ? (p.bridgeWage * 0.90) : 0;
+        const penStarted = age >= p.effStartAge;
+        const splitActive = penStarted && p.divMonthlyToEx > 0 && age >= p.myAgeWhenExStarts && age < p.myAgeWhenExDies;
+        exVal = splitActive ? p.divMonthlyToEx : 0;
+        const grossPen = penStarted ? Math.max(0, p.afterLumpPenGross - exVal) : 0;
+        const afterSusp = Math.max(0, grossPen - ((isWorking && penStarted) ? p.retPenSuspMonthly : 0));
+        const netPen = Math.max(0, afterSusp - calcPenTax(afterSusp));
+        const netDis = Math.max(0, p.disabMonthly - (isWorking ? p.disPenSuspMonthly : 0));
+        myVal = wageNet + netPen + netDis + p.myLumpMonthlyFlow + p.otherInc + p.assetDrawMonthly;
+      } else {
+        spVal = p.spouseTotalMonthlyNet;
+        if (p.divMonthlyToEx > 0 && age >= p.myAgeWhenExStarts && age < p.myAgeWhenExDies) exVal = p.divMonthlyToEx;   // 제47조제1항
+      }
+      maxY = Math.max(maxY, myVal, spVal, exVal * 1.3);
+      sMy.push([age, myVal]); sSp.push([age, spVal]); sEx.push([age, exVal]);
+    }
+    const W = 720, H = 245, padL = 48, padR = 24, padT = 28, padB = 36, baseY = H - padB;
+    const span = Math.max(1, endAge - startAge);
+    const xOf = a => padL + ((a - startAge) / span) * (W - padL - padR);
+    const yOf = v => baseY - (v / (maxY * 1.12)) * (baseY - padT);
+    // 계단형 경로: 해당 연령 1년 동안 같은 금액
+    const stepPath = (arr, keep) => {
+      let d = '';
+      arr.forEach(([a, v]) => {
+        if (!keep(a, v)) return;
+        const x0 = xOf(a).toFixed(1), x1 = xOf(Math.min(endAge, a + 1)).toFixed(1), y = yOf(v).toFixed(1);
+        d += (d === '' ? 'M ' : 'L ') + `${x0} ${y} L ${x1} ${y} `;
+      });
+      return d;
+    };
+    const myPath = stepPath(sMy, a => a < p.effDeathAge);
+    const spPath = stepPath(sSp, a => a >= p.effDeathAge);
+    const exPath = stepPath(sEx, (a, v) => v > 0);
+    let yGrid = '';
+    for (let i = 0; i <= 4; i++) {
+      const val = (maxY * 1.05 / 4) * i, gy = yOf(val);
+      yGrid += `<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W - padR}" y2="${gy.toFixed(1)}" stroke="#eef2f7"/>
+        <text x="${padL - 6}" y="${(gy + 4).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="10">${Math.round(val)}만</text>`;
+    }
+    let xT = '';
+    for (let a = Math.ceil(startAge / 5) * 5; a <= endAge; a += 5) xT += `<text x="${xOf(a).toFixed(1)}" y="${baseY + 18}" text-anchor="middle" fill="#64748b" font-size="10.5">${a}세</text>`;
+    const retX = xOf(p.retAge), deathX = xOf(p.effDeathAge);
+    const retAnchor = (deathX - retX) < 70 ? 'end' : 'middle';
+    const deathAnchor = (deathX - retX) < 70 ? 'start' : 'middle';
+    $('lifeSvgWrap').innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="연령별 월 현금흐름">
+        ${yGrid}
+        <line x1="${retX.toFixed(1)}" y1="${padT}" x2="${retX.toFixed(1)}" y2="${baseY}" stroke="#0d9488" stroke-dasharray="3 3"/>
+        <text x="${retX.toFixed(1)}" y="${padT - 7}" text-anchor="${retAnchor}" fill="#0d9488" font-size="10.5" font-weight="700">퇴직 ${p.retAge}세</text>
+        <line x1="${deathX.toFixed(1)}" y1="${padT}" x2="${deathX.toFixed(1)}" y2="${baseY}" stroke="#7c3aed" stroke-dasharray="3 3"/>
+        <text x="${deathX.toFixed(1)}" y="${padT - 7}" text-anchor="${deathAnchor}" fill="#7c3aed" font-size="10.5" font-weight="700">승계 ${fmtAge(p.effDeathAge)}세</text>
+        ${myPath ? `<path d="${myPath}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linejoin="round"/>` : ''}
+        ${spPath ? `<path d="${spPath}" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linejoin="round"/>` : ''}
+        ${exPath ? `<path d="${exPath}" fill="none" stroke="#e11d48" stroke-width="2.2" stroke-dasharray="5 3"/>` : ''}
+        <line x1="${padL}" y1="${baseY}" x2="${W - padR}" y2="${baseY}" stroke="#cbd5e1"/>
+        ${xT}
+      </svg>`;
+  }
+
+  function renderComparisonSvg(c) {
+    const items = [
+      { label: '공제·분할이 없다면', val: c.origNet, color: '#64748b' },
+      { label: '은퇴 후 본인', val: c.mySteadyRetNet, color: '#0d9488' },
+      { label: '사후 배우자', val: c.spouseTotalMonthlyNet, color: '#7c3aed' },
+      { label: '전 배우자 분할연금', val: c.divMonthlyToEx, color: '#e11d48' }
+    ];
+    const maxV = Math.max(100, ...items.map(i => i.val));
+    const W = 720, H = 172, padL = 150, padR = 100, barMaxW = W - padL - padR;
+    let rows = '';
+    items.forEach((it, idx) => {
+      const y = 18 + idx * 37, bw = Math.max(2, (it.val / maxV) * barMaxW);
+      rows += `<text x="${padL - 10}" y="${y + 15}" text-anchor="end" fill="#1e293b" font-size="12" font-weight="700">${it.label}</text>
+        <rect x="${padL}" y="${y}" width="${bw.toFixed(1)}" height="21" rx="5" fill="${it.color}"/>
+        <text x="${(padL + bw + 8).toFixed(1)}" y="${y + 15}" fill="${it.color}" font-size="12" font-weight="800">${fmtManDec(it.val)}만원</text>`;
+    });
+    $('compSvgWrap').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="단계별 월 현금흐름 비교">${rows}</svg>`;
+  }
+
+  function renderFormulaTrace(d) {
+    const penLine = d.totalSvc < 10
+      ? `• 재직 10년 미만이어서 퇴직연금 대신 퇴직일시금을 받습니다(제51조).`
+      : (d.usingKnown
+          ? `• 퇴직연금 = 공단 예상액 입력값 <strong>월 ${fmtManDec(d.origRetPenGross)}만원</strong>`
+          : `• 퇴직연금(추정) = ${fmtMan(d.penBase)}만 × ${d.cappedSvc.toFixed(1)}년(상한 ${d.svcCap}년) × ${(d.accrual * 100).toFixed(3)}% = <strong>월 ${fmtManDec(d.origRetPenGross)}만원</strong>`);
+    let lumpLine = '';
+    if (d.forcedLump || d.fullLump) {
+      lumpLine = `<br>• 일시금 = ${fmtMan(d.finalBase)}만 × ${d.cappedSvc.toFixed(1)}년 × [0.975 + 0.0065 × (${d.cappedSvc.toFixed(1)} − 5)] = <strong>${fmtMan(d.chosenLumpGross)}만원</strong> (제43조제5항)`;
+    } else if (d.chosenLumpGross > 0) {
+      lumpLine = `<br>• 공제일시금 = ${fmtMan(d.finalBase)}만 × ${d.actualDeductYrs.toFixed(1)}년 × [0.975 + 0.0065 × ${d.actualDeductYrs.toFixed(1)}] = <strong>${fmtMan(d.chosenLumpGross)}만원</strong> (제43조제6항)` +
+        `<br>• 남는 연금 = ${fmtManDec(d.origRetPenGross)}만 × ${d.remPenYears.toFixed(1)}/${d.cappedSvc.toFixed(1)} = <strong>월 ${fmtManDec(d.afterLumpPenGross)}만원</strong>`;
+    }
+    let disLine;
+    if (d.g === 0) disLine = '• 장해 없음';
+    else if (d.isDuty) disLine = `• 공무상 제${d.g}급: ${fmtMan(d.finalBase)}만 × ${(d.disabRate * 100).toFixed(2)}% = 월 ${fmtManDec(d.finalBase * d.disabRate)}만원` + (d.disabLumpAmt > 0 ? ` → 일시금 60개월분 <strong>${fmtMan(d.disabLumpAmt)}만원</strong>` : ` <strong>(비과세)</strong>`) + ` (재해보상법 제29조)`;
+    else if (d.g <= 7) disLine = `• 비공무상 제${d.g}급: ${fmtMan(d.finalBase)}만 × ${(d.disabRate * 100).toFixed(2)}% = 월 ${fmtManDec(d.finalBase * d.disabRate)}만원 (제59조제2항)` + (d.nonDutyBlocked ? ` → <strong>퇴직연금과 병급 불가로 미합산</strong> (제40조제4항)` : '');
+    else disLine = `• 비공무상 제${d.g}급: 일시금 ${fmtMan(d.finalBase)}만 × 2.25 = ${fmtMan(d.finalBase * 2.25)}만원 (제59조제3항)` + (d.nonDutyBlocked ? ` → <strong>퇴직연금과 병급 불가로 미합산</strong>` : '');
+
+    $('formulaTraceBody').innerHTML = `
+      <div class="formula-step">
+        <strong>1. 퇴직연금 · 일시금</strong>
+        ${penLine}${lumpLine}<br>
+        • 개시연령 ${d.effStartAge}세 — ${d.startWhy}
+      </div>
+      <div class="formula-step">
+        <strong>2. 퇴직수당 (제62조, 시행령 제58조)</strong>
+        • ${fmtMan(d.finalBase)}만 × ${d.sevSvc.toFixed(1)}년 × ${(d.sevRate * 100).toFixed(2)}% = <strong>${fmtMan(d.sevGross)}만원</strong>
+      </div>
+      <div class="formula-step">
+        <strong>3. 장해급여</strong>
+        ${disLine}
+      </div>
+      <div class="formula-step">
+        <strong>4. 이혼 분할 (제45조~제49조)</strong>
+        • 혼인기간 비율 = ${d.effMarYrs.toFixed(1)}년 ÷ ${d.totalSvc.toFixed(1)}년 = ${(d.marRatio * 100).toFixed(1)}% · 분할 비율 ${(d.shareRatio * 100).toFixed(0)}%<br>
+        • 전 배우자 몫: 월 <strong>${fmtManDec(d.divMonthlyToEx)}만원</strong> · 일시금 <strong>${fmtMan(d.divLumpToEx)}만원</strong>
+      </div>
+      <div class="formula-step">
+        <strong>5. 재취업 시 연금 일부정지 (제50조제3항)</strong>
+        • 세전 월 ${fmtMan(d.bridgeWage)}만원 → 근로소득금액 월 ${fmtManDec(d.incomeMonthly)}만원 − 기준 ${AVG_PENSION_REF}만원 = 초과 ${fmtManDec(Math.max(0, d.incomeMonthly - AVG_PENSION_REF))}만원<br>
+        • 정지액: 퇴직연금 월 <strong>${fmtManDec(d.retPenSuspMonthly)}만원</strong> · 장해연금 월 <strong>${fmtManDec(d.disPenSuspMonthly)}만원</strong> (각 연금의 1/2 한도)
+      </div>
+      <div class="formula-step" style="margin-bottom:0;">
+        <strong>6. 사후 유족급여</strong>
+        • 퇴직유족연금 = 사망 당시 연금${d.earlyPenaltyRate > 0 ? ` × ${(100 - d.earlyPenaltyRate * 100).toFixed(0)}%(조기퇴직연금 상당액)` : ''} × 60% = ${fmtManDec(d.rawRetSurvPen)}만원 · 장해유족연금 = 장해연금 × 60% = ${fmtManDec(d.rawDisabSurvPen)}만원<br>
+        ${d.isLineOfDutyDeath ? `• 순직 계열 유족연금 = ${fmtManDec(d.dutyClippedBase)}만 × ${((d.dutyDeathBaseRate + d.survAddRate) * 100).toFixed(0)}% = ${fmtManDec(d.rawDutyDeathPen)}만원 (감액 계수 ×${d.dutyFactor})<br>` : ''}
+        • 배우자 직역연금 감액 계수 ×${d.halfFactor} → 선택: ${d.chosenTrackLabel} = <strong>월 ${fmtManDec(d.chosenSurvMonthly)}만원</strong><br>
+        • 특별부가금 = 연금 선택분(${d.remPenYears.toFixed(1)}년) 일시금 ${fmtMan(d.remPenLumpEquiv)}만 × 1/4 × (36 − ${d.effRecMos})/36 = <strong>${fmtMan(d.specialSuppLump)}만원</strong>` +
+        (d.dutyDeathCompLump > 0 ? ` · 유족보상금 ${fmtMan(d.dutyDeathCompLump)}만원` : '') + ` → 일시금 합계 <strong>${fmtMan(d.chosenSurvLump)}만원</strong>
+      </div>`;
+  }
+
+  // ───────── 초기화 ─────────
+  function initBindings() {
+    BOUND_PAIRS.forEach(([rId, nId, min, max, def]) => {
+      const rEl = $(rId), nEl = $(nId);
+      if (!rEl || !nEl) return;
+      // 상·하한이 계산 중 바뀌는 입력(공제연수·수령개월)은 요소의 현재 min/max를 따름
+      const lim = () => {
+        const a = parseFloat(nEl.min), b = parseFloat(nEl.max);
+        return [isFinite(a) ? a : min, isFinite(b) ? b : max];
+      };
+      rEl.addEventListener('input', () => { nEl.value = rEl.value; calculateAll(); });
+      nEl.addEventListener('input', () => {
+        const v = parseFloat(nEl.value);
+        if (isFinite(v)) { const [a, b] = lim(); rEl.value = Math.min(b, Math.max(a, v)); }
+        calculateAll();
+      });
+      nEl.addEventListener('blur', () => {
+        const v = parseFloat(nEl.value);
+        const [a, b] = lim();
+        const clean = isFinite(v) ? Math.min(b, Math.max(a, v)) : Math.min(b, Math.max(a, def));
+        nEl.value = clean; rEl.value = clean;
+        calculateAll();
+      });
+    });
+    loadFromHash();
+    syncSegButtons();
+    calculateAll();
+    window.addEventListener('scroll', updateJumpBtn, { passive: true });
+    updateJumpBtn();
+  }
+  document.addEventListener('DOMContentLoaded', initBindings);
+</script>
+</body>
+</html>

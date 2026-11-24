@@ -241,6 +241,7 @@
   .kpi-item .k-num { font-size: 1.24rem; font-weight: 800; color: var(--navy); margin: 4px 0 2px; }
   .kpi-item .k-desc { font-size: 0.76rem; color: var(--muted); }
   .kpi-item { position: relative; overflow: hidden; }
+  .kpi-item .k-note { display: block; font-size: 0.76rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
   .kpi-item .k-from { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
   .kpi-item .k-diff { display: inline-block; margin-left: 8px; font-size: 0.8rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; vertical-align: 3px; }
   .kpi-item.good { border: 2px solid #5eead4; background: linear-gradient(160deg, #f0fdfa 0%, #fff 60%); box-shadow: 0 6px 18px rgba(13,148,136,0.14); }
@@ -2069,18 +2070,20 @@
     $('kpiCurRank').textContent = `상위 ${curTopPct.toFixed(1)}%`;
     $('kpiCurDetail').textContent = `세전 ${fmtMan(curGross)}만원 (실수령 약 ${fmtMan(curNetMonthly)}만원)`;
     // 상황을 더한 경우: 기본 상황의 순위에서 얼마나 달라졌는지 함께 표시 (상위 %는 작을수록 높은 순위)
-    const kpiSet = (rankId, top, baseTop) => {
+    const kpiSet = (rankId, top, baseTop, penChanged) => {
       const el = $(rankId), box = el.parentElement;
       const d = base ? baseTop - top : 0;
       const moved = base && Math.abs(d) >= 0.05;
-      box.classList.toggle('good', moved && d > 0);
-      box.classList.toggle('bad', moved && d < 0);
-      el.innerHTML = moved
+      const strong = moved && penChanged && Math.abs(d) >= 0.5;
+      box.classList.toggle('good', strong && d > 0);
+      box.classList.toggle('bad', strong && d < 0);
+      el.innerHTML = strong
         ? `<span class="k-from">상위 ${baseTop.toFixed(1)}% →</span> <span class="k-to">상위 ${top.toFixed(1)}%</span><span class="k-diff">${d > 0 ? '▲ 순위 ' : '▼ 순위 '}${Math.abs(d).toFixed(1)}%p ${d > 0 ? '올라감' : '내려감'}</span>`
-        : `상위 ${top.toFixed(1)}%`;
+        : `상위 ${top.toFixed(1)}%` + (moved ? `<span class="k-note">기본 상황 ${baseTop.toFixed(1)}%</span>` : '');
     };
-    kpiSet('kpiRetRank', retTopPct, base ? base.retTopPct : 0);
-    kpiSet('kpiSurvRank', survTopPct, base ? base.survTopPct : 0);
+    const ownPenNow = myPenDuringSplitNet + disabMonthly;
+    kpiSet('kpiRetRank', retTopPct, base ? base.retTopPct : 0, base ? Math.round(ownPenNow - base.ownPenPart) !== 0 : false);
+    kpiSet('kpiSurvRank', survTopPct, base ? base.survTopPct : 0, base ? Math.round(chosenSurvMonthly - base.survPenPart) !== 0 : false);
     $('distLegendBase').style.display = base ? 'inline' : 'none';
     $('kpiRetDetail').textContent = `월 ${fmtMan(mySteadyRetNet)}만원 (세전 ${fmtMan(retEquivGross)}만원 근로자 수준)`;
     $('kpiSurvDetail').textContent = `월 ${fmtMan(spouseTotalMonthlyNet)}만원 (세전 ${fmtMan(survEquivGross)}만원 근로자 수준)`;
@@ -2275,7 +2278,8 @@
       disabMonthly, retPenSuspMonthly, disPenSuspMonthly, myLumpMonthlyFlow, otherInc, assetDrawMonthly, spouseTotalMonthlyNet
     };
     const summary = { mySteadyRetNet, spouseTotalMonthlyNet, totalNetWorthAtRet, effStartAge, hasPension: afterLumpPenGross > 0, life: lifeP,
-      retTopPct, survTopPct, retEquivGross, survEquivGross };
+      retTopPct, survTopPct, retEquivGross, survEquivGross,
+      ownPenPart: myPenDuringSplitNet + disabMonthly, survPenPart: chosenSurvMonthly };
     if (SILENT) return summary;
 
     // ── 요약 문구 · 기본 상황 대비 변화 ──
@@ -2313,8 +2317,22 @@
       }
       deltaEl.style.display = 'block';
       const dRet = mySteadyRetNet - base.mySteadyRetNet, dSp = spouseTotalMonthlyNet - base.spouseTotalMonthlyNet;
+      const dRetPen = ownPenNow - base.ownPenPart, dSpPen = chosenSurvMonthly - base.survPenPart;
+      // 연금 자체가 달라졌을 때만 유리/불리로 강조. 일시금·저축의 운용수익만 달라진 경우는 담담하게 표시
+      const tone2 = (dTot, dPen) => (Math.round(dTot) === 0 ? '' : (Math.round(dPen) === 0 ? 'soft' : (dTot > 0 ? 'good' : 'bad')));
+      const tag2 = (dTot, dPen) => (tone2(dTot, dPen) === 'soft'
+        ? `<span class="d-diff d-same">${dTot > 0 ? '+' : '−'}${fmtMan(Math.abs(dTot))}만원</span>` : diffTag(dTot, '만원'));
+      const sgn = v => (Math.round(v) > 0 ? '+' : (Math.round(v) < 0 ? '−' : '')) + fmtMan(Math.abs(v));
+      const sub2 = (dTot, dPen, penName) => {
+        const dAsset = dTot - dPen;
+        if (Math.round(dTot) === 0) return '';
+        if (Math.round(dPen) === 0) return `<div class="d-sub">${penName}은 그대로입니다. ${dAsset > 0 ? '늘어난' : '줄어든'} ${fmtMan(Math.abs(dAsset))}만원은 일시금·저축을 쓰지 않고 굴린다고 가정했을 때의 운용수익 차이입니다.</div>`;
+        if (Math.round(dAsset) === 0) return `<div class="d-sub">${penName} ${sgn(dPen)}만원</div>`;
+        return `<div class="d-sub">${penName} ${sgn(dPen)}만원 · 자산 운용수익 ${sgn(dAsset)}만원</div>`;
+      };
+      const retTone = tone2(dRet, dRetPen), spTone = tone2(dSp, dSpPen);
       const ageTone = !summary.hasPension ? 'bad' : (ageDiff < 0 ? 'good' : (ageDiff > 0 ? 'bad' : ''));
-      const overall = Math.round(dRet) > 0 ? 'is-good' : (Math.round(dRet) < 0 ? 'is-bad' : (ageTone === 'good' ? 'is-good' : ''));
+      const overall = retTone === 'bad' ? 'is-bad' : ((retTone === 'good' || spTone === 'good' || ageTone === 'good') ? 'is-good' : (spTone === 'bad' ? 'is-bad' : ''));
       const dTitle = overall === 'is-good' ? '기본 상황보다 이렇게 유리해집니다' : (overall === 'is-bad' ? '기본 상황보다 이렇게 줄어듭니다' : '기본 상황에서 이렇게 달라집니다');
       deltaEl.classList.toggle('is-good', overall === 'is-good');
       deltaEl.classList.toggle('is-bad', overall === 'is-bad');
@@ -2322,10 +2340,10 @@
         <div class="res-title"><span class="rt"><i class="rt-ico c1"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></i>${dTitle}</span><span class="pill pill-blue">상황 ${names.length}개 반영</span></div>
         <div class="delta-chips">${names.map(n => `<span class="pill pill-blue">${n}</span>`).join('')}</div>
         <div class="delta-grid">${bridgeItem}
-          <div class="delta-item ${tone(dRet)}"><div class="d-head">${bridgeOn ? '재취업을 마친 뒤 본인 월 실수령' : '은퇴 후 본인 월 실수령'}</div>
-            <div class="d-flow">${fmtMan(base.mySteadyRetNet)}만 → <strong data-n="${Math.round(mySteadyRetNet)}" data-from="${Math.round(base.mySteadyRetNet)}" data-suffix="만원">${fmtMan(mySteadyRetNet)}만원</strong></div>${diffTag(dRet, '만원')}</div>
-          <div class="delta-item ${tone(dSp)}"><div class="d-head">사후 배우자 월 실수령</div>
-            <div class="d-flow">${fmtMan(base.spouseTotalMonthlyNet)}만 → <strong data-n="${Math.round(spouseTotalMonthlyNet)}" data-from="${Math.round(base.spouseTotalMonthlyNet)}" data-suffix="만원">${fmtMan(spouseTotalMonthlyNet)}만원</strong></div>${diffTag(dSp, '만원')}</div>
+          <div class="delta-item ${retTone}"><div class="d-head">${bridgeOn ? '재취업을 마친 뒤 본인 월 실수령' : '은퇴 후 본인 월 실수령'}</div>
+            <div class="d-flow">${fmtMan(base.mySteadyRetNet)}만 → <strong data-n="${Math.round(mySteadyRetNet)}" data-from="${Math.round(base.mySteadyRetNet)}" data-suffix="만원">${fmtMan(mySteadyRetNet)}만원</strong></div>${tag2(dRet, dRetPen)}${sub2(dRet, dRetPen, '연금')}</div>
+          <div class="delta-item ${spTone}"><div class="d-head">사후 배우자 월 실수령</div>
+            <div class="d-flow">${fmtMan(base.spouseTotalMonthlyNet)}만 → <strong data-n="${Math.round(spouseTotalMonthlyNet)}" data-from="${Math.round(base.spouseTotalMonthlyNet)}" data-suffix="만원">${fmtMan(spouseTotalMonthlyNet)}만원</strong></div>${tag2(dSp, dSpPen)}${sub2(dSp, dSpPen, '유족연금')}</div>
           <div class="delta-item ${ageTone}"><div class="d-head">퇴직연금 개시</div>
             <div class="d-flow">${base.effStartAge}세 → <strong>${summary.hasPension ? effStartAge + '세' : '연금 없음'}</strong></div>${!summary.hasPension ? '<span class="d-diff d-down">일시금 수령</span>' : (ageDiff === 0 ? '<span class="d-diff d-same">변화 없음</span>' : `<span class="d-diff ${ageDiff < 0 ? 'd-up' : 'd-down'}">${ageDiff < 0 ? '▲ ' : '▼ '}${Math.abs(ageDiff)}년 ${ageDiff < 0 ? '앞당겨짐' : '늦어짐'}</span>`)}</div>
         </div>

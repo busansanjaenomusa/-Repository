@@ -240,6 +240,18 @@
   .kpi-item .k-head { font-size: 0.77rem; font-weight: 700; color: var(--sub); }
   .kpi-item .k-num { font-size: 1.24rem; font-weight: 800; color: var(--navy); margin: 4px 0 2px; }
   .kpi-item .k-desc { font-size: 0.76rem; color: var(--muted); }
+  .kpi-item { position: relative; overflow: hidden; }
+  .kpi-item .k-from { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+  .kpi-item .k-diff { display: inline-block; margin-left: 8px; font-size: 0.8rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; vertical-align: 3px; }
+  .kpi-item.good { border: 2px solid #5eead4; background: linear-gradient(160deg, #f0fdfa 0%, #fff 60%); box-shadow: 0 6px 18px rgba(13,148,136,0.14); }
+  .kpi-item.good .k-to { font-size: 1.5rem; color: #0f766e; letter-spacing: -0.03em; }
+  .kpi-item.good .k-diff { background: var(--teal); color: #fff; box-shadow: 0 3px 8px rgba(13,148,136,0.3); }
+  .kpi-item.good::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0) 100%); transform: skewX(-18deg); pointer-events: none; }
+  #card1.flash .kpi-item.good::after { animation: shine 1.1s 0.9s ease-out; }
+  #card1.flash .kpi-item.good .k-diff { animation: bump 0.7s 1.3s ease-out both; }
+  .kpi-item.bad { border-color: #fecdd3; background: #fff8f9; }
+  .kpi-item.bad .k-to { color: #be123c; }
+  .kpi-item.bad .k-diff { background: var(--rose-soft); color: var(--rose); }
 
   .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table.data-tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
@@ -387,7 +399,7 @@
   .qr-txt b { display: block; font-size: 0.8rem; color: var(--navy); margin-bottom: 2px; padding-right: 12px; }
   .qr-close { position: absolute; top: 2px; right: 6px; border: none; background: none; font-size: 1.1rem; color: var(--muted); cursor: pointer; padding: 4px; line-height: 1; }
   @media (min-width: 1290px) and (hover: hover) { body.phase-intro .qr-card.show { display: flex; } }
-  @media (prefers-reduced-motion: reduce) { .ev-card.featured .ev-sw, .delta-card.flash, .delta-card.flash .delta-item.good::after, .delta-card.flash .delta-item.good .d-diff { animation: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .ev-card.featured .ev-sw, .delta-card.flash, .delta-card.flash .delta-item.good::after, .delta-card.flash .delta-item.good .d-diff, #card1.flash .kpi-item.good::after, #card1.flash .kpi-item.good .k-diff { animation: none !important; } }
 
   /* 단계 전환 */
   body.phase-intro .sticky-score, body.phase-intro .results-col, body.phase-intro .ev-zone,
@@ -1015,6 +1027,7 @@
         <span><i class="leg-dot" style="background:#2563eb;"></i>재직 중</span>
         <span><i class="leg-dot" style="background:#0d9488;"></i>은퇴 후 본인</span>
         <span><i class="leg-dot" style="background:#7c3aed;"></i>사후 배우자</span>
+        <span id="distLegendBase" style="display:none;"><i class="leg-dot" style="background:#fff; border:2px solid #94a3b8;"></i>상황 더하기 전</span>
       </div>
       <p class="res-note">※ 은퇴 후·사후 위치는 가구의 월 실수령액(연금+자산수익+부수소득)을 ‘같은 실수령액을 받는 근로자의 세전 월급’으로 바꿔 개인 임금근로자 분포에 대어 본 어림값입니다. 통계상 확인된 좌표(중위·평균·350만원 미만 61.6%) 사이는 보간했습니다.</p>
     </div>
@@ -1462,6 +1475,8 @@
     box.classList.remove('flash');
     void box.offsetWidth;
     box.classList.add('flash');
+    const c1 = $('card1');
+    c1.classList.remove('flash'); void c1.offsetWidth; c1.classList.add('flash');
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // 유리한 변화일 때만 색종이 효과
     if (!reduce && box.classList.contains('is-good')) {
@@ -2053,9 +2068,21 @@
     // ── KPI ──
     $('kpiCurRank').textContent = `상위 ${curTopPct.toFixed(1)}%`;
     $('kpiCurDetail').textContent = `세전 ${fmtMan(curGross)}만원 (실수령 약 ${fmtMan(curNetMonthly)}만원)`;
-    $('kpiRetRank').textContent = `상위 ${retTopPct.toFixed(1)}%`;
+    // 상황을 더한 경우: 기본 상황의 순위에서 얼마나 달라졌는지 함께 표시 (상위 %는 작을수록 높은 순위)
+    const kpiSet = (rankId, top, baseTop) => {
+      const el = $(rankId), box = el.parentElement;
+      const d = base ? baseTop - top : 0;
+      const moved = base && Math.abs(d) >= 0.05;
+      box.classList.toggle('good', moved && d > 0);
+      box.classList.toggle('bad', moved && d < 0);
+      el.innerHTML = moved
+        ? `<span class="k-from">상위 ${baseTop.toFixed(1)}% →</span> <span class="k-to">상위 ${top.toFixed(1)}%</span><span class="k-diff">${d > 0 ? '▲ 순위 ' : '▼ 순위 '}${Math.abs(d).toFixed(1)}%p ${d > 0 ? '올라감' : '내려감'}</span>`
+        : `상위 ${top.toFixed(1)}%`;
+    };
+    kpiSet('kpiRetRank', retTopPct, base ? base.retTopPct : 0);
+    kpiSet('kpiSurvRank', survTopPct, base ? base.survTopPct : 0);
+    $('distLegendBase').style.display = base ? 'inline' : 'none';
     $('kpiRetDetail').textContent = `월 ${fmtMan(mySteadyRetNet)}만원 (세전 ${fmtMan(retEquivGross)}만원 근로자 수준)`;
-    $('kpiSurvRank').textContent = `상위 ${survTopPct.toFixed(1)}%`;
     $('kpiSurvDetail').textContent = `월 ${fmtMan(spouseTotalMonthlyNet)}만원 (세전 ${fmtMan(survEquivGross)}만원 근로자 수준)`;
 
     // ── 생전 명세 ──
@@ -2241,13 +2268,14 @@
     }
 
     // ── 차트 · 산식 ──
-    renderDistSvg(curGross, retEquivGross, survEquivGross, curTopPct, retTopPct, survTopPct);
+    renderDistSvg(curGross, retEquivGross, survEquivGross, curTopPct, retTopPct, survTopPct, base);
     const lifeP = {
       curAge, retAge, effStartAge, effDeathAge, widowYears, curNetMonthly, bridgeYrs, bridgeWage,
       afterLumpPenGross, divMonthlyToEx, myAgeWhenExStarts, myAgeWhenExDies,
       disabMonthly, retPenSuspMonthly, disPenSuspMonthly, myLumpMonthlyFlow, otherInc, assetDrawMonthly, spouseTotalMonthlyNet
     };
-    const summary = { mySteadyRetNet, spouseTotalMonthlyNet, totalNetWorthAtRet, effStartAge, hasPension: afterLumpPenGross > 0, life: lifeP };
+    const summary = { mySteadyRetNet, spouseTotalMonthlyNet, totalNetWorthAtRet, effStartAge, hasPension: afterLumpPenGross > 0, life: lifeP,
+      retTopPct, survTopPct, retEquivGross, survEquivGross };
     if (SILENT) return summary;
 
     // ── 요약 문구 · 기본 상황 대비 변화 ──
@@ -2326,7 +2354,7 @@
   }
 
   // ───────── 차트 ─────────
-  function renderDistSvg(curG, retG, survG, curTop, retTop, survTop) {
+  function renderDistSvg(curG, retG, survG, curTop, retTop, survTop, base) {
     const W = 720, H = 235, padL = 42, padR = 26, padT = 34, padB = 38, maxX = 1150;
     const xOf = v => padL + (Math.min(maxX, Math.max(0, v)) / maxX) * (W - padL - padR);
     const pdf = x => {
@@ -2358,6 +2386,15 @@
         <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5.5" fill="${m.color}" stroke="#fff" stroke-width="2"/>
         <text x="${tx.toFixed(1)}" y="${padT + m.dy - 4}" text-anchor="${anchor}" fill="${m.color}" font-size="11.5" font-weight="800">${m.label}</text>`;
     });
+    // 상황을 더하기 전 위치: 속이 빈 회색 점과 이동 화살표
+    if (base) {
+      [[base.retEquivGross, retG, '#0d9488'], [base.survEquivGross, survG, '#7c3aed']].forEach(([from, to, color]) => {
+        if (Math.abs(to - from) < 3) return;
+        const fx = xOf(from), fy = yOf(pdf(Math.max(25, Math.min(maxX, from)))), tx2 = xOf(to), ty = yOf(pdf(Math.max(25, Math.min(maxX, to))));
+        mk += `<line x1="${fx.toFixed(1)}" y1="${fy.toFixed(1)}" x2="${tx2.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="2" stroke-opacity="0.55" marker-end="url(#arr${color.slice(1)})"/>
+          <circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="5" fill="#fff" stroke="#94a3b8" stroke-width="2"/>`;
+      });
+    }
     let tk = '';
     [150, 288, 375, 545, 745, 1000].forEach(t => {
       const tx = xOf(t), lbl = t === 288 ? '중위 288' : (t === 375 ? '평균 375' : `${t}만`);
@@ -2366,7 +2403,10 @@
     });
     $('distSvgWrap').innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="임금근로자 소득 분포에서의 위치">
-        <defs><linearGradient id="distFill" x1="0" y1="0" x2="0" y2="1">
+        <defs>
+          <marker id="arr0d9488" viewBox="0 0 10 10" refX="14" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0d9488"/></marker>
+          <marker id="arr7c3aed" viewBox="0 0 10 10" refX="14" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker>
+          <linearGradient id="distFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
         </linearGradient></defs>
         <path d="${dArea}" fill="url(#distFill)"/>

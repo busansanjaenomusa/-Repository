@@ -125,6 +125,13 @@
   .score-box.s-surv { border-left-color: var(--purple); }
   .score-box.s-asset { border-left-color: var(--amber); }
   .score-label { font-size: 0.75rem; font-weight: 700; color: var(--sub); display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap; }
+  /* 요약 칸: ‘상위 몇 %’를 가장 크게 */
+  .score-box .score-label { flex-direction: column; align-items: flex-start; gap: 5px; }
+  .score-box .pill { font-size: 1.42rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; padding: 3px 12px; border-radius: 9px; color: #fff; background: var(--blue); box-shadow: 0 3px 8px rgba(15,23,42,0.14); }
+  .score-box.s-ret .pill { background: var(--teal); }
+  .score-box.s-surv .pill { background: var(--purple); }
+  .score-box.s-asset .pill { background: var(--amber); }
+  .score-box .score-val { font-size: 1rem; margin-top: 6px; color: var(--sub); }
   .score-val { font-size: 1.12rem; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -0.02em; }
   .score-sub { font-size: 0.74rem; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pill { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.71rem; font-weight: 700; white-space: nowrap; }
@@ -369,6 +376,8 @@
     .score-box { padding: 5px 8px; }
     .score-label { font-size: 0.68rem; }
     .score-val { font-size: 0.95rem; }
+    .score-box .pill { font-size: 1.28rem; padding: 2px 10px; }
+    .score-box .score-val { font-size: 0.92rem; margin-top: 4px; }
     .score-sub { display: none; }
     .tab-btn { font-size: 0.71rem; padding: 9px 2px; }
     .preset-btns { grid-template-columns: 1fr; }
@@ -1323,14 +1332,15 @@
   }
   function animateCount(el) {
     const finalText = el.textContent;
-    const m = finalText.match(/^([\d,.]+)(.*)$/);
-    if (!m) return;
+    const mm = finalText.match(/^(\D*)([\d,.]+)(.*)$/);
+    if (!mm) return;
+    const pre = mm[1], m = [null, mm[2], mm[3]];
     const target = parseFloat(m[1].replace(/,/g, ''));
     const dec = (m[1].split('.')[1] || '').length;
     const t0 = performance.now(), dur = 1100;
     const tick = now => {
       const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-      el.textContent = (target * e).toLocaleString('ko-KR', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + m[2];
+      el.textContent = pre + (target * e).toLocaleString('ko-KR', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + m[2];
       if (k < 1 && document.body.classList.contains('revealing')) requestAnimationFrame(tick);
       else calculateAll();
     };
@@ -1345,7 +1355,7 @@
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (skipAnim || reduce) return;
     document.body.classList.add('revealing');
-    ['sbCurNet', 'sbRetNet', 'sbSurvNet', 'sbAssetVal'].forEach(id => animateCount($(id)));
+    ['sbCurNet', 'sbRetNet', 'sbSurvNet', 'sbAssetVal', 'sbCurPct', 'sbRetPct', 'sbSurvPct', 'sbAssetPct'].forEach(id => animateCount($(id)));
     clearTimeout(revealResults._t);
     revealResults._t = setTimeout(() => document.body.classList.remove('revealing'), 2400);
   }

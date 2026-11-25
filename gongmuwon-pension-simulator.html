@@ -170,6 +170,9 @@
   .score-box .score-val { font-size: 1rem; margin-top: 6px; color: var(--sub); }
   .score-val { font-size: 1.12rem; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -0.02em; }
   .score-sub { font-size: 0.74rem; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score-break { font-size: 0.74rem; font-weight: 700; color: var(--sub); margin-top: 3px; line-height: 1.35; }
+  .score-break b { color: var(--navy); font-weight: 800; }
+  .est-chip { display: inline-block; font-size: 0.68rem; font-weight: 800; color: var(--amber); background: var(--amber-soft); border: 1px solid #fde68a; border-radius: 999px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
   .pill { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.71rem; font-weight: 700; white-space: nowrap; }
   .pill-blue { background: var(--blue-soft); color: var(--blue); }
   .pill-teal { background: var(--teal-soft); color: var(--teal); }
@@ -444,6 +447,7 @@
     .score-label { font-size: 0.68rem; }
     .score-val { font-size: 0.95rem; }
     .score-box .pill { font-size: 1.28rem; padding: 2px 10px; }
+    .score-break { font-size: 0.7rem; }
     .score-box .score-val { font-size: 0.92rem; margin-top: 4px; }
     .score-sub { display: none; }
     .tab-btn { font-size: 0.71rem; padding: 9px 2px; }
@@ -534,11 +538,13 @@
     <div class="score-box s-ret">
       <div class="score-label"><span>② 은퇴 후 본인 월 수령</span><span class="pill pill-teal" id="sbRetPct">상위 -%</span></div>
       <div class="score-val" id="sbRetNet">- 만원</div>
+      <div class="score-break" id="sbRetBreak"></div>
       <div class="score-sub" id="sbRetSub">연금 개시 -세</div>
     </div>
     <div class="score-box s-surv">
       <div class="score-label"><span>③ 사후 배우자 월 수령</span><span class="pill pill-purple" id="sbSurvPct">상위 -%</span></div>
       <div class="score-val" id="sbSurvNet">- 만원</div>
+      <div class="score-break" id="sbSurvBreak"></div>
       <div class="score-sub" id="sbSurvSub">유족연금 비과세</div>
     </div>
     <div class="score-box s-asset">
@@ -631,8 +637,8 @@
             <div class="field-hint">퇴직연금 추정의 기초입니다. 공무원 전체 평균액의 160%(952만원)를 넘는 부분은 반영되지 않습니다 (제30조제2항).</div>
           </div>
 
-          <details class="more-box">
-            <summary>더 정확하게 계산하기 (선택)</summary>
+          <details class="more-box" open>
+            <summary>더 정확하게 계산하기 — 공단 예상액이 있으면 꼭 넣어 주세요</summary>
             <div class="field" style="margin-top:12px;">
               <div class="field-top">
                 <label for="knownPen">공단 예상 퇴직연금 월액</label>
@@ -1094,7 +1100,7 @@
       <summary>법적 근거와 이 계산기의 한계 (꼭 읽어 주세요)</summary>
       <div class="acc-body">
         <ul class="law-list">
-          <li><strong>퇴직연금:</strong> 재직기간 1년당 평균기준소득월액의 1.7%(2026년 퇴직 1.736%에서 2035년 1.7%까지 단계 인하, <a href="https://www.law.go.kr/법령/공무원연금법" target="_blank" rel="noopener">공무원연금법</a> 제43조제4항, 법률 제13387호 부칙 제9조). 재직기간 상한은 36년이지만 2016.1.1. 당시 재직자는 그 전 재직기간에 따라 33~36년입니다(같은 부칙 제11조). <u>2015년 이전 재직기간은 종전 산식(2009년 이전분은 평균보수월액 기준)이 적용되고 소득재분배도 들어가므로, 자동 추정액은 실제와 차이가 날 수 있습니다.</u> 공단 예상액을 입력해 쓰시기를 권합니다.</li>
+          <li><strong>퇴직연금:</strong> 실제 퇴직연금은 세 기간을 따로 계산해 더합니다(공무원연금공단 ‘연금수급 개요’). ① 2009년 이전 재직분은 평균보수월액 기준(20년 미만 1년당 2.5%, 20년 이상은 50% + 초과 1년당 2%), ② 2010~2015년 재직분은 평균기준소득월액 × 재직기간별 적용비율 × 1.9%, ③ 2016년 이후 재직분은 재직한 해마다 다른 지급률(2016년 1.878% → 2026년 1.736% → 2035년 1.7%, <a href="https://www.law.go.kr/법령/공무원연금법" target="_blank" rel="noopener">공무원연금법</a> 제43조제4항, 법률 제13387호 부칙 제9조)을 적용하고 그중 1%에는 소득재분배가 들어갑니다. <u>이 계산기의 자동 추정은 ‘평균기준소득월액 × 인정 재직기간 × 퇴직연도 지급률’ 하나로 줄인 간이 계산이어서, 기간별 산식·재직기간별 적용비율·소득재분배를 반영하지 못합니다. 실제 금액과 차이가 날 수 있으니 공단 예상퇴직급여 조회값을 넣어 쓰시기를 권합니다.</u> 재직기간 상한은 36년이지만 2016.1.1. 당시 재직자는 그 전 재직기간에 따라 33~36년입니다(같은 부칙 제11조).</li>
           <li><strong>연금 개시연령:</strong> 1996년 이후 임용자는 퇴직연도에 따라 62~65세(부칙 제7조제1항·제8조). 1995년 이전 임용자는 법률 제6328호 부칙 제10조가 먼저 적용되어 퇴직 즉시 또는 60세부터 받습니다(부칙 제7조제4항). 장해등급 1~7급이면 퇴직 즉시 개시됩니다(제43조제1항제5호, 시행령 제40조). 개시연령보다 일찍 받으려면 조기퇴직연금을 신청할 수 있고, 못 미치는 햇수 1년마다 5%씩(최대 5년, 75%) 평생 감액됩니다(제43조제2항). 정년·계급정년·직제폐지 특례(제43조제1항제2~4호)는 반영하지 않았습니다.</li>
           <li><strong>퇴직수당:</strong> 재직기간 × 기준소득월액 × 6.5~39%(제62조, 시행령 제58조). 33년 상한이 있고, 군 복무 산입·합산기간은 빠집니다(제25조제4항). 휴직·정직기간 1/2 차감(제25조제5항)은 반영하지 않았습니다.</li>
           <li><strong>공무상 장해급여:</strong> 기준소득월액의 52%(1급)~9.75%(14급), 일시금은 5년분(<a href="https://www.law.go.kr/법령/공무원재해보상법" target="_blank" rel="noopener">공무원 재해보상법</a> 제29조). 퇴직연금과 함께 받습니다. 기준소득월액 상·하한(평균액의 160%·50%)은 순직유족연금 등에만 적용되고 장해급여에는 적용되지 않습니다(같은 법 제10조제2항). 재취업 소득이 있으면 퇴직연금과 같은 기준으로 일부 정지됩니다(제32조).</li>
@@ -1103,6 +1109,8 @@
           <li><strong>분할연금:</strong> 혼인기간 5년 이상, 혼인기간에 해당하는 연금액을 균등 분할(제45조), 협의·재판 비율 우선(제46조), 전 배우자 사망 시 환원(제47조제5항), 퇴직급여 청구 전 이혼이면 일시금도 분할(제49조). 퇴직수당과 장해연금은 공단 분할 대상이 아닙니다. 분할이 진행 중일 때 본인이 사망하면 유족연금은 분할 후 금액을 기준으로 계산했는데, 이는 이 계산기의 가정이므로 공단에 확인하십시오.</li>
           <li><strong>유족급여:</strong> 퇴직유족연금은 퇴직연금의 60%, 개시 전 사망이면 조기퇴직연금 상당액의 60%(제55조제1항). 개시 전 또는 개시 후 3년 이내 사망이면 특별부가금(제54조제3항·제55조제3항). 장해유족연금은 장해연금의 60%(재해보상법 제35조). 순직유족연금(38%+유족 1명당 5%)·위험직무순직유족연금(43%+가산)은 퇴직유족연금·장해유족연금과 각각 택일(공무원연금법 제41조제4항, 재해보상법 제19조제2항·제20조). 순직유족보상금은 공무원 전체 기준소득월액 평균액(2026.5.~2027.4. 595만원)의 24배, 위험직무는 45배(제37·39조).</li>
           <li><strong>배우자가 직역연금 수급자인 경우:</strong> 퇴직유족연금 1/2 감액(공무원연금법 제40조제1항·제41조제2항), 순직유족연금·장해유족연금 1/2 감액(재해보상법 제20조제6항). 위험직무순직유족연금은 같은 항에 열거되어 있지 않아 감액하지 않고 계산했습니다. 실제 적용은 공단에 확인하십시오.</li>
+          <li><strong>‘월 수령’에 들어 있는 것:</strong> 상단의 ‘은퇴 후 본인 월 수령’과 ‘사후 배우자 월 수령’은 연금만이 아니라 가구의 월 현금흐름입니다. 퇴직수당·저축 등 금융자산의 운용수익(원금은 쓰지 않는다는 가정)과 부수소득이 더해져 있고, 사후 배우자 금액에는 배우자 본인의 연금도 들어 있습니다. 연금만의 금액은 각 칸 아래에 따로 적었습니다.</li>
+          <li><strong>건강보험료:</strong> 퇴직 후 지역가입자가 되면 연금·금융소득·재산을 기준으로 건강보험료가 부과되는데, 이 계산기의 실수령액에서는 빼지 않았습니다. <a href="https://busansanjaenomusa.github.io/-Repository/jiyeok/" target="_blank" rel="noopener">지역가입자 건강보험료 계산기</a>로 따로 확인해 보세요.</li>
           <li><strong>세금·분포 가정:</strong> 재직 중 공제율, 연금소득세, 퇴직수당·일시금 세후 96.5%는 법정 산식이 아닌 어림 계수입니다. 장해연금·유족연금은 비과세로 보았습니다(소득세법 제12조). 순자산 분포는 2025년 가계금융복지조사 평균(4억 7,144만원) 등을 이용한 어림입니다.</li>
         </ul>
         <div class="disclaimer-bar">
@@ -2057,6 +2065,17 @@
     $('sbRetPct').textContent = `상위 ${retTopPct.toFixed(1)}%`;
     $('sbRetNet').textContent = `${fmtMan(mySteadyRetNet)} 만원`;
     $('sbRetSub').textContent = (forcedLump ? '퇴직연금 없음 (일시금)' : `연금 개시 ${effStartAge}세` + (gapYrs > 0 ? ` · 소득공백 ${gapYrs}년` : ' · 공백 없음')) + (bridgeWage > 0 && bridgeYrs > 0 ? ' · 재취업 급여 제외' : '');
+    {
+      const penOnly = myPenDuringSplitNet, extra = myLumpMonthlyFlow + otherInc + assetDrawMonthly;
+      const parts = [`퇴직연금 <b>${fmtMan(penOnly)}만</b>` + (usingKnown || penOnly <= 0 ? '' : '<span class="est-chip">추정</span>')];
+      if (disabMonthly > 0) parts.push(`장해연금 <b>${fmtMan(disabMonthly)}만</b>`);
+      parts.push(`자산수익·부수소득 ${fmtMan(extra)}만`);
+      $('sbRetBreak').innerHTML = parts.join(' + ');
+      const sp = [`유족연금 <b>${fmtMan(chosenSurvMonthly)}만</b>`];
+      if (spouseOwnPen > 0) sp.push(`배우자 본인 연금 ${fmtMan(spouseOwnPen)}만`);
+      sp.push(`자산수익·부수소득 ${fmtMan(householdFlow)}만`);
+      $('sbSurvBreak').innerHTML = sp.join(' + ');
+    }
     $('sbSurvPct').textContent = `상위 ${survTopPct.toFixed(1)}%`;
     $('sbSurvNet').textContent = `${fmtMan(spouseTotalMonthlyNet)} 만원`;
     $('sbSurvSub').textContent = chosenSurvLump > 0
@@ -2085,8 +2104,8 @@
     kpiSet('kpiRetRank', retTopPct, base ? base.retTopPct : 0, base ? Math.round(ownPenNow - base.ownPenPart) !== 0 : false);
     kpiSet('kpiSurvRank', survTopPct, base ? base.survTopPct : 0, base ? Math.round(chosenSurvMonthly - base.survPenPart) !== 0 : false);
     $('distLegendBase').style.display = base ? 'inline' : 'none';
-    $('kpiRetDetail').textContent = `월 ${fmtMan(mySteadyRetNet)}만원 (세전 ${fmtMan(retEquivGross)}만원 근로자 수준)`;
-    $('kpiSurvDetail').textContent = `월 ${fmtMan(spouseTotalMonthlyNet)}만원 (세전 ${fmtMan(survEquivGross)}만원 근로자 수준)`;
+    $('kpiRetDetail').textContent = `월 ${fmtMan(mySteadyRetNet)}만원 = 연금 ${fmtMan(myPenDuringSplitNet + disabMonthly)}만 + 자산수익·부수소득 ${fmtMan(myLumpMonthlyFlow + otherInc + assetDrawMonthly)}만 (세전 ${fmtMan(retEquivGross)}만원 근로자 수준)`;
+    $('kpiSurvDetail').textContent = `월 ${fmtMan(spouseTotalMonthlyNet)}만원 = 유족연금 ${fmtMan(chosenSurvMonthly)}만 + 배우자 연금 ${fmtMan(spouseOwnPen)}만 + 자산수익·부수소득 ${fmtMan(householdFlow)}만 (세전 ${fmtMan(survEquivGross)}만원 근로자 수준)`;
 
     // ── 생전 명세 ──
     $('lumpBreakEvenBadge').textContent = (chosenLumpGross > 0 && breakEvenYrs > 0)
@@ -2097,7 +2116,7 @@
         (gapYrs > 0 ? `<br>퇴직(${retAge}세) 후 <strong>${gapYrs}년간</strong> 퇴직연금이 나오지 않습니다.` : '');
 
     const penSrcTail = earlyN > 0 ? ` × ${(earlyFactor * 100).toFixed(0)}%(조기 ${earlyN}년)` : '';
-    const penSrc = usingKnown ? '공단 예상액 입력값' + penSrcTail : `${fmtMan(penBase)}만 × ${cappedSvc.toFixed(1)}년 × ${(accrual * 100).toFixed(3)}% (추정)` + penSrcTail;
+    const penSrc = usingKnown ? '공단 예상액 입력값' + penSrcTail : `${fmtMan(penBase)}만 × ${cappedSvc.toFixed(1)}년 × ${(accrual * 100).toFixed(3)}% (간이 추정 · 공단 예상액 입력 권장)` + penSrcTail;
     let livRows = `
       <tr>
         <td>① 퇴직연금 (공제·분할 전)</td>
@@ -2453,7 +2472,8 @@
         myVal = wageNet + netPen + netDis + p.myLumpMonthlyFlow + p.otherInc + p.assetDrawMonthly;
       } else {
         spVal = p.spouseTotalMonthlyNet;
-        if (p.divMonthlyToEx > 0 && age >= p.myAgeWhenExStarts && age < p.myAgeWhenExDies) exVal = p.divMonthlyToEx;   // 제47조제1항
+        // 분할연금을 받던 중 본인이 사망하면 계속 지급(제47조제1항), 개시 전에 사망하면 지급되지 않음
+        if (p.divMonthlyToEx > 0 && p.effDeathAge > p.myAgeWhenExStarts && age >= p.myAgeWhenExStarts && age < p.myAgeWhenExDies) exVal = p.divMonthlyToEx;
       }
       out.push([age, myVal, spVal, exVal]);
     }
